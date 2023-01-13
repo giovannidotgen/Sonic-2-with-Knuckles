@@ -4985,10 +4985,18 @@ InitPlayers_Alone: ; either Sonic or Tails but not both
 ; ===========================================================================
 ; loc_44D0:
 InitPlayers_TailsAlone:
+	subq.w	#1,d0
+	bne.s	InitPlayers_KnucklesAlone ; branch if this is a Knuckles alone game
 	move.b	#ObjID_Tails,(MainCharacter+id).w ; load Obj02 Tails object at $FFFFB000
 	move.b	#ObjID_SpindashDust,(Tails_Dust+id).w ; load Obj08 Tails' spindash dust/splash object at $FFFFD100
 	addi_.w	#4,(MainCharacter+y_pos).w
 	rts
+
+; ===========================================================================	
+InitPlayers_KnucklesAlone:
+	move.b	#ObjID_Knuckles,(MainCharacter+id).w ; load ObjXX Knuckles object at $FFFFB000
+	move.b	#ObjID_SpindashDust,(Sonic_Dust+id).w ; load Obj08 Knuckles' spindash dust/splash object at $FFFFD100
+	rts	
 ; End of function InitPlayers
 
 
@@ -12069,7 +12077,7 @@ OptionScreen_Controls:
 ; ===========================================================================
 ; word_917A:
 OptionScreen_Choices:
-	dc.l (3-1)<<24|(Player_option&$FFFFFF)
+	dc.l (4-1)<<24|(Player_option&$FFFFFF)
 	dc.l (2-1)<<24|(Two_player_items&$FFFFFF)
 	dc.l ($80-1)<<24|(Sound_test_sound&$FFFFFF)
 
@@ -12213,6 +12221,7 @@ off_92DE:
 	dc.l TextOptScr_SonicAndTails
 	dc.l TextOptScr_SonicAlone
 	dc.l TextOptScr_TailsAlone
+	dc.l TextOptScr_KnucklesAlone
 off_92EA:
 	dc.l TextOptScr_AllKindsItems
 	dc.l TextOptScr_TeleportOnly
@@ -12776,6 +12785,7 @@ TextOptScr_SonicAndTails:	menutxt	"SONIC AND TAILS"	; byte_97EC:
 TextOptScr_SonicAlone:		menutxt	"SONIC ALONE    "	; byte_97FC:
 TextOptScr_MilesAlone:		menutxt	"MILES ALONE    "	; byte_980C:
 TextOptScr_TailsAlone:		menutxt	"TAILS ALONE    "	; byte_981C:
+TextOptScr_KnucklesAlone:	menutxt	"KNUCKLES ALONE "
 TextOptScr_VsModeItems:		menutxt	"* VS MODE ITEMS *"	; byte_982C:
 TextOptScr_AllKindsItems:	menutxt	"ALL KINDS ITEMS"	; byte_983E:
 TextOptScr_TeleportOnly:	menutxt	"TELEPORT ONLY  "	; byte_984E:
@@ -29443,7 +29453,7 @@ ObjPtr_LauncherBall:	dc.l Obj48	; Round ball thing from OOZ that fires you off i
 ObjPtr_EHZWaterfall:	dc.l Obj49	; Waterfall from EHZ
 ObjPtr_Octus:		dc.l Obj4A	; Octus (octopus badnik) from OOZ
 ObjPtr_Buzzer:		dc.l Obj4B	; Buzzer (Buzz bomber) from EHZ
-			dc.l ObjNull	; Obj4C
+ObjPtr_Knuckles:	dc.l Obj4C	; Knuckles
 			dc.l ObjNull	; Obj4D
 			dc.l ObjNull	; Obj4E
 			dc.l ObjNull	; Obj4F
@@ -90188,11 +90198,23 @@ ArtUnc_Sonic:	BINCLUDE	"art/uncompressed/Sonic's art.bin"
 ;---------------------------------------------------------------------------------------
 	align $20
 ArtUnc_Tails:	BINCLUDE	"art/uncompressed/Tails's art.bin"
+;---------------------------------------------------------------------------------------
+; Uncompressed art
+; Patterns for Knuckles
+;---------------------------------------------------------------------------------------
+	align $20
+SK_ArtUnc_Knux:	BINCLUDE	"art/uncompressed/Knuckles.bin"
+
 ;--------------------------------------------------------------------------------------
 ; Sprite Mappings
 ; Sonic			; MapUnc_6FBE0: SprTbl_Sonic:
 ;--------------------------------------------------------------------------------------
 MapUnc_Sonic:	BINCLUDE	"mappings/sprite/Sonic.bin"
+;--------------------------------------------------------------------------------------
+; Sprite Mappings
+; Knuckles
+;--------------------------------------------------------------------------------------
+SK_Map_Knuckles:	BINCLUDE	"mappings/sprite/knuckles.bin"
 ;--------------------------------------------------------------------------------------
 ; Sprite Dynamic Pattern Reloading
 ; Sonic DPLCs   		; MapRUnc_714E0:
@@ -90200,6 +90222,8 @@ MapUnc_Sonic:	BINCLUDE	"mappings/sprite/Sonic.bin"
 ; WARNING: the build script needs editing if you rename this label
 ;          or if you move Sonic's running frame to somewhere else than frame $2D
 MapRUnc_Sonic:	BINCLUDE	"mappings/spriteDPLC/Sonic.bin"
+;--------------------------------------------------------------------------------------
+SK_PLC_Knuckles:	include	"mappings/spriteDPLC/Knuckles.asm"
 ;--------------------------------------------------------------------------------------
 ; Nemesis compressed art (32 blocks)
 ; Shield			; ArtNem_71D8E:

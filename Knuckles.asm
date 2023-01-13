@@ -3130,141 +3130,26 @@ LoadKnucklesDynPLC_Part2:			  ; ...
 		move.w	(a2)+,d5
 		subq.w	#1,d5
 		bmi.w	return_31753E
-		moveq	#0,d3
-		lea	($FFFFF100).w,a3	  ; RAM	address	where the converted art	will be	stored
-		lea	ArtConvTable(pc),a4	  ; Load art-conversion	table
-
-KPLC_ReadEntry:					  ; ...
-		moveq	#0,d0
+		move.w	#tiles_to_bytes(ArtTile_ArtUnc_Sonic),d4
+; loc_1B86E:
+KPLC_ReadEntry:
 		moveq	#0,d1
 		move.w	(a2)+,d1
-		move.w	d1,d4
-		rol.w	#4,d4
-		and.w	#$F,d4
-		addq.w	#1,d3
-		add.w	d4,d3
-		and.w	#$FFF,d1
+		move.w	d1,d3
+		lsr.w	#8,d3
+		andi.w	#$F0,d3
+		addi.w	#$10,d3
+		andi.w	#$FFF,d1
 		lsl.l	#5,d1
-		lea	(SK_ArtUnc_Knux).l,a1	  ; SK_ArtUnc_Knux
-		add.l	d1,a1
-
-KPLC_ConvertArtFromS3K:				  ; ...
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+
-		move.b	(a1)+,d0
-		move.b	(a4,d0.w),(a3)+		  ; Repeated $20 times
-		dbf	d4,KPLC_ConvertArtFromS3K
-		dbf	d5,KPLC_ReadEntry
-		move.l	#$FFF100,d1		  ; RAM	address	where the converted art	was stored
-		move.w	#$F000,d2		  ; VRAM address for Knuckles' art
-		lsl.w	#4,d3
-		jmp	QueueDMATransfer
-; ---------------------------------------------------------------------------
-
+		addi.l	#SK_ArtUnc_Knux,d1
+		move.w	d4,d2
+		add.w	d3,d4
+		add.w	d3,d4
+		jsr	(QueueDMATransfer).l
+		dbf	d5,KPLC_ReadEntry	; repeat for number of entries
 return_31753E:					  ; ...
 		rts
 ; END OF FUNCTION CHUNK	FOR sub_333D66
-; ---------------------------------------------------------------------------
-; This table converts art using	palette	indexes	set for	S&K to palette indexes set for S2.
-; Format: The rightmost	nybble of entry	X in any row = the new index that replaces color X.
-; Similarly, the leftmost nybble of entry X in any column = the	new index that replaces	color X.
-;
-; Specific replacements:
-;
-; $0 ->	$0
-; $1 ->	$6
-; $2 ->	$5
-; $3 ->	$3
-; $4 ->	$2
-; $5 ->	$4
-; $6 ->	$C
-; $7 ->	$D
-; $8 ->	$E
-; $9 ->	$F
-; $A ->	$A
-; $B ->	$B
-; $C ->	$7
-; $D ->	$8
-; $E ->	$9
-; $F ->	$1
-; ---------------------------------------------------------------------------
-ArtConvTable:	dc.b $00,$06,$05,$03,$02,$04,$0C,$0D,$0E,$0F,$0A,$0B,$07,$08,$09,$01; 0	; ...
-		dc.b $60,$66,$65,$63,$62,$64,$6C,$6D,$6E,$6F,$6A,$6B,$67,$68,$69,$61; 16
-		dc.b $50,$56,$55,$53,$52,$54,$5C,$5D,$5E,$5F,$5A,$5B,$57,$58,$59,$51; 32
-		dc.b $30,$36,$35,$33,$32,$34,$3C,$3D,$3E,$3F,$3A,$3B,$37,$38,$39,$31; 48
-		dc.b $20,$26,$25,$23,$22,$24,$2C,$2D,$2E,$2F,$2A,$2B,$27,$28,$29,$21; 64
-		dc.b $40,$46,$45,$43,$42,$44,$4C,$4D,$4E,$4F,$4A,$4B,$47,$48,$49,$41; 80
-		dc.b $C0,$C6,$C5,$C3,$C2,$C4,$CC,$CD,$CE,$CF,$CA,$CB,$C7,$C8,$C9,$C1; 96
-		dc.b $D0,$D6,$D5,$D3,$D2,$D4,$DC,$DD,$DE,$DF,$DA,$DB,$D7,$D8,$D9,$D1; 112
-		dc.b $E0,$E6,$E5,$E3,$E2,$E4,$EC,$ED,$EE,$EF,$EA,$EB,$E7,$E8,$E9,$E1; 128
-		dc.b $F0,$F6,$F5,$F3,$F2,$F4,$FC,$FD,$FE,$FF,$FA,$FB,$F7,$F8,$F9,$F1; 144
-		dc.b $A0,$A6,$A5,$A3,$A2,$A4,$AC,$AD,$AE,$AF,$AA,$AB,$A7,$A8,$A9,$A1; 160
-		dc.b $B0,$B6,$B5,$B3,$B2,$B4,$BC,$BD,$BE,$BF,$BA,$BB,$B7,$B8,$B9,$B1; 176
-		dc.b $70,$76,$75,$73,$72,$74,$7C,$7D,$7E,$7F,$7A,$7B,$77,$78,$79,$71; 192
-		dc.b $80,$86,$85,$83,$82,$84,$8C,$8D,$8E,$8F,$8A,$8B,$87,$88,$89,$81; 208
-		dc.b $90,$96,$95,$93,$92,$94,$9C,$9D,$9E,$9F,$9A,$9B,$97,$98,$99,$91; 224
-		dc.b $10,$16,$15,$13,$12,$14,$1C,$1D,$1E,$1F,$1A,$1B,$17,$18,$19,$11; 240
-; ---------------------------------------------------------------------------
 
 ; =============== S U B	R O U T	I N E =======================================
 

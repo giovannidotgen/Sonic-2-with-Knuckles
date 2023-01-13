@@ -596,6 +596,7 @@ ObjID_LauncherBall =		id(ObjPtr_LauncherBall)		; 48
 ObjID_EHZWaterfall =		id(ObjPtr_EHZWaterfall)		; 49
 ObjID_Octus =			id(ObjPtr_Octus)		; 4A
 ObjID_Buzzer =			id(ObjPtr_Buzzer)		; 4B
+ObjID_Knuckles =		id(ObjPtr_Knuckles)		; 4C
 ObjID_Aquis =			id(ObjPtr_Aquis)		; 50
 ObjID_CNZBoss =			id(ObjPtr_CNZBoss)		; 51
 ObjID_HTZBoss =			id(ObjPtr_HTZBoss)		; 52
