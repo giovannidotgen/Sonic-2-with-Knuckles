@@ -43718,7 +43718,7 @@ ObjCheckLeftWallDist:
 	rts
 
 
-
+	include "Knuckles.asm"
 
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
@@ -44006,7 +44006,7 @@ Obj79_MakeSpecialStars:
 	moveq	#4-1,d1 ; execute the loop 4 times (1 for each star)
 	moveq	#0,d2
 
--	bsr.w	SingleObjLoad2
+-	jsr		SingleObjLoad2
 	bne.s	+	; rts
 	_move.b	id(a0),id(a1) ; load obj79
 	move.l	#Obj79_MapUnc_1F4A0,mappings(a1)
@@ -44327,7 +44327,7 @@ Obj44_BumpCharacter:
 	moveq	#1,d0
 	movea.w	a1,a3
 	jsr	(AddPoints2).l
-	bsr.w	SingleObjLoad
+	jsr		SingleObjLoad
 	bne.s	return_1F83C
 	_move.b	#ObjID_Points,id(a1) ; load obj29
 	move.w	x_pos(a0),x_pos(a1)
@@ -44527,7 +44527,7 @@ loc_1FA2A:
 	jsr	(RandomNumber).l
 	andi.w	#$1F,d0
 	move.w	d0,objoff_38(a0)
-	bsr.w	SingleObjLoad
+	jsr		SingleObjLoad
 	bne.s	loc_1FAA6
 	_move.b	id(a0),id(a1) ; load obj24
 	move.w	x_pos(a0),x_pos(a1)
@@ -45122,7 +45122,7 @@ loc_2013C:
 	move.b	width_pixels(a0),d1
 	moveq	#$11,d3
 	move.w	x_pos(a0),d4
-	bsr.w	PlatformObject
+	jsr		PlatformObject
 	jmpto	MarkObjGone, JmpTo3_MarkObjGone
 ; ---------------------------------------------------------------------------
 +
@@ -45259,7 +45259,7 @@ loc_202E6:
 	move.b	width_pixels(a0),d1
 	moveq	#9,d3
 	move.w	x_pos(a0),d4
-	bsr.w	PlatformObject
+	jsr		PlatformObject
 	jmpto	MarkObjGone, JmpTo4_MarkObjGone
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
@@ -45317,7 +45317,7 @@ Obj12_Main:
 	move.w	#$10,d2
 	move.w	#$10,d3
 	move.w	x_pos(a0),d4
-	bsr.w	SolidObject
+	jsr		SolidObject
 	move.w	x_pos(a0),d0
 	andi.w	#$FF80,d0
 	sub.w	(Camera_X_pos_coarse).w,d0
@@ -45820,7 +45820,7 @@ Obj74_Main:
 	move.w	d2,d3
 	addq.w	#1,d3
 	move.w	x_pos(a0),d4
-	bsr.w	SolidObject_Always
+	jsr		SolidObject_Always
 	tst.w	(Two_player_mode).w
 	bne.s	+
 	move.w	x_pos(a0),d0
@@ -46391,7 +46391,7 @@ loc_21562:
 	bhs.s	return_215BE
 	tst.b	obj_control(a1)
 	bne.s	return_215BE
-	bsr.w	RideObject_SetRide
+	jsr		RideObject_SetRide
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -46419,7 +46419,7 @@ loc_215A8:
 	subi.w	#$10,d1
 	cmpi.w	#$30,d1
 	bhs.s	return_215BE
-	bsr.w	RideObject_SetRide
+	jsr		RideObject_SetRide
 
 return_215BE:
 	rts
@@ -46587,7 +46587,7 @@ Obj06_Cylinder:
 	addq.w	#3,d2
 	move.w	d2,y_pos(a1)
 	move.b	#1,flip_turned(a1) ; face the other way
-	bsr.w	RideObject_SetRide
+	jsr		RideObject_SetRide
 	move.w	#AniIDSonAni_Run,anim(a1)
 	move.b	#0,(a2)
 	tst.w	inertia(a1)
@@ -46792,7 +46792,7 @@ Obj14_UpdateMappingAndCollision:
 	move.b	width_pixels(a0),d1
 	moveq	#8,d3
 	move.w	(sp)+,d4
-	bra.w	SlopedPlatform
+	jmp		SlopedPlatform
 ; ===========================================================================
 
 return_21A74:
@@ -51058,7 +51058,7 @@ Obj22_Arrow:
 	btst	#0,status(a0)
 	bne.s	loc_257DE
 	moveq	#-8,d3
-	bsr.w	ObjCheckLeftWallDist
+	jsr		ObjCheckLeftWallDist
 	tst.w	d1
 	bmi.w	BranchTo_JmpTo27_DeleteObject
 	jmpto	MarkObjGone, JmpTo15_MarkObjGone
@@ -51070,7 +51070,7 @@ BranchTo_JmpTo27_DeleteObject ; BranchTo
 
 loc_257DE:
 	moveq	#8,d3
-	bsr.w	ObjCheckRightWallDist
+	jsr		ObjCheckRightWallDist
 	tst.w	d1
 	bmi.w	BranchTo_JmpTo27_DeleteObject
 	jmpto	MarkObjGone, JmpTo15_MarkObjGone
@@ -51239,7 +51239,7 @@ byte_259B0:
 loc_259B8:
 	jsrto	ObjectMove, JmpTo12_ObjectMove
 	addi.w	#$38,y_vel(a0)
-	bsr.w	ObjCheckFloorDist
+	jsr		ObjCheckFloorDist
 	tst.w	d1
 	bpl.w	+
 	add.w	d1,y_pos(a0)
