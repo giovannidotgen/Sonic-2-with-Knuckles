@@ -2903,6 +2903,8 @@ CyclingPal_WFZ2:
 
 ; sub_213E:
 PalCycle_SuperSonic:
+	cmpi.w	#3,(Player_mode).w	; are we Knuckles?
+	beq.w	PalCycle_SuperKnuckles	; if we are, run the Super Knuckles cycle instead
 	move.b	(Super_Sonic_palette).w,d0
 	beq.s	.return	; return, if Sonic isn't super
 	bmi.w	.normal	; branch, if fade-in is done
@@ -3037,6 +3039,60 @@ CyclingPal_CPZUWTransformation:
 ; Pal_2346:
 CyclingPal_ARZUWTransformation:
 	BINCLUDE	"art/palettes/ARZWater SS transformation.bin"
+
+PalCycle_SuperKnuckles:				  ; ...
+		move.b	($FFFFF65F).w,d0
+		beq.s	return_301E74
+		bmi.w	loc_301E8A
+		subq.b	#1,d0
+		bne.s	loc_301E76
+		subq.b	#1,($FFFFF65E).w
+		bpl.s	return_301E74
+		move.b	#3,($FFFFF65E).w
+		move.b	#$FF,($FFFFF65F).w
+		move.w	#0,($FFFFF65C).w
+		move.b	#0,($FFFFB02A).w
+
+return_301E74:					  ; ...
+		rts
+; ---------------------------------------------------------------------------
+
+loc_301E76:					  ; ...
+		moveq	#0,d0
+		move.w	d0,($FFFFF65C).w
+		move.b	d0,($FFFFF65F).w
+		lea	(Pal_KnucklesReds).l,a0
+		bra.w	loc_301EBA
+; ---------------------------------------------------------------------------
+
+loc_301E8A:					  ; ...
+		subq.b	#1,($FFFFF65E).w
+		bpl.w	return_301E74
+		move.b	#2,($FFFFF65E).w
+		lea	(Pal_SuperKnuckles).l,a0
+		move.w	($FFFFF65C).w,d0
+		addq.w	#6,($FFFFF65C).w
+		cmp.w	#$3C,($FFFFF65C).w
+		bcs.s	loc_301EBA
+		move.w	#0,($FFFFF65C).w
+		move.b	#$E,($FFFFF65E).w
+
+loc_301EBA:					  ; ...
+		lea	($FFFFFB04).w,a1
+		move.l	(a0,d0.w),(a1)+
+		move.w	4(a0,d0.w),2(a1)
+		tst.b	($FFFFF730).w
+		beq.w	return_301E74
+		lea	($FFFFF084).w,a1
+		move.l	(a0,d0.w),(a1)+
+		move.w	4(a0,d0.w),2(a1)
+		rts
+; End of function PalCycle_SuperKnuckles
+
+; ---------------------------------------------------------------------------
+Pal_SuperKnuckles:	BINCLUDE	"art/palettes/Super Knuckles transformation.bin"
+Pal_KnucklesReds: BINCLUDE		"art/palettes/Super Knuckles revert.bin"
+
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to fade in from black
@@ -3676,6 +3732,9 @@ PalPtr_SS3_2p:	palptr Pal_SS3_2p,3
 PalPtr_OOZ_B:	palptr Pal_OOZ_B, 1
 PalPtr_Menu:	palptr Pal_Menu,  0
 PalPtr_Result:	palptr Pal_Result,0
+PalPtr_Knux:	palptr Pal_Knux,  0
+PalPtr_CPZ_K_U:	palptr Pal_CPZ_K_U, 0
+PalPtr_ARZ_K_U:	palptr Pal_ARZ_K_U, 0
 
 ; ----------------------------------------------------------------------------
 ; This macro defines Pal_ABC and Pal_ABC_End, so palptr can compute the size of
@@ -3726,6 +3785,9 @@ Pal_SS1_2p:palette Special Stage 1 2p.bin ; Special Stage 1 2p palette
 Pal_SS2_2p:palette Special Stage 2 2p.bin ; Special Stage 2 2p palette
 Pal_SS3_2p:palette Special Stage 3 2p.bin ; Special Stage 3 2p palette
 Pal_Result:palette Special Stage Results Screen.bin ; Special Stage Results Screen palette
+Pal_Knux:  palette Knuckles.bin,SonicAndTails2.bin ; "Sonic and Miles" background palette (also usually the primary palette line)
+Pal_CPZ_K_U: palette CPZ Knux underwater.bin ; Chemical Plant Zone underwater palette
+Pal_ARZ_K_U: palette ARZ Knux underwater.bin ; Aquatic Ruin Zone underwater palette
 ; ===========================================================================
 
     if gameRevision<2
@@ -4664,7 +4726,10 @@ Level_InitWater:
 ; loc_407C:
 Level_LoadPal:
 	moveq	#PalID_BGND,d0
-	bsr.w	PalLoad_Now	; load Sonic's palette line
+	cmpi.w	#3,(Player_mode).w	; are you playing as Knuckles?
+	blt.s	+	; if not, branch
+	moveq	#PalID_Knux,d0	; load Knuckles' palette index
++	bsr.w	PalLoad_Now	; load Sonic's palette line
 	tst.b	(Water_flag).w	; does level have water?
 	beq.s	Level_GetBgm	; if not, branch
 	moveq	#PalID_HPZ_U,d0	; palette number $15
@@ -4672,8 +4737,17 @@ Level_LoadPal:
 	beq.s	Level_WaterPal ; branch if level is HPZ
 	moveq	#PalID_CPZ_U,d0	; palette number $16
 	cmpi.b	#chemical_plant_zone,(Current_Zone).w
-	beq.s	Level_WaterPal ; branch if level is CPZ
+	bne.s	Level_PalNotCPZ ; branch if level is not CPZ
+	cmpi.w	#3,(Player_mode).w	; are you playing as Knuckles?
+	blt.s	Level_WaterPal	; if not, branch
+	moveq	#PalID_CPZ_K_U,d0
+	bra.s	Level_WaterPal	; branch
+Level_PalNotCPZ:
 	moveq	#PalID_ARZ_U,d0	; palette number $17
+	cmpi.w	#3,(Player_mode).w	; are you playing as Knuckles?
+	blt.s	Level_WaterPal	; if not, branch
+	moveq	#PalID_ARZ_K_U,d0
+
 ; loc_409E:
 Level_WaterPal:
 	bsr.w	PalLoad_Water_Now	; load underwater palette (with d0)
