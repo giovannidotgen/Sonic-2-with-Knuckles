@@ -3735,6 +3735,7 @@ PalPtr_Result:	palptr Pal_Result,0
 PalPtr_Knux:	palptr Pal_Knux,  0
 PalPtr_CPZ_K_U:	palptr Pal_CPZ_K_U, 0
 PalPtr_ARZ_K_U:	palptr Pal_ARZ_K_U, 0
+PalPtr_SSK: palptr Pal_SSK, 0
 
 ; ----------------------------------------------------------------------------
 ; This macro defines Pal_ABC and Pal_ABC_End, so palptr can compute the size of
@@ -3788,6 +3789,7 @@ Pal_Result:palette Special Stage Results Screen.bin ; Special Stage Results Scre
 Pal_Knux:  palette Knuckles.bin,SonicAndTails2.bin ; "Sonic and Miles" background palette (also usually the primary palette line)
 Pal_CPZ_K_U: palette CPZ Knux underwater.bin ; Chemical Plant Zone underwater palette
 Pal_ARZ_K_U: palette ARZ Knux underwater.bin ; Aquatic Ruin Zone underwater palette
+Pal_SSK:	palette Special Stage Knuckles.bin ; Special Stage palette but for Knuckles
 ; ===========================================================================
 
     if gameRevision<2
@@ -6491,11 +6493,21 @@ SpecialStage:
 	move.l	#0,(Camera_Y_pos).w
 	move.l	#0,(Camera_X_pos_copy).w
 	move.l	#0,(Camera_Y_pos_copy).w
-	cmpi.w	#1,(Player_mode).w	; is this a Tails alone game?
+	cmpi.w	#1,(Player_mode).w	; is this a Tails or Knuckles alone game?
 	bgt.s	+			; if yes, branch
+	
+; Load Sonic	
 	move.b	#ObjID_SonicSS,(MainCharacter+id).w ; load Obj09 (special stage Sonic)
 	tst.w	(Player_mode).w		; is this a Sonic and Tails game?
-	bne.s	++			; if not, branch
+	bne.s	+++			; if not, branch
+	bra.s	++			; else, load Tails
+; Load Tails or Knuckles	
++	cmpi.w	#3,(Player_mode).w	; are you playing as Knuckles?
+	bne.s	++					; if not, load Tails
+; Load Knuckles
+	move.b	#ObjID_KnucklesSS,(MainCharacter+id).w	; load Obj4D (special stage Knuckles)
+	bra.s	++								; don't load Tails
+; Load Tails	
 +	move.b	#ObjID_TailsSS,(Sidekick+id).w ; load Obj10 (special stage Tails)
 +	move.b	#ObjID_SSHUD,(SpecialStageHUD+id).w ; load Obj5E (special stage HUD)
 	move.b	#ObjID_StartBanner,(SpecialStageStartBanner+id).w ; load Obj5F (special stage banner)
@@ -9072,6 +9084,10 @@ SSPlaneB_Background:
 ;sub_6DD4
 SSDecompressPlayerArt:
 	lea	(ArtNem_SpecialSonicAndTails).l,a0
+	cmpi.w	#3,(Player_mode).w	; are you playing as Knuckles?
+	bne.s	+
+	lea (ArtNem_SpecialKnuckles).l,a0
++	
 	lea	(SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF).l,a4
 	bra.w	NemDecToRAM
 ; End of function SSDecompressPlayerArt
@@ -10137,6 +10153,10 @@ SSInitPalAndData:
 	move.w	d0,(a2)+
 	move.w	d0,(a2)+
 	moveq	#PalID_SS,d0
+	cmpi.w	#3,(Player_mode).w	; are you playing as Knuckles?
+	bne.s	+					; if not, branch
+	moveq	#PalID_SSK,d0	
++	
 	bsr.w	PalLoad_ForFade
 	lea_	SpecialStage_Palettes,a1
 	moveq	#0,d0
@@ -29528,7 +29548,7 @@ ObjPtr_EHZWaterfall:	dc.l Obj49	; Waterfall from EHZ
 ObjPtr_Octus:		dc.l Obj4A	; Octus (octopus badnik) from OOZ
 ObjPtr_Buzzer:		dc.l Obj4B	; Buzzer (Buzz bomber) from EHZ
 ObjPtr_Knuckles:	dc.l Obj4C	; Knuckles
-			dc.l ObjNull	; Obj4D
+ObjPtr_KnucklesSS:	dc.l Obj4D	; Knuckles in Special Stage
 			dc.l ObjNull	; Obj4E
 			dc.l ObjNull	; Obj4F
 ObjPtr_Aquis:		dc.l Obj50	; Aquis (seahorse badnik) from OOZ
@@ -69296,7 +69316,7 @@ LoadSSSonicDynPLC:
 ; ===========================================================================
 +
 	jsrto	DisplaySprite, JmpTo42_DisplaySprite
-	move.l	#$FF0000,d6
+	move.l	#SSRAM_ArtNem_SpecialSonicAndTails&$FFFFFF,d6
 	lea	(Obj09_MapRUnc).l,a2
 	lea	(Sonic_LastLoadedDPLC).w,a4
 	move.w	#tiles_to_bytes(ArtTile_ArtNem_SpecialSonic),d4
@@ -69993,6 +70013,10 @@ byte_34208:
 ; ----------------------------------------------------------------------------
 Obj09_MapUnc_34212:	BINCLUDE "mappings/sprite/obj09.bin"
 ; ----------------------------------------------------------------------------
+; sprite mappings - uses ArtNem_SpecialKnuckles
+; ----------------------------------------------------------------------------
+Obj4D_MapUnc:	BINCLUDE "mappings/sprite/obj4D.bin"
+; ----------------------------------------------------------------------------
 ; sprite mappings for special stage shadows
 ; ----------------------------------------------------------------------------
 Obj63_MapUnc_34492:	BINCLUDE "mappings/sprite/obj63.bin"
@@ -70003,6 +70027,7 @@ Obj63_MapUnc_34492:	BINCLUDE "mappings/sprite/obj63.bin"
 Obj09_MapRUnc:	BINCLUDE "mappings/spriteDPLC/obj09.bin"
 Obj10_MapRUnc:	BINCLUDE "mappings/spriteDPLC/obj10.bin"
 Obj88_MapRUnc:	BINCLUDE "mappings/spriteDPLC/obj88.bin"
+Obj4D_MapRUnc:	BINCLUDE "mappings/spriteDPLC/obj4D.bin"
 ; ===========================================================================
 
     if ~~removeJmpTos
@@ -70015,7 +70040,7 @@ JmpTo_SSSingleObjLoad ; JmpTo
     endif
 
 
-
+	include	"Knuckles in Special Stage.asm"
 
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
@@ -91623,6 +91648,7 @@ ArtNem_SpecialMessages:	BINCLUDE	"art/nemesis/Special stage messages and icons.b
 ; Art for Obj09 and Obj10 and Obj88	; ArtNem_DEEAE:
 	even
 ArtNem_SpecialSonicAndTails:	BINCLUDE	"art/nemesis/Sonic and Tails animation frames in special stage.bin"
+ArtNem_SpecialKnuckles:	BINCLUDE	"art/nemesis/Knuckles animation frames in special stage.bin"
 ;--------------------------------------------------------------------------------------
 ; Nemesis compressed art (5 blocks)
 ; "Tails" patterns from special stage	; ArtNem_E247E:

@@ -441,6 +441,7 @@ PalID_Result =	id(PalPtr_Result) ; 27
 PalID_Knux =	id(PalPtr_Knux) ; 28
 PalID_CPZ_K_U =	id(PalPtr_CPZ_K_U) ; 29
 PalID_ARZ_K_U =	id(PalPtr_ARZ_K_U) ; 2A
+PalID_SSK = id(PalPtr_SSK) ; 2B
 
 ; PLC IDs
 offset :=	ArtLoadCues
@@ -600,6 +601,7 @@ ObjID_EHZWaterfall =		id(ObjPtr_EHZWaterfall)		; 49
 ObjID_Octus =			id(ObjPtr_Octus)		; 4A
 ObjID_Buzzer =			id(ObjPtr_Buzzer)		; 4B
 ObjID_Knuckles =		id(ObjPtr_Knuckles)		; 4C
+ObjID_KnucklesSS =		id(ObjPtr_KnucklesSS)	; 4D
 ObjID_Aquis =			id(ObjPtr_Aquis)		; 50
 ObjID_CNZBoss =			id(ObjPtr_CNZBoss)		; 51
 ObjID_HTZBoss =			id(ObjPtr_HTZBoss)		; 52
