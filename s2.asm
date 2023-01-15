@@ -69283,11 +69283,6 @@ byte_33A92:
 	dc.b   0,  2	; 10
 	dc.b   4,  3	; 12
 	dc.b  $C,  1	; 14
-dword_33AA2:
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($000)		; Sonic in upright position, $58 tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($058)		; Sonic in diagonal position, $CC tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($124)		; Sonic in horizontal position, $4D tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($171)		; Sonic in ball form, $12 tiles
 ; ===========================================================================
 
 LoadSSSonicDynPLC:
@@ -69301,7 +69296,8 @@ LoadSSSonicDynPLC:
 ; ===========================================================================
 +
 	jsrto	DisplaySprite, JmpTo42_DisplaySprite
-	lea	dword_33AA2(pc),a3
+	move.l	#$FF0000,d6
+	lea	(Obj09_MapRUnc).l,a2
 	lea	(Sonic_LastLoadedDPLC).w,a4
 	move.w	#tiles_to_bytes(ArtTile_ArtNem_SpecialSonic),d4
 	moveq	#0,d1
@@ -69310,30 +69306,14 @@ LoadSSPlayerDynPLC:
 	moveq	#0,d0
 	move.b	mapping_frame(a0),d0
 	cmp.b	(a4),d0
-	beq.s	return_33B3E
+	beq.s	+
 	move.b	d0,(a4)
-	moveq	#0,d6
-	cmpi.b	#4,d0
-	blt.s	loc_33AFE
-	addq.w	#4,d6
-	cmpi.b	#$C,d0
-	blt.s	loc_33AFE
-	addq.w	#4,d6
-	cmpi.b	#$10,d0
-	blt.s	loc_33AFE
-	addq.b	#4,d6
-
-loc_33AFE:
-	move.l	(a3,d6.w),d6
-	add.w	d1,d0
 	add.w	d0,d0
-	lea	(Obj09_MapRUnc_345FA).l,a2
 	adda.w	(a2,d0.w),a2
 	move.w	(a2)+,d5
 	subq.w	#1,d5
-	bmi.s	return_33B3E
-
-SSPLC_ReadEntry:
+	bmi.s	+
+-
 	moveq	#0,d1
 	move.w	(a2)+,d1
 	move.w	d1,d3
@@ -69341,15 +69321,14 @@ SSPLC_ReadEntry:
 	andi.w	#$F0,d3
 	addi.w	#$10,d3
 	andi.w	#$FFF,d1
-	lsl.w	#1,d1
+	lsl.w	#5,d1
 	add.l	d6,d1
 	move.w	d4,d2
 	add.w	d3,d4
 	add.w	d3,d4
 	jsr	(QueueDMATransfer).l
-	dbf	d5,SSPLC_ReadEntry
-
-return_33B3E:
+	dbf	d5,-
++
 	rts
 ; ===========================================================================
 
@@ -70018,17 +69997,12 @@ Obj09_MapUnc_34212:	BINCLUDE "mappings/sprite/obj09.bin"
 ; ----------------------------------------------------------------------------
 Obj63_MapUnc_34492:	BINCLUDE "mappings/sprite/obj63.bin"
 ; ----------------------------------------------------------------------------
-; custom dynamic pattern loading cues for special stage Sonic, Tails and
-; Tails' tails
-; The first $12 frames are for Sonic, and the next $12 frames are for Tails.
-; The last $15 frames are for Tails' tails.
-; The first $24 frames are almost normal dplcs -- the only difference being
-; that the art tile to load is pre-shifted left by 4 bits.
-; The same applies to the last $15 frames, but they have yet another difference:
-; a small space optimization. These frames only have one dplc per frame ever,
-; hence the two-byte dplc count is removed from each frame.
+; standard dynamic pattern loading cues for special stage Sonic, Tails,
+; Tails' tails and Knuckles.
 ; ----------------------------------------------------------------------------
-Obj09_MapRUnc_345FA:	BINCLUDE "mappings/spriteDPLC/obj09.bin"
+Obj09_MapRUnc:	BINCLUDE "mappings/spriteDPLC/obj09.bin"
+Obj10_MapRUnc:	BINCLUDE "mappings/spriteDPLC/obj10.bin"
+Obj88_MapRUnc:	BINCLUDE "mappings/spriteDPLC/obj88.bin"
 ; ===========================================================================
 
     if ~~removeJmpTos
@@ -70195,12 +70169,6 @@ SSTailsCPU_Control:
 	move.w	(a1),(Ctrl_2_Logical).w
 	rts
 ; ===========================================================================
-dword_349B8:
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($183)		; Tails in upright position, $3D tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($1C0)		; Tails in diagonal position, $A4 tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($264)		; Tails in horizontal position, $3A tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($29E)		; Tails in ball form, $10 tiles
-; ===========================================================================
 
 LoadSSTailsDynPLC:
 	move.b	ss_dplc_timer(a0),d0
@@ -70213,10 +70181,11 @@ LoadSSTailsDynPLC:
 ; ===========================================================================
 +
 	jsrto	DisplaySprite, JmpTo43_DisplaySprite
-	lea	dword_349B8(pc),a3
+	move.l	#$FF0000,d6
+	lea	(Obj10_MapRUnc).l,a2
 	lea	(Tails_LastLoadedDPLC).w,a4
 	move.w	#tiles_to_bytes(ArtTile_ArtNem_SpecialTails),d4
-	moveq	#$12,d1
+	moveq	#0,d1
 	bra.w	LoadSSPlayerDynPLC
 ; ===========================================================================
 
@@ -70278,11 +70247,6 @@ Obj88:
 return_34A9E:
 	rts
 ; ===========================================================================
-dword_34AA0:
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($2AE)		; Tails' tails when he is in upright position, $35 tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($2E3)		; Tails' tails when he is in diagonal position, $3B tiles
-	dc.l   (SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF) + tiles_to_bytes($31E)		; Tails' tails when he is in horizontal position, $35 tiles
-; ===========================================================================
 
 LoadSSTailsTailsDynPLC:
 	movea.l	ss_parent(a0),a1 ; load obj address of Tails
@@ -70293,40 +70257,14 @@ LoadSSTailsTailsDynPLC:
 	rts
 ; ===========================================================================
 +
-	jsrto	DisplaySprite, JmpTo43_DisplaySprite
-	moveq	#0,d0
-	move.b	mapping_frame(a0),d0
-	cmp.b	(TailsTails_LastLoadedDPLC).w,d0
-	beq.s	return_34B1A
-	move.b	d0,(TailsTails_LastLoadedDPLC).w
-	moveq	#0,d6
-	cmpi.b	#7,d0
-	blt.s	loc_34AE4
-	addq.w	#4,d6
-	cmpi.b	#$E,d0
-	blt.s	loc_34AE4
-	addq.w	#4,d6
-
-loc_34AE4:
-	move.l	dword_34AA0(pc,d6.w),d6
-	addi.w	#$24,d0
-	add.w	d0,d0
-	lea	(Obj09_MapRUnc_345FA).l,a2
-	adda.w	(a2,d0.w),a2
-	move.w	#tiles_to_bytes(ArtTile_ArtNem_SpecialTails_Tails),d2
+	jsrto	(DisplaySprite).l, JmpTo43_DisplaySprite
+	move.l	#$FF0000,d6
+	lea	(Obj88_MapRUnc).l,a2
+	lea	(TailsTails_LastLoadedDPLC).w,a4
+	move.w	#tiles_to_bytes(ArtTile_ArtNem_SpecialTails_Tails),d4
 	moveq	#0,d1
-	move.w	(a2)+,d1
-	move.w	d1,d3
-	lsr.w	#8,d3
-	andi.w	#$F0,d3
-	addi.w	#$10,d3
-	andi.w	#$FFF,d1
-	lsl.w	#1,d1
-	add.l	d6,d1
-	jsr	(QueueDMATransfer).l
-
-return_34B1A:
-	rts
+	bra.w	LoadSSPlayerDynPLC
+	
 ; ===========================================================================
 off_34B1C:	offsetTable
 		offsetTableEntry.w byte_34B24	; 0
