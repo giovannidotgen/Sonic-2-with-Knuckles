@@ -1511,7 +1511,7 @@ Knuckles_ChgJumpDir:				  ; ...
 		neg.w	d1
 		cmp.w	d1,d0
 		bgt.s	loc_31630E
-		tst.w	($FFFFFFD0).w
+		tst.w	(Demo_mode_flag).w
 		bne.w	loc_31630C
 		add.w	d5,d0
 		cmp.w	d1,d0
@@ -1527,7 +1527,7 @@ loc_31630E:					  ; ...
 		add.w	d5,d0
 		cmp.w	d6,d0
 		blt.s	loc_316332
-		tst.w	($FFFFFFD0).w
+		tst.w	(Demo_mode_flag).w
 		bne.w	loc_316330
 		sub.w	d5,d0
 		cmp.w	d6,d0
@@ -1688,7 +1688,7 @@ Knuckles_Jump:					  ; ...
 		move.w	#$300,d2
 
 loc_316470:					  ; ...
-		tst.w	($FFFFFFD0).w		  ; Check for demo mode	(note: in normal Sonic 2, this is the level select flag!)
+		tst.w	(Demo_mode_flag).w		  ; Check for demo mode	(note: in normal Sonic 2, this is the level select flag!)
 		beq.s	loc_31647A
 		add.w	#$80,d2			  ; Set	the jump height	to Sonic's height in Demo mode because Sonic Team were too lazy to record new demos for S2&K.
 
@@ -1767,7 +1767,7 @@ return_316538:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_CheckGlide:				  ; ...
-		tst.w	($FFFFFFD0).w		  ; Don't glide on demos
+		tst.w	(Demo_mode_flag).w		  ; Don't glide on demos
 		bne.w	return_3165D2
 		tst.b	$21(a0)
 		bne.w	return_3165D2
@@ -2721,7 +2721,7 @@ Obj4C_ResetLevel:				  ; ...
 ; ---------------------------------------------------------------------------
 
 Obj4C_ResetLevel_Part2:				  ; ...
-		tst.w	($FFFFFFDC).w
+		tst.w	(Two_player_mode).w
 		beq.s	return_316F64
 		move.b	#0,($FFFFEEBE).w
 		move.b	#$A,$24(a0)

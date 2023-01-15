@@ -5332,6 +5332,11 @@ WindTunnel:
 	move.w	#0,y_vel(a1)
 	move.b	#AniIDSonAni_Float2,anim(a1)
 	bset	#1,status(a1)	; set "in-air" bit
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	bne.s	+
+	clr.b	$21(a1)
+
++	
 	btst	#button_up,(Ctrl_1_Held).w	; is Up being pressed?
 	beq.s	+				; if not, branch
 	subq.w	#1,y_pos(a1)	; move up
@@ -25382,10 +25387,21 @@ BranchTo2_MarkObjGone
 SolidObject_Monitor_Sonic:
 	btst	d6,status(a0)			; is Sonic standing on the monitor?
 	bne.s	Obj26_ChkOverEdge		; if yes, branch
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	beq.s	SolidObject_Monitor_Knuckles	
 	cmpi.b	#AniIDSonAni_Roll,anim(a1)		; is Sonic spinning?
 	bne.w	SolidObject_cont		; if not, branch
 	rts
 ; End of function SolidObject_Monitor_Sonic
+
+SolidObject_Monitor_Knuckles:
+	cmp.b	#1,$21(a1)
+	beq.s	+
+	cmp.b	#3,$21(a1)
+	beq.s	+
+	cmpi.b	#AniIDSonAni_Roll,anim(a1)
+	bne.w	SolidObject_cont
++	rts
 
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
@@ -37515,6 +37531,8 @@ Sonic_ResetOnFloor:
 	move.b	#AniIDSonAni_Walk,anim(a0)
 ; loc_1B0AC:
 Sonic_ResetOnFloor_Part2:
+	cmpi.b	#ObjID_Knuckles,id(a0)	; is this object ID Knuckles?
+	beq.w	Knuckles_ResetOnFloor_Part2	; if it is, branch to the Knuckles version of this code
 	; some routines outside of Tails' code can call Sonic_ResetOnFloor_Part2
 	; when they mean to call Tails_ResetOnFloor_Part2, so fix that here
 	_cmpi.b	#ObjID_Sonic,id(a0)	; is this object ID Sonic (obj01)?
@@ -42076,11 +42094,18 @@ BranchTo16_DeleteObject
 ; loc_1DE4A:
 Obj08_CheckSkid:
 	movea.w	parent(a0),a2 ; a2=character
+	moveq	#$10,d1	; move y offset to d1
 	cmpi.b	#AniIDSonAni_Stop,anim(a2)	; SonAni_Stop
 	beq.s	Obj08_SkidDust
-	move.b	#2,routine(a0)
-	move.b	#0,obj08_dust_timer(a0)
+	moveq	#6,d1	; move different y offset to d1
+	cmpi.b	#ObjID_Knuckles,id(a2)	; playing as Knuckles?
+	bne.s	+
+	cmpi.b	#3,$21(a2)	; check for sliding
+	beq.s	Obj08_SkidDust
++	move.b	#2,routine(a0)
+	move.b	#0,objoff_32(a0)
 	rts
+
 ; ===========================================================================
 ; loc_1DE64:
 Obj08_SkidDust:
@@ -42092,7 +42117,7 @@ Obj08_SkidDust:
 	_move.b	id(a0),id(a1) ; load obj08
 	move.w	x_pos(a2),x_pos(a1)
 	move.w	y_pos(a2),y_pos(a1)
-	addi.w	#$10,y_pos(a1)
+	add.w	d1,y_pos(a1)
 	tst.b	obj08_belongs_to_tails(a0)
 	beq.s	+
 	subi_.w	#4,y_pos(a1)	; Tails is shorter than Sonic
@@ -44747,8 +44772,11 @@ loc_1FB0C:
 	bclr	#4,status(a1)
 	btst	#2,status(a1)
 	beq.w	loc_1FBB8
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	beq.s	+
 	cmpi.b	#1,(a1)
 	bne.s	loc_1FBA8
++
 	bclr	#2,status(a1)
 	move.b	#$13,y_radius(a1)
 	move.b	#9,x_radius(a1)
@@ -57722,26 +57750,30 @@ BranchTo2_JmpTo26_MarkObjGone
 
 loc_2A990:
 	cmpi.b	#4,routine(a1)
-	bhs.s	return_2AA10
+	bhs.w	return_2AA10
 	tst.b	obj_control(a1)
-	bne.s	return_2AA10
+	bne.w	return_2AA10
 	move.w	x_pos(a1),d0
 	sub.w	x_pos(a0),d0
 	addi.w	#$40,d0
 	cmpi.w	#$80,d0
-	bhs.s	return_2AA10
+	bhs.w	return_2AA10
 	moveq	#0,d1
 	move.b	(Oscillating_Data+$14).w,d1
 	add.w	y_pos(a1),d1
 	addi.w	#$60,d1
 	sub.w	y_pos(a0),d1
-	bcs.s	return_2AA10
+	bcs.w	return_2AA10
 	cmpi.w	#$90,d1
-	bhs.s	return_2AA10
+	bhs.w	return_2AA10
 	subi.w	#$60,d1
 	bcs.s	+
 	not.w	d1
 	add.w	d1,d1
++
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	bne.s	+
+	clr.b	$21(a1)
 +
 	addi.w	#$60,d1
 	neg.w	d1
@@ -78597,7 +78629,8 @@ ObjB2_Main_WFZ_states:	offsetTable
 		offsetTableEntry.w ObjB2_Landed_on_plane	;  $A
 		offsetTableEntry.w ObjB2_Approaching_ship	;  $C
 		offsetTableEntry.w ObjB2_Jump_to_ship	;  $E
-		offsetTableEntry.w ObjB2_Dock_on_DEZ	; $10
+		offsetTableEntry.w ObjB2_Jumping_to_ship ; $10
+		offsetTableEntry.w ObjB2_Dock_on_DEZ	; $12
 ; ===========================================================================
 ; loc_3A982:
 ObjB2_Wait_Leader_position:
@@ -78690,7 +78723,7 @@ ObjB2_Jump_to_plane:
 	addq.w	#1,objoff_2A(a0)
 	subq.w	#1,objoff_2E(a0)
 	bmi.s	+
-	move.w	#((button_right_mask|button_A_mask)<<8)|button_right_mask|button_A_mask,(Ctrl_1_Logical).w
+	move.w	#(button_right_mask|button_A_mask)<<8,(Ctrl_1_Logical).w
 + ; loc_3AABC:
 	bsr.w	ObjB2_Align_plane
 	btst	#p1_standing_bit,status(a0)
@@ -78727,6 +78760,10 @@ loc_3AB18:
 	bclr	#1,status(a1)
 	bclr	#2,status(a1)
 	move.l	#(1<<24)|(0<<16)|(AniIDSonAni_Wait<<8)|AniIDSonAni_Wait,mapping_frame(a1)
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	bne.s	+
+	move.l	#($56<<24)|(0<<16)|(AniIDSonAni_Wait<<8)|AniIDSonAni_Wait,mapping_frame(a1)
++	
 	move.w	#$100,anim_frame_duration(a1)
 	move.b	#$13,y_radius(a1)
 	cmpi.w	#2,(Player_mode).w
@@ -78748,7 +78785,13 @@ ObjB2_Jump_to_ship:
 	cmpi.w	#$447,objoff_2A(a0)
 	bhs.s	loc_3AB8A
 	move.w	#(button_A_mask<<8)|button_A_mask,(Ctrl_1_Logical).w
+	addq.b	#2,routine_secondary(a0)
+	bra.s	loc_3AB8A
 
+ObjB2_Jumping_to_ship:
+	cmpi.w	#$447,objoff_2A(a0)
+	bcc.s	loc_3AB8A
+	move.w	#button_A_mask<<8,(Ctrl_1_Logical).w
 loc_3AB8A:
 	cmpi.w	#$460,objoff_2A(a0)
 	blo.s	ObjB2_Dock_on_DEZ
@@ -78837,6 +78880,10 @@ ObjB2_Deactivate_level:
 ObjB2_Waiting_animation:
 	lea	(MainCharacter).w,a1 ; a1=character
 	move.l	#(1<<24)|(0<<16)|(AniIDSonAni_Wait<<8)|AniIDSonAni_Wait,mapping_frame(a1)
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	bne.s	+
+	move.l	#($56<<24)|(0<<16)|(AniIDSonAni_Wait<<8)|AniIDSonAni_Wait,mapping_frame(a1)
++	
 	move.w	#$100,anim_frame_duration(a1)
 	rts
 ; ===========================================================================
@@ -79428,7 +79475,7 @@ ObjB5_Animate:
 ; loc_3B456:
 ObjB5_CheckPlayers:
 	cmpi.b	#4,anim(a0)
-	bne.s	++	; rts
+	bne.w	++	; rts
 	lea	(MainCharacter).w,a1 ; a1=character
 	bsr.w	ObjB5_CheckPlayer
 	lea	(Sidekick).w,a1 ; a1=character
@@ -79452,6 +79499,11 @@ ObjB5_CheckPlayer:
 	not.w	d1
 	add.w	d1,d1
 +
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	bne.s	ObjB5_NotKnuckles
+	clr.b	$21(a1)
+
+ObjB5_NotKnuckles:
 	addi.w	#$60,d1
 	neg.w	d1
 	asr.w	#4,d1
@@ -85066,17 +85118,34 @@ Touch_Monitor:
 	tst.w	(Two_player_mode).w
 	beq.s	return_3F78A
 +
-	cmpi.b	#AniIDSonAni_Roll,anim(a0)
+	cmpi.b	#2,anim(a0)
+	beq.s	Break_Monitor
+	cmpi.b	#ObjID_Knuckles,id(a0)
 	bne.s	return_3F78A
+	cmp.b	#1,$21(a0)
+	beq.s	Break_Monitor
+	cmp.b	#3,$21(a0)
+	bne.s	return_3F78A
+
+Break_Monitor:
 	neg.w	y_vel(a0)	; reverse Sonic's y-motion
 	move.b	#4,routine(a1)
 	move.w	a0,parent(a1)
+
 
 return_3F78A:
 	rts
 ; ===========================================================================
 ; loc_3F78C:
 Touch_Enemy:
+	cmpi.b	#ObjID_Knuckles,id(a0)
+	bne.s	Touch_NotKnuckles
+	cmp.b	#1,$21(a0)
+	beq.s	+
+	cmp.b	#3,$21(a0)
+	beq.s	+
+
+Touch_NotKnuckles:
 	btst	#status_sec_isInvincible,status_secondary(a0)	; is Sonic invincible?
 	bne.s	+			; if yes, branch
 	cmpi.b	#AniIDSonAni_Spindash,anim(a0)
@@ -85088,6 +85157,13 @@ Touch_Enemy:
 	beq.s	Touch_Enemy_Part2
 	tst.b	boss_hitcount2(a1)
 	beq.s	return_3F7C6
+	cmpi.b	#ObjID_Knuckles,id(a0)
+	bne.s	+
+	cmp.b	#1,$21(a0)
+	bne.s	+
+	move.b	#2,$21(a0)
+	move.b	#$21,anim(a0)
++
 	neg.w	x_vel(a0)
 	neg.w	y_vel(a0)
 	move.b	#0,collision_flags(a1)
@@ -85100,6 +85176,13 @@ return_3F7C6:
 Touch_Enemy_Part2:
 	tst.b	collision_property(a1)
 	beq.s	Touch_KillEnemy
+	cmpi.b	#ObjID_Knuckles,id(a0)
+	bne.s	+
+	cmp.b	#1,$21(a0)
+	bne.s	+
+	move.b	#2,$21(a0)
+	move.b	#$21,anim(a0)
++	
 	neg.w	x_vel(a0)
 	neg.w	y_vel(a0)
 	move.b	#0,collision_flags(a1)
@@ -88411,6 +88494,10 @@ Debug_ExitDebugMode:
 	move.w	d0,(Debug_placement_mode).w
 	lea	(MainCharacter).w,a1 ; a1=character
 	move.l	#MapUnc_Sonic,mappings(a1)
+	cmpi.b	#ObjID_Knuckles,id(a1)
+	bne.s	+
+	move.l	#SK_Map_Knuckles,mappings(a1)
++
 	move.w	#make_art_tile(ArtTile_ArtUnc_Sonic,0,0),art_tile(a1)
 	tst.w	(Two_player_mode).w
 	beq.s	.notTwoPlayerMode
