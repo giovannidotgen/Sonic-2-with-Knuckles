@@ -4637,14 +4637,17 @@ Level:
 	beq.s	+
 	bsr.w	LoadPLC
 +
-	moveq	#PLCID_Std2,d0
-	bsr.w	LoadPLC
 	bsr.w	Level_SetPlayerMode
+	moveq	#PLCID_Std2,d0
+	cmpi.w	#3,(Player_mode).w	; are we Knuckles?
+	bne.s	+	; if not, branch
+	moveq	#PLCID_Std2Knuckles,d0	; load Knuckles' standard art
++	bsr.w	LoadPLC
 	moveq	#PLCID_Miles1up,d0
 	tst.w	(Two_player_mode).w
 	bne.s	+
 	cmpi.w	#2,(Player_mode).w
-	bne.s	Level_ClrRam
+	bne.s	Level_NoTails
 	addq.w	#PLCID_MilesLife-PLCID_Miles1up,d0
 +
 	tst.b	(Graphics_Flags).w
@@ -4652,6 +4655,13 @@ Level:
 	addq.w	#PLCID_Tails1up-PLCID_Miles1up,d0
 +
 	bsr.w	LoadPLC
+
+Level_NoTails:
+	cmpi.w	#3,(Player_mode).w
+	bne.s	Level_ClrRam
+	moveq	#PLCID_KnucklesLife,d0
+	bsr.w	LoadPLC
+
 ; loc_3F48:
 Level_ClrRam:
 	clearRAM Sprite_Table_Input,Sprite_Table_Input_End
@@ -5995,6 +6005,9 @@ CheckLoadSignpostArt:
 	tst.w	(Two_player_mode).w
 	bne.s	+	; rts
 	moveq	#PLCID_Signpost,d0 ; <== PLC_1F
+	cmpi.w	#3,(Player_mode).w
+	bne.w	LoadPLC2		; load signpost art
+	moveq	#PLCID_SignpostKnuckles,d0	
 	bra.w	LoadPLC2		; load signpost art
 ; ---------------------------------------------------------------------------
 ; loc_4C80:
@@ -28775,6 +28788,15 @@ LoadTitleCard0:
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_TitleCard),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_TitleCard).l,a0
 	jsrto	NemDec, JmpTo2_NemDec
+	cmpi.w	#3,(Player_option).w
+	bne.s	LoadTitleCard_Art2
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_TitleCard+$5A),VRAM,WRITE),(VDP_control_port).l
+	moveq	#$F,d0
+
+loc_312364:
+	move.l	#$44444444,(VDP_data_port).l
+	dbf	d0,loc_312364
+LoadTitleCard_Art2:	
 	lea	(Level_Layout).w,a4
 	lea	(ArtNem_TitleCard2).l,a0
 	jmpto	NemDecToRAM, JmpTo_NemDecToRAM
@@ -34427,6 +34449,10 @@ Load_EndOfAct:
 	cmpi.w	#2,(Player_mode).w
 	bne.s	+
 	moveq	#PLCID_ResultsTails,d0
++
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	moveq	#PLCID_ResultsKnuckles,d0
 +
 	jsr	(LoadPLC2).l
 	move.b	#1,(Update_Bonus_score).w
@@ -59678,6 +59704,8 @@ SlotMachine_Subroutine2:
 ; ===========================================================================
 ; loc_2C2B8
 SlotMachine_GetPixelRow:
+	cmpi.w	#3,(Player_mode).w
+	beq.s	sub_325964
 	move.w	d3,d0				; d0 = pixel offset into slot picture
 	lsr.w	#8,d0				; Convert offset into index
 	andi.w	#7,d0				; Limit each sequence to 8 pictures
@@ -59691,6 +59719,33 @@ SlotMachine_GetPixelRow:
 	lsr.w	#1,d0				; Convert into bytes
 	adda.w	d0,a2				; a2 = pointer to desired pixel row
 	rts
+	
+sub_325964:					  ; ...
+	move.w	d3,d0
+	lsr.w	#8,d0
+	and.w	#7,d0
+	move.b	(a3,d0.w),d0
+	and.w	#7,d0
+	beq.s	loc_32598C
+	ror.w	#7,d0
+	lea	(ArtUnc_CNZSlotPics).l,a2
+	add.w	d0,a2
+	move.w	d3,d0
+	and.w	#$F8,d0
+	lsr.w	#1,d0
+	add.w	d0,a2
+	rts
+; ---------------------------------------------------------------------------
+
+loc_32598C:					  ; ...
+	lea	(byte_33B1F0).l,a2
+	move.w	d3,d0
+	and.w	#$F8,d0
+	lsr.w	#1,d0
+	add.w	d0,a2
+	rts
+; End of function sub_325964
+
 ; ==========================================================================
 ; loc_2C2DE:
 SlotMachine_ChooseReward:
@@ -87218,6 +87273,10 @@ BuildHUD:
 	move.w	#128+16,d3	; set X pos
 	move.w	#128+136,d2	; set Y pos
 	lea	(HUD_MapUnc_40A9A).l,a1
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	lea	(HUD_MapUnc_Knuckles).l,a1
++	
 	movea.w	#make_art_tile(ArtTile_ArtNem_HUD,0,1),a3	; set art tile and flags
 	add.w	d1,d1
 	adda.w	(a1,d1.w),a1
@@ -87490,6 +87549,8 @@ HUD_MapUnc_40BEA:	BINCLUDE "mappings/sprite/hud_b.bin"
 
 
 HUD_MapUnc_40C82:	BINCLUDE "mappings/sprite/hud_c.bin"
+
+HUD_MapUnc_Knuckles:	BINCLUDE "mappings/sprite/hud_k.bin"
 
 ; ---------------------------------------------------------------------------
 ; Add points subroutine
@@ -89086,6 +89147,10 @@ PLCptr_Tornado:		offsetTableEntry.w PlrList_Tornado		; 63
 PLCptr_Capsule:		offsetTableEntry.w PlrList_Capsule		; 64
 PLCptr_Explosion:	offsetTableEntry.w PlrList_Explosion		; 65
 PLCptr_ResultsTails:	offsetTableEntry.w PlrList_ResultsTails		; 66
+PLCptr_KnucklesLife:	offsetTableEntry.w PlrList_KnucklesLife	; 67
+PLCptr_Std2Knuckles:	offsetTableEntry.w PlrList_Std2Knuckles ; 68
+PLCptr_ResultsKnuckles:	offsetTableEntry.w PlrList_ResultsKnuckles ; No.
+PLCptr_SignpostKnuckles:	offsetTableEntry.w PlrList_SignpostKnuckles ; 70
 
 ; macro for a pattern load request list header
 ; must be on the same line as a label that has a corresponding _End label later
@@ -89727,6 +89792,43 @@ PlrList_ResultsTails: plrlistheader
 	plreq ArtTile_ArtNem_MiniCharacter, ArtNem_MiniTails
 	plreq ArtTile_ArtNem_Perfect, ArtNem_Perfect
 PlrList_ResultsTails_End
+
+;---------------------------------------------------------------------------------------
+; Pattern load queue
+; Knuckles life counter
+;---------------------------------------------------------------------------------------
+PlrList_KnucklesLife: plrlistheader
+	plreq ArtTile_ArtNem_life_counter, ArtNem_KTELife
+PlrList_KnucklesLife_End
+;---------------------------------------------------------------------------------------
+; PATTERN LOAD REQUEST LIST
+; Standard 2 - loaded for every level
+;---------------------------------------------------------------------------------------
+PlrList_Std2Knuckles: plrlistheader
+	plreq ArtTile_ArtNem_Checkpoint, ArtNem_Checkpoint
+	plreq ArtTile_ArtNem_Powerups, ArtNem_Powerups
+	plreq ArtTile_ArtNem_Powerups+$2C, ArtNem_MonitorIconsMod
+	plreq ArtTile_ArtNem_Shield, ArtNem_InvincibilityShield
+PlrList_Std2Knuckles_End
+;---------------------------------------------------------------------------------------
+; Pattern load queue
+; Knuckles end of level results screen
+;---------------------------------------------------------------------------------------
+PlrList_ResultsKnuckles: plrlistheader
+	plreq ArtTile_ArtNem_TitleCard, ArtNem_TitleCard
+	plreq ArtTile_ArtNem_ResultsText, ArtNem_ResultsText
+	plreq ArtTile_ArtNem_MiniCharacter, ArtNem_MiniKnuckles
+	plreq ArtTile_ArtNem_Perfect, ArtNem_Perfect
+PlrList_ResultsKnuckles_End
+;---------------------------------------------------------------------------------------
+; Pattern load queue
+; End of level signpost
+;---------------------------------------------------------------------------------------
+PlrList_SignpostKnuckles: plrlistheader
+	plreq ArtTile_ArtNem_Signpost, ArtNem_Signpost
+	plreq ArtTile_ArtNem_Signpost+$22, ArtNem_Signpost_KnucklesPatch
+PlrList_SignpostKnuckles_End
+
 
 
 
@@ -90553,6 +90655,37 @@ ArtNem_TailsLife:	BINCLUDE	"art/nemesis/Tails life counter.bin"
 ; Tails extra continue icon	; ArtNem_7C2F2:
 	even
 ArtNem_MiniTails:	BINCLUDE	"art/nemesis/Tails continue.bin"
+;---------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Knuckles extra continue icon
+	even
+ArtNem_MiniKnuckles:	BINCLUDE	"art/nemesis/Knuckles continue.bin"
+;---------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Knuckles HUD life art
+	even
+ArtNem_KTELife:	BINCLUDE	"art/nemesis/Knuckles lives counter.bin"
+;---------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Gray shield and invincibility art from KiS2
+	even
+ArtNem_InvincibilityShield:	BINCLUDE	"art/nemesis/Shield and invincibility stars from KiS2.bin"
+;---------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Signpost art for Knuckles
+	even
+ArtNem_Signpost_KnucklesPatch:	BINCLUDE	"art/nemesis/Signpost (Knuckles patch).bin"
+;---------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Monitor icons
+	even
+ArtNem_MonitorIconsMod:	BINCLUDE	"art/nemesis/Monitor and contents (Knuckles patch).bin"
+;---------------------------------------------------------------------------------------
+; Uncompressed art
+; Slot machines Knuckles patch
+	even
+byte_33B1F0:	BINCLUDE	"art/uncompressed/Slot Pictures (Knuckles patch).bin"
 ;---------------------------------------------------------------------------------------
 ; Nemesis compressed art (88 blocks)
 ; Standard font		; ArtNem_7C43A:
