@@ -1,8 +1,41 @@
 {
     "Flex": 2,
     "name": "Sonic 2",
-    "node": "dad6e825-1660-4429-93f6-dd09b880aa01",
+    "node": "5e8b91e9-f2e7-4403-b863-568fff19d73a",
     "objects": [
+        {
+            "name": "Misc",
+            "children": [
+                {
+                    "uuid": "5e8b91e9-f2e7-4403-b863-568fff19d73a",
+                    "format": "Sonic 2.js",
+                    "name": "Special Stage HUD",
+                    "palettes": [
+                        {
+                            "path": "art\\palettes\\Special Stage Knuckles.bin",
+                            "length": 3
+                        }
+                    ],
+                    "art": {
+                        "path": "art\\nemesis\\Knuckles text patterns from special stage.bin",
+                        "compression": "Nemesis",
+                        "offset": 0
+                    },
+                    "mappings": {
+                        "path": "mappings\\sprite\\obj5E.bin",
+                        "label": ""
+                    },
+                    "dplcs": {
+                        "enabled": false,
+                        "path": "",
+                        "label": ""
+                    }
+                }
+            ],
+            "isDirectory": true,
+            "expanded": true,
+            "uuid": "cd5e8b91-e9f2-47d4-83b8-63568fff19d7"
+        },
         {
             "name": "Common",
             "children": [

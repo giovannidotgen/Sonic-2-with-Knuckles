@@ -519,6 +519,7 @@ PLCID_KnucklesLife =	id(PLCptr_KnucklesLife)
 PLCID_Std2Knuckles =	id(PLCptr_Std2Knuckles)
 PLCID_ResultsKnuckles =	id(PLCptr_ResultsKnuckles)
 PLCID_SignpostKnuckles =	id(PLCptr_SignpostKnuckles)
+PLCID_SSKnucklesText =	id(PLCptr_SSKnucklesText)
 
 ; Object IDs
 offset :=	Obj_Index

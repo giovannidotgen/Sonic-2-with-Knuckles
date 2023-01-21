@@ -6506,6 +6506,11 @@ SpecialStage:
 	move.w	#0,(SpecialStage_CurrentSegment).w
 	moveq	#PLCID_SpecialStage,d0
 	bsr.w	RunPLC_ROM
+	cmpi.w	#3,(Player_mode).w	; check if playing as Knuckles
+	bne.s	+
+	moveq	#PLCID_SSKnucklesText,d0
+	bsr.w	RunPLC_ROM
++
 	clr.b	(Level_started_flag).w
 	move.l	#0,(Camera_X_pos).w	; probably means something else in this context
 	move.l	#0,(Camera_Y_pos).w
@@ -6521,7 +6526,7 @@ SpecialStage:
 	bra.s	++			; else, load Tails
 ; Load Tails or Knuckles	
 +	cmpi.w	#3,(Player_mode).w	; are you playing as Knuckles?
-	bne.s	++					; if not, load Tails
+	bne.s	+					; if not, load Tails
 ; Load Knuckles
 	move.b	#ObjID_KnucklesSS,(MainCharacter+id).w	; load Obj4D (special stage Knuckles)
 	bra.s	++								; don't load Tails
@@ -9443,7 +9448,7 @@ Obj5E:
 	moveq	#0,d1
 	tst.b	(SS_2p_Flag).w
 	beq.s	+
-	addq.w	#6,d1
+	addq.w	#8,d1
 	tst.b	(Graphics_Flags).w
 	bpl.s	++
 	addq.w	#1,d1
@@ -9453,7 +9458,7 @@ Obj5E:
 	andi.w	#3,d1
 	tst.b	(Graphics_Flags).w
 	bpl.s	+
-	addq.w	#3,d1 ; set special stage Tails name to "TAILS" instead of MILES
+	addq.w	#4,d1 ; set special stage Tails name to "TAILS" instead of MILES
 +
 	add.w	d1,d1
 	moveq	#0,d2
@@ -9479,11 +9484,13 @@ SSHUDLayout:	offsetTable
 		offsetTableEntry.w SSHUD_SonicMilesTotal	; 0
 		offsetTableEntry.w SSHUD_Sonic			; 1
 		offsetTableEntry.w SSHUD_Miles			; 2
-		offsetTableEntry.w SSHUD_SonicTailsTotal	; 3
-		offsetTableEntry.w SSHUD_Sonic_2		; 4
-		offsetTableEntry.w SSHUD_Tails			; 5
-		offsetTableEntry.w SSHUD_SonicMiles		; 6
-		offsetTableEntry.w SSHUD_SonicTails		; 7
+		offsetTableEntry.w SSHUD_Knuckles		; 3
+		offsetTableEntry.w SSHUD_SonicTailsTotal	; 4		
+		offsetTableEntry.w SSHUD_Sonic_2		; 5
+		offsetTableEntry.w SSHUD_Tails			; 6
+		offsetTableEntry.w SSHUD_Knuckles2		; 7		
+		offsetTableEntry.w SSHUD_SonicMiles		; 8
+		offsetTableEntry.w SSHUD_SonicTails		; 9
 
 ; byte_7052:
 SSHUD_SonicMilesTotal:
@@ -9500,6 +9507,11 @@ SSHUD_Miles:
 	dc.b   1
 	dc.b   $38
 	dc.b   1
+	
+SSHUD_Knuckles:
+	dc.b   1
+	dc.b   $D4
+	dc.b   0	
 
 ; byte_705D:
 SSHUD_SonicTailsTotal:
@@ -9516,6 +9528,10 @@ SSHUD_Tails:
 	dc.b   1
 	dc.b   $38
 	dc.b   2
+SSHUD_Knuckles2:
+	dc.b   1
+	dc.b   $D4
+	dc.b   0		
 
 ; 2 player
 ; byte_7068:
@@ -9809,6 +9825,8 @@ loc_7480:
 	addq.w	#next_subspr,d5
 	dbf	d4,-
 	cmpi.w	#1,(Player_mode).w
+	beq.s	loc_7536
+	cmpi.w	#3,(Player_mode).w
 	beq.s	loc_7536
 
 loc_74EA:
@@ -71337,6 +71355,8 @@ Obj5A_RingsNeeded:
 	cmpi.w	#1,(Player_mode).w
 	blt.s	+
 	beq.s	++
+	cmpi.w  #3,(Player_mode).w
+	beq.s	++
 	move.w	(Ring_count_2P).w,d0
 	bra.s	++
 ; ===========================================================================
@@ -71950,6 +71970,8 @@ Obj5A_PrintCheckpointMessage:
 	bsr.w	Obj5A_CreateCheckpointWingedHand
 	cmpi.w	#1,(Player_mode).w
 	ble.s	loc_35D6E
+	cmpi.w	#3,(Player_mode).w
+	beq.s	loc_35D6E
 	addi.w	#palette_line_1,art_tile(a1)
 	addi.w	#palette_line_1,art_tile(a2)
 
@@ -89151,6 +89173,7 @@ PLCptr_KnucklesLife:	offsetTableEntry.w PlrList_KnucklesLife	; 67
 PLCptr_Std2Knuckles:	offsetTableEntry.w PlrList_Std2Knuckles ; 68
 PLCptr_ResultsKnuckles:	offsetTableEntry.w PlrList_ResultsKnuckles ; No.
 PLCptr_SignpostKnuckles:	offsetTableEntry.w PlrList_SignpostKnuckles ; 70
+PLCptr_SSKnucklesText:	offsetTableEntry.w PlrList_SSKnucklesText ; 71
 
 ; macro for a pattern load request list header
 ; must be on the same line as a label that has a corresponding _End label later
@@ -89828,9 +89851,13 @@ PlrList_SignpostKnuckles: plrlistheader
 	plreq ArtTile_ArtNem_Signpost, ArtNem_Signpost
 	plreq ArtTile_ArtNem_Signpost+$22, ArtNem_Signpost_KnucklesPatch
 PlrList_SignpostKnuckles_End
-
-
-
+;---------------------------------------------------------------------------------------
+; Pattern load queue
+; Special stage text for Knuckles
+;---------------------------------------------------------------------------------------
+PlrList_SSKnucklesText:	plrlistheader
+	plreq ArtTile_ArtNem_SpecialHUD, ArtNem_SpecialKnucklesText
+PlrList_SSKnucklesText_End
 
 
 ;---------------------------------------------------------------------------------------
@@ -91874,7 +91901,11 @@ ArtNem_SpecialKnuckles:	BINCLUDE	"art/nemesis/Knuckles animation frames in speci
 ; "Tails" patterns from special stage	; ArtNem_E247E:
 	even
 ArtNem_SpecialTailsText:	BINCLUDE	"art/nemesis/Tails text patterns from special stage.bin"
-
+;--------------------------------------------------------------------------------------
+; Nemesis compressed art (5 blocks)
+; K-T-E patterns from special stage
+	even
+ArtNem_SpecialKnucklesText:	BINCLUDE	"art/nemesis/Knuckles text patterns from special stage.bin"
 ;--------------------------------------------------------------------------------------
 ; Special stage object perspective data (Kosinski compression)	; MiscKoz_E24FE:
 ;--------------------------------------------------------------------------------------
