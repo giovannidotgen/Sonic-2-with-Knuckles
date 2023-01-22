@@ -6680,6 +6680,8 @@ SpecialStage:
 	beq.s	++
 	subq.w	#1,d0
 	beq.s	+
+	subq.w	#2,d0
+	beq.s	+
 	clr.w	(Ring_count).w
 	bra.s	++
 ; ===========================================================================
@@ -10248,7 +10250,7 @@ used := used|1<<strstr(llookup,"char")	; if not, mark it as used
 
 ;word_7822:
 SpecialStage_ResultsLetters:
-	titleLetters	"ACDGHILMPRSTUW."
+	titleLetters	"ACDGHILMPRSTUWK"
 
  charset ; revert character set
 
@@ -21884,7 +21886,7 @@ Obj11_Init:
 	move.l	#Obj11_MapUnc_FC28,mappings(a0)
 	move.w	#make_art_tile(ArtTile_ArtNem_HPZ_Bridge,3,0),art_tile(a0)
 +
-	bsr.w	Adjust2PArtPointer
+	jsr		Adjust2PArtPointer
 	move.b	#4,render_flags(a0)
 	move.b	#$80,width_pixels(a0)
 	move.w	y_pos(a0),d2
@@ -22952,7 +22954,7 @@ Obj17_Init:
 	moveq	#0,d6
 ; loc_10372:
 Obj17_MakeHelix:
-	bsr.w	SingleObjLoad2
+	jsr		SingleObjLoad2
 	bne.s	Obj17_Main
 	addq.b	#1,subtype(a0)
 	move.w	a1,d5
@@ -27582,6 +27584,10 @@ loc_140AC:
 +
 	movea.l	a0,a1
 	lea	byte_14380(pc),a2
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	lea	byte_14380_K(pc),a2
++	
 	moveq	#7,d1
 
 loc_140BC:
@@ -27602,6 +27608,10 @@ loc_140CE:
 	move.b	(a2)+,routine(a1)
 	move.b	(a2)+,mapping_frame(a1)
 	move.l	#Obj3A_MapUnc_14CBC,mappings(a1)
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	move.l	#Map_Obj3A_Knuckles,mappings(a1)
++	
 	bsr.w	Adjust2PArtPointer2
 	move.b	#0,render_flags(a1)
 	lea	next_object(a1),a1 ; a1=object
@@ -27900,6 +27910,17 @@ results_screen_object macro startx, targetx, y, routine, frame
 	results_screen_object  $320, $120,  $F0,   4, $A
 	results_screen_object  $330, $120, $100,   4, $B
 	results_screen_object  $340, $120, $110, $16, $E
+	
+byte_14380_K:
+	results_screen_object   $28, $138,  $B8,   2,  0
+	results_screen_object  $200, $100,  $CA,   4,  3
+	results_screen_object  $240, $140,  $CA,   6,  4
+	results_screen_object  $278, $178,  $BE,   8,  6
+	results_screen_object  $350, $120, $120,   4,  9
+	results_screen_object  $320, $120,  $F0,   4, $A
+	results_screen_object  $330, $120, $100,   4, $B
+	results_screen_object  $340, $120, $110, $16, $E
+	
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
 ; Object 6F - End of special stage results screen
@@ -27961,6 +27982,10 @@ Obj6F_Init:
 	move.b	(a2)+,routine(a1)
 	move.b	(a2)+,mapping_frame(a1)
 	move.l	#Obj6F_MapUnc_14ED0,mappings(a1)
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	move.l	#Obj6F_MapUnc_Knux,mappings(a1)
++	
 	move.b	#$78,width_pixels(a1)
 	move.b	#0,render_flags(a1)
 	lea	next_object(a1),a1 ; go to next object ; a1=object
@@ -28068,6 +28093,8 @@ Obj6F_P1Rings:
 	beq.s	++
 	move.w	#$120,y_pixel(a0)
 	subq.w	#1,d0
+	beq.s	++
+	subq.w	#2,d0
 	beq.s	++
 	moveq	#$E,d0		; "Miles rings"
 	btst	#7,(Graphics_Flags).w
@@ -28552,10 +28579,42 @@ word_14E96:	dc.w 7
 	dc.w 5,	$85F0, $82F8, $FFF4
 	dc.w $D, $8538,	$829C, $38
 	dc.w 1,	$86F0, $8378, $58
+	
+Map_Obj3A_Knuckles:	offsetTable
+	offsetTableEntry.w word_311BF6
+	offsetTableEntry.w word_14D1C
+	offsetTableEntry.w word_14D5E
+	offsetTableEntry.w word_14DA0
+	offsetTableEntry.w word_14DDA
+	offsetTableEntry.w word_14BC8
+	offsetTableEntry.w word_14BEA
+	offsetTableEntry.w word_14BF4
+	offsetTableEntry.w word_14BFE
+	offsetTableEntry.w word_14DF4
+	offsetTableEntry.w word_14E1E
+	offsetTableEntry.w word_14E50
+	offsetTableEntry.w word_14E82
+	offsetTableEntry.w word_14E8C
+	offsetTableEntry.w word_14E96
+word_311BF6:	dc.w $B
+	dc.w 5, $85C6, $82E3, $FF88
+	dc.w 5, $8584, $82C2, $FF98
+	dc.w 5, $85D8, $82EC, $FFA8
+	dc.w 5, $85B4, $82DA, $FFB8
+	dc.w 5, $85C6, $82E3, $FFC8
+	dc.w 5, $85C2, $82E1, $FFD8
+	dc.w 5, $8580, $82C0, $FFE8
+	dc.w 5, $85D0, $82E8, $FFF8
+	dc.w 5, $85B8, $82DC, $10
+	dc.w 5, $8588, $82C4, $20
+	dc.w 5, $85D4, $82EA, $2F
+	
 ; -------------------------------------------------------------------------------
 ; sprite mappings
 ; -------------------------------------------------------------------------------
-Obj6F_MapUnc_14ED0:	BINCLUDE "mappings/sprite/obj6F.bin"
+Obj6F_MapUnc_14ED0:	INCLUDE "mappings/sprite/Obj_SSResults.asm"
+
+Obj6F_MapUnc_Knux:	INCLUDE "mappings/sprite/Obj_SSResults (Knux).asm"
 ; ===========================================================================
 
 ;loc_15584: ; level title card drawing function called from Vint
@@ -28741,7 +28800,7 @@ loc_15714:
 	move.w	d1,d4
 	moveq	#-$10,d5
 	moveq	#$1F,d6
-	bsr.w	DrawBlockRow_CustomWidth
+	jsr		DrawBlockRow_CustomWidth
 	movem.l	(sp)+,d4-d6
 	addi.w	#$10,d4
 	dbf	d6,-
@@ -28760,7 +28819,7 @@ loc_15758:
 	move.w	d1,d4
 	moveq	#-16,d5
 	moveq	#64/2-1,d6
-	bsr.w	DrawBlockRow_CustomWidth
+	jsr		DrawBlockRow_CustomWidth
 	movem.l	(sp)+,d4-d6
 	addi.w	#16,d4
 	dbf	d6,-
@@ -89840,6 +89899,7 @@ PlrList_Std2Knuckles_End
 PlrList_ResultsKnuckles: plrlistheader
 	plreq ArtTile_ArtNem_TitleCard, ArtNem_TitleCard
 	plreq ArtTile_ArtNem_ResultsText, ArtNem_ResultsText
+	plreq ArtTile_ArtNem_ResultsText+$16, ArtNem_KnucklesK		
 	plreq ArtTile_ArtNem_MiniCharacter, ArtNem_MiniKnuckles
 	plreq ArtTile_ArtNem_Perfect, ArtNem_Perfect
 PlrList_ResultsKnuckles_End
@@ -90439,6 +90499,7 @@ ArtUnc_CPZAnimBack:	BINCLUDE	"art/uncompressed/Animated background section (CPZ 
 ArtUnc_Waterfall1:	BINCLUDE	"art/uncompressed/ARZ waterfall patterns - 1.bin"
 ArtUnc_Waterfall2:	BINCLUDE	"art/uncompressed/ARZ waterfall patterns - 2.bin"
 ArtUnc_Waterfall3:	BINCLUDE	"art/uncompressed/ARZ waterfall patterns - 3.bin"
+	align $20000
 ;---------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Patterns for Sonic  ; ArtUnc_50000:
@@ -90451,6 +90512,7 @@ ArtUnc_Sonic:	BINCLUDE	"art/uncompressed/Sonic's art.bin"
 ;---------------------------------------------------------------------------------------
 	align $20
 ArtUnc_Tails:	BINCLUDE	"art/uncompressed/Tails's art.bin"
+	align $20000
 ;---------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Patterns for Knuckles
@@ -90738,6 +90800,8 @@ ArtUnc_MenuBack:	BINCLUDE	"art/uncompressed/Sonic and Miles animated background.
 ; Title card patterns		; ArtNem_7D22C:
 	even
 ArtNem_TitleCard:	BINCLUDE	"art/nemesis/Title card.bin"
+	even
+ArtNem_KnucklesK:	BINCLUDE	"art/nemesis/S2KnuxK.bin"
 ;--------------------------------------------------------------------------------------
 ; Nemesis compressed art (92 blocks)
 ; Alphabet for font using large broken letters	; ArtNem_7D58A:
