@@ -78902,9 +78902,13 @@ ObjB2_Wait_for_plane:
 ObjB2_Prepare_to_jump:
 	bsr.w	ObjB2_Waiting_animation
 	addq.w	#1,objoff_2A(a0)
+	cmpi.w	#$20,objoff_2A(a0)
+	blt.s	++
+	cmpi.w	#3,(Player_mode).w
+	beq.s	+
 	cmpi.w	#$30,objoff_2A(a0)
-	bne.s	+
-	addq.b	#2,routine_secondary(a0)
+	bne.s	++
++	addq.b	#2,routine_secondary(a0)
 	move.w	#(button_A_mask<<8)|button_A_mask,(Ctrl_1_Logical).w
 	move.w	#$38,objoff_2E(a0)
 	tst.b	(Super_Sonic_flag).w
