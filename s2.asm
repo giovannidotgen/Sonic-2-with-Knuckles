@@ -53216,6 +53216,7 @@ loc_270DC:
 	bclr	#4,status(a1)
     endif
 	bclr	#5,status(a1)
+	clr.b	$21(a1)			; KiS2: Makes Knuckles un-glide	
 	move.w	#SndID_Spring,d0
 	jmp	(PlaySound).l
 ; ===========================================================================
