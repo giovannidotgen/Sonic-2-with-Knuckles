@@ -4800,7 +4800,7 @@ Level_TtlCard:
 +
 	moveq	#PalID_BGND,d0
 	bsr.w	PalLoad_ForFade	; load Sonic's palette line
-	bsr.w	LevelSizeLoad
+	jsr		LevelSizeLoad
 	jsrto	DeformBgLayer, JmpTo_DeformBgLayer
 	clr.w	(Vscroll_Factor_FG).w
 	move.w	#-$E0,(Vscroll_Factor_P2_FG).w
@@ -13019,6 +13019,14 @@ EndingSequence:
 +
 	addq.w	#2,d0
 +
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	moveq	#6,d0
+	cmpi.b	#7,(Emerald_count).w
+	bne.s	+
+	addq.w	#2,d0
++
+
 	move.w	d0,(Ending_Routine).w
 	bsr.w	EndingSequence_LoadCharacterArt
 	bsr.w	EndingSequence_LoadFlickyArt
@@ -13297,10 +13305,12 @@ pal_A0FE:	BINCLUDE	"art/palettes/Ending Cycle.bin"
 ; Sprite_A1D6:
 ObjCA:
 	addq.w	#1,objoff_32(a0)
-	cmpi.w	#4,(Ending_Routine).w
+	cmpi.w	#8,(Ending_Routine).w
 	beq.s	+
 	cmpi.w	#2,(Ending_Routine).w
-	bne.s	+
+	beq.s	+
+	bra.s	++
++
 	st.b	(Super_Sonic_flag).w
 	move.w	#$100,(Ring_count).w
 	move.b	#-1,(Super_Sonic_palette).w
@@ -13404,6 +13414,8 @@ ObjCA_State5_States:	offsetTable
 	offsetTableEntry.w loc_A2E0	; 0
 	offsetTableEntry.w loc_A2EE	; 2
 	offsetTableEntry.w loc_A2F2	; 4
+	offsetTableEntry.w loc_A2E0k	; 6
+	offsetTableEntry.w loc_A2EEk	; 8	
 ; ===========================================================================
 
 loc_A2E0:
@@ -13426,6 +13438,19 @@ loc_A2F2:
 	move.b	#ObjID_TailsTails,(Tails_Tails_Cutscene+id).w ; load Obj05 (Tails' tails) at $FFFFB080
 	move.w	a1,(Tails_Tails_Cutscene+parent).w
 	rts
+	
+loc_A2E0k:
+	moveq	#$10,d0
+-
+	move.b	#ObjID_Knuckles,id(a1) ; load Sonic object
+	move.b	#$81,obj_control(a1)
+	rts
+; ===========================================================================
+
+loc_A2EEk:
+	moveq	#$12,d0
+	bra.s	-
+	
 ; ===========================================================================
 
 loc_A30A:
@@ -13440,10 +13465,12 @@ loc_A30A:
 	move.b	#AniIDSonAni_Float2,anim(a1)
 	move.w	#$A0,x_pos(a1)
 	move.w	#$50,y_pos(a1)
+	cmpi.w	#8,(Ending_Routine).w
+	beq.s	+
 	cmpi.w	#2,(Ending_Routine).w
-	bne.s	+	; rts
-	move.b	#AniIDSonAni_Walk,anim(a1)
-	move.w	#$1000,inertia(a1)
+	beq.s	+
+	bra.s	++
++	move.w	#$1000,inertia(a1)
 +
 	rts
 ; ===========================================================================
@@ -13593,6 +13620,8 @@ loc_A4B6:
 	clr.b	mapping_frame(a0)
 	cmpi.w	#2,(Ending_Routine).w
 	beq.s	+
+	cmpi.w	#8,(Ending_Routine).w
+	beq.s	+	
 	move.b	#7,mapping_frame(a0)
 	cmpi.w	#4,(Ending_Routine).w
 	bne.s	+
@@ -13623,6 +13652,8 @@ off_A534:	offsetTable
 		offsetTableEntry.w loc_A53A	; 0
 		offsetTableEntry.w loc_A55C	; 2
 		offsetTableEntry.w loc_A582	; 4
+		offsetTableEntry.w loc_A53Ak; 6
+		offsetTableEntry.w loc_A55C	; 8
 ; ===========================================================================
 
 loc_A53A:
@@ -13655,6 +13686,16 @@ loc_A582:
 	subi.w	#$18,d0
 	bra.s	-
 
+loc_A53Ak:
+	move.w	y_pos(a0),d0
+	subi.w	#$1C,d0
+	move.w	d0,y_pos(a1)
+	move.w	x_pos(a0),x_pos(a1)
+	move.w	#$500,anim(a1)
+	move.w	#$100,anim_frame_duration(a1)
+	rts
+
+
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 
@@ -13686,7 +13727,9 @@ loc_A5A6:
 	move.b	(a1,d0.w),mapping_frame(a0)
 	add.w	d0,d0
 	add.w	d0,d0
-	move.l	word_A656(pc,d0.w),d1
+	lea		(word_A656).l,a2
+	adda.l	d0,a2
+	move.l	(a2),d1
 	move.w	d1,y_pos(a0)
 	swap	d1
 	move.w	d1,x_pos(a0)
@@ -13704,6 +13747,8 @@ off_A5FC:	offsetTable
 		offsetTableEntry.w byte_A602	; 0
 		offsetTableEntry.w byte_A61E	; 2
 		offsetTableEntry.w byte_A63A	; 4
+		offsetTableEntry.w byte_A602	; 6
+		offsetTableEntry.w byte_A61E	; 8		
 byte_A602:
 	dc.b   7,  7,  7,  7,  8,  8,  8,  8,  8,  8,  8,  9,  9,  9, $A, $A
 	dc.b  $A, $B, $B, $B, $B, $B, $B, $B, $B, $B, $B, $B; 16
@@ -14244,6 +14289,8 @@ EndingSequence_LoadCharacterArt_Characters: offsetTable
 	offsetTableEntry.w EndingSequence_LoadCharacterArt_Sonic	; 0
 	offsetTableEntry.w EndingSequence_LoadCharacterArt_SuperSonic	; 2
 	offsetTableEntry.w EndingSequence_LoadCharacterArt_Tails	; 4
+	offsetTableEntry.w EndingSequence_LoadCharacterArt_Knuckles	; 6
+	offsetTableEntry.w EndingSequence_LoadCharacterArt_Knuckles	; 8	
 ; ===========================================================================
 ; loc_ABF4:
 EndingSequence_LoadCharacterArt_Sonic:
@@ -14263,6 +14310,12 @@ EndingSequence_LoadCharacterArt_Tails:
 	lea	(ArtNem_EndingTails).l,a0
 	jmpto	NemDec, JmpTo_NemDec
 
+; ===========================================================================
+EndingSequence_LoadCharacterArt_Knuckles:
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_EndingCharacter),VRAM,WRITE),(VDP_control_port).l
+	lea	(ArtNem_EndingKnuckles).l,a0
+	bra.w	JmpTo_NemDec
+
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 
@@ -14278,6 +14331,8 @@ EndingSequence_LoadFlickyArt_Flickies: offsetTable
 	offsetTableEntry.w EndingSequence_LoadFlickyArt_Bird	; 0
 	offsetTableEntry.w EndingSequence_LoadFlickyArt_Eagle	; 2
 	offsetTableEntry.w EndingSequence_LoadFlickyArt_Chicken	; 4
+	offsetTableEntry.w EndingSequence_LoadFlickyArt_Bird	; 6
+	offsetTableEntry.w EndingSequence_LoadFlickyArt_Eagle	; 8	
 ; ===========================================================================
 ; loc_AC42:
 EndingSequence_LoadFlickyArt_Bird:
@@ -14302,6 +14357,8 @@ Pal_AC9E:	BINCLUDE	"art/palettes/Ending Sonic Far.bin"
 Pal_ACDE:	BINCLUDE	"art/palettes/Ending Background.bin"
 Pal_AD1E:	BINCLUDE	"art/palettes/Ending Photos.bin"
 Pal_AD3E:	BINCLUDE	"art/palettes/Ending Super Sonic.bin"
+Pal_3090BC:	BINCLUDE	"art/palettes/Ending Knuckles.bin"
+Pal_30917C: BINCLUDE	"art/palettes/Ending Knuckles Far.bin"
 
 word_AD5E:
 	dc.w objoff_3E
@@ -26758,6 +26815,8 @@ PaletteChangerDataIndex: offsetTable
 	offsetTableEntry.w off_133C8	; $A
 	offsetTableEntry.w off_133D4	; $C
 	offsetTableEntry.w off_133E0	; $E
+	offsetTableEntry.w off_310678	;$10
+	offsetTableEntry.w off_310690	;$12	
 
 C9PalInfo macro codeptr,dataptr,loadtoOffset,length,fadeinTime,fadeinAmount
 	dc.l codeptr, dataptr
@@ -26772,6 +26831,8 @@ off_133BC:	C9PalInfo                      loc_1344C,  Pal_AC7E,   0,$1F,4,7
 off_133C8:	C9PalInfo                      loc_1344C,  Pal_ACDE, $40,$1F,4,7
 off_133D4:	C9PalInfo                      loc_1344C,  Pal_AD3E,   0, $F,4,7
 off_133E0:	C9PalInfo                      loc_1344C,  Pal_AC9E,   0,$1F,4,7
+off_310678:	C9PalInfo    				loc_1344C,Pal_3090BC,   0,$1F,4,7
+off_310690:	C9PalInfo    				loc_1344C,Pal_30917C,0,$F,4,7
 
 Pal_133EC:	BINCLUDE "art/palettes/Title Sonic.bin"
 Pal_1340C:	BINCLUDE "art/palettes/Title Background.bin"
@@ -91501,6 +91562,11 @@ ArtNem_EndingMiniTornado:	BINCLUDE	"art/nemesis/Small pictures of Tornado in fin
 ; Mini pictures of Sonic and final image of Sonic
 	even
 ArtNem_EndingSonic:	BINCLUDE	"art/nemesis/Small pictures of Sonic and final image of Sonic.bin"
+;--------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Final image of Knuckles
+	even
+ArtNem_EndingKnuckles:	BINCLUDE	"art/nemesis/Final image of Knuckles.bin"
 ;--------------------------------------------------------------------------------------
 ; Nemesis compressed art (117 blocks)
 ; Mini pictures of Sonic and final image of Sonic in Super Sonic mode	; ArtNem_93848:
