@@ -13022,6 +13022,7 @@ EndingSequence:
 	cmpi.w	#3,(Player_mode).w
 	bne.s	+
 	moveq	#6,d0
+	bra.s	+
 	cmpi.b	#7,(Emerald_count).w
 	bne.s	+
 	addq.w	#2,d0
@@ -13942,6 +13943,10 @@ ObjCE_Init:
 	lea	(ObjB3_SubObjData).l,a1
 	jsrto	LoadSubObject_Part3, JmpTo_LoadSubObject_Part3
 	move.l	#ObjCF_MapUnc_ADA2,mappings(a0)
+	cmpi.w	#3,(Player_mode).w		; Are we playing as Knuckles?
+	bne.s	+			; If not, branch
+	move.l	#ObjCF_MapUnc_Knux,mappings(a0)
+	
 	move.w	#make_art_tile(ArtTile_ArtKos_LevelArt,0,1),art_tile(a0)
 	move.b	#1,priority(a0)
 	jsr	(Adjust2PArtPointer).l
@@ -14037,6 +14042,10 @@ ObjCF_Init:
 	lea	(ObjB3_SubObjData).l,a1
 	jsrto	LoadSubObject_Part3, JmpTo_LoadSubObject_Part3
 	move.l	#ObjCF_MapUnc_ADA2,mappings(a0)
+	cmpi.w	#3,(Player_mode).w		; Are we playing as Knuckles?
+	bne.s	+			; If not, branch
+	move.l	#ObjCF_MapUnc_Knux,mappings(a0)
++	
 	move.w	#make_art_tile(ArtTile_ArtKos_LevelArt,0,1),art_tile(a0)
 	move.b	#3,priority(a0)
 	jsr	(Adjust2PArtPointer).l
@@ -14322,6 +14331,10 @@ EndingSequence_LoadCharacterArt_Knuckles:
 ; sub_AC30:
 EndingSequence_LoadFlickyArt:
 	move.w	(Ending_Routine).w,d0
+	cmpi.b	#7,(Emerald_count).w
+	bne.s	+
+	moveq	#2,d0
++	
 	move.w	EndingSequence_LoadFlickyArt_Flickies(pc,d0.w),d0
 	jmp	EndingSequence_LoadFlickyArt_Flickies(pc,d0.w)
 ; End of function EndingSequence_LoadFlickyArt
@@ -14406,6 +14419,8 @@ byte_AD9E:	dc.b   1,  5,  6,$FF
 ; sprite mappings
 ; -----------------------------------------------------------------------------
 ObjCF_MapUnc_ADA2:	BINCLUDE "mappings/sprite/objCF.bin"
+	even
+ObjCF_MapUnc_Knux:	INCLUDE "mappings/sprite/objCF_Knux.asm"	
 ; --------------------------------------------------------------------------------------
 ; Enigma compressed art mappings
 ; "Sonic the Hedgehog 2" mappings		; MapEng_B23A:
