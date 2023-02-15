@@ -13632,6 +13632,10 @@ loc_A4B6:
 	clr.b	anim_frame(a0)
 	clr.b	anim_frame_duration(a0)
 	move.l	#ObjCF_MapUnc_ADA2,mappings(a0)
+	cmpi.w	#3,(Player_mode).w		; Are we playing as Knuckles?
+	bne.s	+			; If not, branch
+	move.l	#ObjCF_MapUnc_Knux,mappings(a0)
++	
 	move.w	#make_art_tile(ArtTile_ArtKos_LevelArt,0,0),art_tile(a0)
 	jsr	(Adjust2PArtPointer).l
 	subi.w	#$14,x_pos(a0)
@@ -13946,7 +13950,7 @@ ObjCE_Init:
 	cmpi.w	#3,(Player_mode).w		; Are we playing as Knuckles?
 	bne.s	+			; If not, branch
 	move.l	#ObjCF_MapUnc_Knux,mappings(a0)
-	
++	
 	move.w	#make_art_tile(ArtTile_ArtKos_LevelArt,0,1),art_tile(a0)
 	move.b	#1,priority(a0)
 	jsr	(Adjust2PArtPointer).l

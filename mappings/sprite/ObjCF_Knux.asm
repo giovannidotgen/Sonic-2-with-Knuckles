@@ -2,169 +2,209 @@
 ; Sprite mappings - output from SonMapEd - Sonic 2 format
 ; --------------------------------------------------------------------------------
 
-SME_mJAzA:	
-		dc.w SME_mJAzA_34-SME_mJAzA, SME_mJAzA_6E-SME_mJAzA	
-		dc.w SME_mJAzA_90-SME_mJAzA, SME_mJAzA_A2-SME_mJAzA	
-		dc.w SME_mJAzA_B4-SME_mJAzA, SME_mJAzA_CE-SME_mJAzA	
-		dc.w SME_mJAzA_100-SME_mJAzA, SME_mJAzA_132-SME_mJAzA	
-		dc.w SME_mJAzA_174-SME_mJAzA, SME_mJAzA_19E-SME_mJAzA	
-		dc.w SME_mJAzA_1B8-SME_mJAzA, SME_mJAzA_1D2-SME_mJAzA	
-		dc.w SME_mJAzA_1F4-SME_mJAzA, SME_mJAzA_206-SME_mJAzA	
-		dc.w SME_mJAzA_218-SME_mJAzA, SME_mJAzA_25A-SME_mJAzA	
-		dc.w SME_mJAzA_27C-SME_mJAzA, SME_mJAzA_296-SME_mJAzA	
-		dc.w SME_mJAzA_330-SME_mJAzA, SME_mJAzA_342-SME_mJAzA	
-		dc.w SME_mJAzA_34C-SME_mJAzA, SME_mJAzA_356-SME_mJAzA	
-		dc.w SME_mJAzA_360-SME_mJAzA, SME_mJAzA_36A-SME_mJAzA	
-		dc.w SME_mJAzA_3E4-SME_mJAzA, SME_mJAzA_426-SME_mJAzA	
-SME_mJAzA_34:	dc.b 0, 7	
-		dc.b $F0, 4, 4, $93, 4, $49, $FF, $E0	
-		dc.b $F8, 9, 4, $95, 4, $4A, $FF, $E0	
-		dc.b $F0, 5, 4, $9B, 4, $4D, $FF, $F8	
-		dc.b 0, 4, 4, $9F, 4, $4F, $FF, $F8	
-		dc.b $F0, 4, 4, $A1, 4, $50, 0, 8	
-		dc.b $F8, 9, 4, $A3, 4, $51, 0, 8	
-		dc.b 8, 0, 4, $A9, 4, $54, 0, 8	
-SME_mJAzA_6E:	dc.b 0, 4	
-		dc.b $F4, 5, 4, $AA, 4, $55, $FF, $E8	
-		dc.b $F4, 5, 4, $AE, 4, $57, $FF, $F8	
-		dc.b 4, 4, 4, $B2, 4, $59, $FF, $F8	
-		dc.b $F4, 6, 4, $B4, 4, $5A, 0, 8	
-SME_mJAzA_90:	dc.b 0, 2	
-		dc.b $F4, $E, 4, $BA, 4, $5D, $FF, $EC	
-		dc.b $F4, 2, 4, $C6, 4, $63, 0, $C	
-SME_mJAzA_A2:	dc.b 0, 2	
-		dc.b $F4, $E, 4, $C9, 4, $64, $FF, $EC	
-		dc.b $F4, 0, 4, $D5, 4, $6A, 0, $C	
-SME_mJAzA_B4:	dc.b 0, 3	
-		dc.b $FC, 5, 4, $D6, 4, $6B, $FF, $EC	
-		dc.b $F4, 9, 4, $DA, 4, $6D, $FF, $FC	
-		dc.b 4, 4, 4, $E0, 4, $70, $FF, $FC	
-SME_mJAzA_CE:	dc.b 0, 6	
-		dc.b $F8, 0, 4, $E2, 4, $71, $FF, $F0	
-		dc.b 0, 4, 4, $E3, 4, $71, $FF, $F0	
-		dc.b 8, 8, 4, $E5, 4, $72, $FF, $F0	
-		dc.b $F0, 8, 4, $E8, 4, $74, $FF, $F8	
-		dc.b $F8, 4, 4, $EB, 4, $75, 0, 0	
-		dc.b 0, 0, 4, $ED, 4, $76, 0, 8	
-SME_mJAzA_100:	dc.b 0, 6	
-		dc.b 0, 0, $1C, $E2, $1C, $71, 0, 8	
-		dc.b $F8, 4, $1C, $E3, $1C, $71, 0, 0	
-		dc.b $F0, 8, $1C, $E5, $1C, $72, $FF, $F8	
-		dc.b 8, 8, $1C, $E8, $1C, $74, $FF, $F0	
-		dc.b 0, 4, $1C, $EB, $1C, $75, $FF, $F0	
-		dc.b $F8, 0, $1C, $ED, $1C, $76, $FF, $F0	
-SME_mJAzA_132:	dc.b 0, 8	
-		dc.b $E0, 6, 0, $19, 0, $C, 0, 6	
-		dc.b $F0, 4, 4, $93, 4, $49, $FF, $E0	
-		dc.b $F8, 9, 4, $95, 4, $4A, $FF, $E0	
-		dc.b $F0, 5, 4, $9B, 4, $4D, $FF, $F8	
-		dc.b 0, 4, 4, $9F, 4, $4F, $FF, $F8	
-		dc.b $F0, 4, 4, $A1, 4, $50, 0, 8	
-		dc.b $F8, 9, 4, $A3, 4, $51, 0, 8	
-		dc.b 8, 0, 4, $A9, 4, $54, 0, 8	
-SME_mJAzA_174:	dc.b 0, 5	
-		dc.b $E7, 1, 0, $1F, 0, $F, 0, 4	
-		dc.b $F4, 5, 4, $AA, 4, $55, $FF, $E8	
-		dc.b $F4, 5, 4, $AE, 4, $57, $FF, $F8	
-		dc.b 4, 4, 4, $B2, 4, $59, $FF, $F8	
-		dc.b $F4, 6, 4, $B4, 4, $5A, 0, 8	
-SME_mJAzA_19E:	dc.b 0, 3	
-		dc.b $ED, 5, 0, $21, 0, $10, $FF, $FB	
-		dc.b $F4, $E, 4, $BA, 4, $5D, $FF, $EC	
-		dc.b $F4, 2, 4, $C6, 4, $63, 0, $C	
-SME_mJAzA_1B8:	dc.b 0, 3	
-		dc.b $ED, 5, 0, $25, 0, $12, $FF, $F8	
-		dc.b $F4, $E, 4, $C9, 4, $64, $FF, $EC	
-		dc.b $F4, 0, 4, $D5, 4, $6A, 0, $C	
-SME_mJAzA_1D2:	dc.b 0, 4	
-		dc.b $F1, 5, 0, $29, 0, $14, $FF, $F7	
-		dc.b $FC, 5, 4, $D6, 4, $6B, $FF, $EC	
-		dc.b $F4, 9, 4, $DA, 4, $6D, $FF, $FC	
-		dc.b 4, 4, 4, $E0, 4, $70, $FF, $FC	
-SME_mJAzA_1F4:	dc.b 0, 2	
-		dc.b 0, $F, 0, $2D, 0, $16, 0, 0	
-		dc.b $20, 4, 0, $3D, 0, $1E, 0, 8	
-SME_mJAzA_206:	dc.b 0, 2	
-		dc.b 8, $F, 0, $3F, 0, $1F, 0, 0	
-		dc.b $28, 4, 0, $4F, 0, $27, 0, $10	
-SME_mJAzA_218:	dc.b 0, 8	
-		dc.b 0, $F, 0, $51, 0, $28, 0, $28	
-		dc.b 0, 5, 0, $61, 0, $30, 0, $18	
-		dc.b $10, $F, 0, $65, 0, $32, 0, 8	
-		dc.b $20, $D, 0, $75, 0, $3A, 0, $28	
-		dc.b $30, $F, 0, $7D, 0, $3E, 0, 8	
-		dc.b $30, 6, 0, $8D, 0, $46, 0, $28	
-		dc.b $48, 9, 0, $93, 0, $49, 0, $28	
-		dc.b $50, 6, 0, $99, 0, $4C, 0, $18	
-SME_mJAzA_25A:	dc.b 0, 4	
-		dc.b 0, 4, 0, $2B, 0, $15, 0, 8	
-		dc.b 8, 1, 0, $2D, 0, $16, 0, 0	
-		dc.b 8, $A, 0, $2F, 0, $17, 0, 8	
-		dc.b $20, 4, 0, $38, 0, $1C, 0, 8	
-SME_mJAzA_27C:	dc.b 0, 3	
-		dc.b 8, 8, 0, $3A, 0, $1D, 0, 8	
-		dc.b $10, $E, 0, $3D, 0, $1E, 0, 0	
-		dc.b $28, 8, 0, $49, 0, $24, 0, 8	
-SME_mJAzA_296:	dc.b 0, $13	
-		dc.b 0, 8, 0, $4C, 0, $26, 0, $30	
-		dc.b 8, $F, 0, $4F, 0, $27, 0, $28	
-		dc.b $18, 8, 0, $5F, 0, $2F, 0, $48	
-		dc.b $20, $F, 0, $62, 0, $31, 0, $48	
-		dc.b $18, 3, 0, $72, 0, $39, 0, $68	
-		dc.b $38, 3, 0, $76, 0, $3B, 0, $68	
-		dc.b $40, $F, 0, $7A, 0, $3D, 0, $48	
-		dc.b $10, 0, 0, $8A, 0, $45, 0, 0	
-		dc.b $20, 0, 0, $8B, 0, $45, 0, 0	
-		dc.b $10, $E, 0, $8C, 0, $46, 0, 8	
-		dc.b $28, 0, 0, $98, 0, $4C, 0, 8	
-		dc.b $38, 2, 0, $99, 0, $4C, 0, 0	
-		dc.b $28, $F, 0, $9C, 0, $4E, 0, $28	
-		dc.b $28, 5, 0, $AC, 0, $56, 0, $18	
-		dc.b $38, 9, 0, $B0, 0, $58, 0, $10	
-		dc.b $40, 2, 0, $B6, 0, $5B, 0, 8	
-		dc.b $48, $A, 0, $B9, 0, $5C, 0, $10	
-		dc.b $48, 5, 0, $C2, 0, $61, 0, $28	
-		dc.b $48, 7, 0, $C6, 0, $63, 0, $38	
-SME_mJAzA_330:	dc.b 0, 2	
-		dc.b $F8, 4, 0, $19, 0, $C, $FF, $FC	
-		dc.b 0, 8, 0, $1B, 0, $D, $FF, $F4	
-SME_mJAzA_342:	dc.b 0, 1	
-		dc.b $F8, 5, 0, $1E, 0, $F, $FF, $F8	
-SME_mJAzA_34C:	dc.b 0, 1	
-		dc.b $F8, 5, 0, $22, 0, $11, $FF, $F8	
-SME_mJAzA_356:	dc.b 0, 1	
-		dc.b $F8, 5, 0, $26, 0, $13, $FF, $F8	
-SME_mJAzA_360:	dc.b 0, 1	
-		dc.b $F8, 5, 0, $2A, 0, $15, $FF, $F8	
-SME_mJAzA_36A:	dc.b 0, $F	
-		dc.b 0, 0, $80, $2E, $80, $17, 0, $28	
-		dc.b 8, 8, $80, $2F, $80, $17, 0, $20	
-		dc.b $10, $F, $80, $32, $80, $19, 0, $18	
-		dc.b $10, 5, $80, $42, $80, $21, 0, $38	
-		dc.b $20, $B, $80, $46, $80, $23, 0, $38	
-		dc.b $28, $F, $80, $52, $80, $29, 0, $50	
-		dc.b $30, $F, $80, $62, $80, $31, 0, $18	
-		dc.b $40, 8, $80, $72, $80, $39, 0, $38	
-		dc.b $48, $A, $80, $75, $80, $3A, 0, 0	
-		dc.b $50, 4, $80, $7E, $80, $3F, 0, $18	
-		dc.b $58, 0, $80, $80, $80, $40, 0, $18	
-		dc.b $48, $C, $80, $81, $80, $40, 0, $38	
-		dc.b $50, 5, $80, $85, $80, $42, 0, $30	
-		dc.b $50, 8, $80, $89, $80, $44, 0, $40	
-		dc.b $58, 4, $80, $8C, $80, $46, 0, $48	
-SME_mJAzA_3E4:	dc.b 0, 8	
-		dc.b $E0, 6, $20, $19, $20, $C, 0, 6	
-		dc.b $F0, 4, 4, $93, 4, $49, $FF, $E0	
-		dc.b $F8, 9, 4, $EE, 4, $77, $FF, $E0	
-		dc.b $F0, 5, 4, $F4, 4, $7A, $FF, $F8	
-		dc.b 0, 4, 4, $9F, 4, $4F, $FF, $F8	
-		dc.b $F0, 4, 4, $A1, 4, $50, 0, 8	
-		dc.b $F8, 9, 4, $A3, 4, $51, 0, 8	
-		dc.b 8, 0, 4, $A9, 4, $54, 0, 8	
-SME_mJAzA_426:	dc.b 0, 5	
-		dc.b $E7, 1, $20, $1F, $20, $F, 0, 4	
-		dc.b $F4, 5, 4, $F8, 4, $7C, $FF, $E8	
-		dc.b $F4, 5, 4, $FC, 4, $7E, $FF, $F8	
-		dc.b 4, 4, 4, $B2, 4, $59, $FF, $F8	
-		dc.b $F4, 6, 4, $B4, 4, $5A, 0, 8	
-		even
+ObjCFKnux:
+	dc.w	ObjCFKnux_0034-ObjCFKnux
+	dc.w	ObjCFKnux_0060-ObjCFKnux
+	dc.w	ObjCFKnux_007A-ObjCFKnux
+	dc.w	ObjCFKnux_0088-ObjCFKnux
+	dc.w	ObjCFKnux_0096-ObjCFKnux
+	dc.w	ObjCFKnux_00AA-ObjCFKnux
+	dc.w	ObjCFKnux_00D0-ObjCFKnux
+	dc.w	ObjCFKnux_00F6-ObjCFKnux
+	dc.w	ObjCFKnux_0128-ObjCFKnux
+	dc.w	ObjCFKnux_0148-ObjCFKnux
+	dc.w	ObjCFKnux_015C-ObjCFKnux
+	dc.w	ObjCFKnux_0170-ObjCFKnux
+	dc.w	ObjCFKnux_018A-ObjCFKnux
+	dc.w	ObjCFKnux_0198-ObjCFKnux
+	dc.w	ObjCFKnux_01A6-ObjCFKnux
+	dc.w	ObjCFKnux_01D8-ObjCFKnux
+	dc.w	ObjCFKnux_01F2-ObjCFKnux
+	dc.w	ObjCFKnux_0206-ObjCFKnux
+	dc.w	ObjCFKnux_027A-ObjCFKnux
+	dc.w	ObjCFKnux_0288-ObjCFKnux
+	dc.w	ObjCFKnux_0290-ObjCFKnux
+	dc.w	ObjCFKnux_0298-ObjCFKnux
+	dc.w	ObjCFKnux_02A0-ObjCFKnux
+	dc.w	ObjCFKnux_02A8-ObjCFKnux
+	dc.w	ObjCFKnux_0304-ObjCFKnux
+	dc.w	ObjCFKnux_0336-ObjCFKnux
+
+ObjCFKnux_0034:	dc.w 7
+	dc.w $F004, $493, $249, $FFE0
+	dc.w $F809, $495, $24A, $FFE0
+	dc.w $F005, $49B, $24D, $FFF8
+	dc.w 4, $49F, $24F, $FFF8
+	dc.w $F004, $4A1, $250, 8
+	dc.w $F809, $4A3, $251, 8
+	dc.w $800, $4A9, $254, 8
+
+ObjCFKnux_0060:	dc.w 4
+	dc.w $F405, $4AA, $255, $FFE8
+	dc.w $F405, $4AE, $257, $FFF8
+	dc.w $404, $4B2, $259, $FFF8
+	dc.w $F406, $4B4, $25A, 8
+
+ObjCFKnux_007A:	dc.w 2
+	dc.w $F40E, $4BA, $25D, $FFEC
+	dc.w $F402, $4C6, $263, $C
+
+ObjCFKnux_0088:	dc.w 2
+	dc.w $F40E, $4C9, $264, $FFEC
+	dc.w $F400, $4D5, $26A, $C
+
+ObjCFKnux_0096:	dc.w 3
+	dc.w $FC05, $4D6, $26B, $FFEC
+	dc.w $F409, $4DA, $26D, $FFFC
+	dc.w $404, $4E0, $270, $FFFC
+
+ObjCFKnux_00AA:	dc.w 6
+	dc.w $F800, $4E2, $271, $FFF0
+	dc.w 4, $4E3, $271, $FFF0
+	dc.w $808, $4E5, $272, $FFF0
+	dc.w $F008, $4E8, $274, $FFF8
+	dc.w $F804, $4EB, $275, 0
+	dc.w 0, $4ED, $276, 8
+
+ObjCFKnux_00D0:	dc.w 6
+	dc.w 0, $1CE2, $1A71, 8
+	dc.w $F804, $1CE3, $1A71, 0
+	dc.w $F008, $1CE5, $1A72, $FFF8
+	dc.w $808, $1CE8, $1A74, $FFF0
+	dc.w 4, $1CEB, $1A75, $FFF0
+	dc.w $F800, $1CED, $1A76, $FFF0
+
+ObjCFKnux_00F6:	dc.w 8
+	dc.w $E006, $19, $C, 6
+	dc.w $F004, $493, $249, $FFE0
+	dc.w $F809, $495, $24A, $FFE0
+	dc.w $F005, $49B, $24D, $FFF8
+	dc.w 4, $49F, $24F, $FFF8
+	dc.w $F004, $4A1, $250, 8
+	dc.w $F809, $4A3, $251, 8
+	dc.w $800, $4A9, $254, 8
+
+ObjCFKnux_0128:	dc.w 5
+	dc.w $E701, $1F, $F, 4
+	dc.w $F405, $4AA, $255, $FFE8
+	dc.w $F405, $4AE, $257, $FFF8
+	dc.w $404, $4B2, $259, $FFF8
+	dc.w $F406, $4B4, $25A, 8
+
+ObjCFKnux_0148:	dc.w 3
+	dc.w $ED05, $21, $10, $FFFB
+	dc.w $F40E, $4BA, $25D, $FFEC
+	dc.w $F402, $4C6, $263, $C
+
+ObjCFKnux_015C:	dc.w 3
+	dc.w $ED05, $25, $12, $FFF8
+	dc.w $F40E, $4C9, $264, $FFEC
+	dc.w $F400, $4D5, $26A, $C
+
+ObjCFKnux_0170:	dc.w 4
+	dc.w $F105, $29, $14, $FFF7
+	dc.w $FC05, $4D6, $26B, $FFEC
+	dc.w $F409, $4DA, $26D, $FFFC
+	dc.w $404, $4E0, $270, $FFFC
+
+ObjCFKnux_018A:	dc.w 2
+	dc.w $F, $2D, $16, 0
+	dc.w $2004, $3D, $1E, 8
+
+ObjCFKnux_0198:	dc.w 2
+	dc.w $80F, $3F, $1F, 0
+	dc.w $2804, $4F, $27, $10
+
+ObjCFKnux_01A6:	dc.w 8
+	dc.w $F, $51, $28, $28
+	dc.w 5, $61, $30, $18
+	dc.w $100F, $65, $32, 8
+	dc.w $200D, $75, $3A, $28
+	dc.w $300F, $7D, $3E, 8
+	dc.w $3006, $8D, $46, $28
+	dc.w $4809, $93, $49, $28
+	dc.w $5006, $99, $4C, $18
+
+ObjCFKnux_01D8:	dc.w 4
+	dc.w 4, $2B, $15, 8
+	dc.w $801, $2D, $16, 0
+	dc.w $80A, $2F, $17, 8
+	dc.w $2004, $38, $1C, 8
+
+ObjCFKnux_01F2:	dc.w 3
+	dc.w $808, $3A, $1D, 8
+	dc.w $100E, $3D, $1E, 0
+	dc.w $2808, $49, $24, 8
+
+ObjCFKnux_0206:	dc.w $13
+	dc.w 8, $4C, $26, $30
+	dc.w $80F, $4F, $27, $28
+	dc.w $1808, $5F, $2F, $48
+	dc.w $200F, $62, $31, $48
+	dc.w $1803, $72, $39, $68
+	dc.w $3803, $76, $3B, $68
+	dc.w $400F, $7A, $3D, $48
+	dc.w $1000, $8A, $45, 0
+	dc.w $2000, $8B, $45, 0
+	dc.w $100E, $8C, $46, 8
+	dc.w $2800, $98, $4C, 8
+	dc.w $3802, $99, $4C, 0
+	dc.w $280F, $9C, $4E, $28
+	dc.w $2805, $AC, $56, $18
+	dc.w $3809, $B0, $58, $10
+	dc.w $4002, $B6, $5B, 8
+	dc.w $480A, $B9, $5C, $10
+	dc.w $4805, $C2, $61, $28
+	dc.w $4807, $C6, $63, $38
+
+ObjCFKnux_027A:	dc.w 2
+	dc.w $F804, $19, $C, $FFFC
+	dc.w 8, $1B, $D, $FFF4
+
+ObjCFKnux_0288:	dc.w 1
+	dc.w $F805, $1E, $F, $FFF8
+
+ObjCFKnux_0290:	dc.w 1
+	dc.w $F805, $22, $11, $FFF8
+
+ObjCFKnux_0298:	dc.w 1
+	dc.w $F805, $26, $13, $FFF8
+
+ObjCFKnux_02A0:	dc.w 1
+	dc.w $F805, $2A, $15, $FFF8
+
+ObjCFKnux_02A8:	dc.w $F
+	dc.w 0, $802E, $8017, $28
+	dc.w $808, $802F, $8017, $20
+	dc.w $100F, $8032, $8019, $18
+	dc.w $1005, $8042, $8021, $38
+	dc.w $200B, $8046, $8023, $38
+	dc.w $280F, $8052, $8029, $50
+	dc.w $300F, $8062, $8031, $18
+	dc.w $4008, $8072, $8039, $38
+	dc.w $480A, $8075, $803A, 0
+	dc.w $5004, $807E, $803F, $18
+	dc.w $5800, $8080, $8040, $18
+	dc.w $480C, $8081, $8040, $38
+	dc.w $5005, $8085, $8042, $30
+	dc.w $5008, $8089, $8044, $40
+	dc.w $5804, $808C, $8046, $48
+
+ObjCFKnux_0304:	dc.w 8
+	dc.w $E006, $2019, $200C, 6
+	dc.w $F004, $493, $249, $FFE0
+	dc.w $F809, $4EE, $277, $FFE0
+	dc.w $F005, $4F4, $27A, $FFF8
+	dc.w 4, $49F, $24F, $FFF8
+	dc.w $F004, $4A1, $250, 8
+	dc.w $F809, $4A3, $251, 8
+	dc.w $800, $4A9, $254, 8
+
+ObjCFKnux_0336:	dc.w 5
+	dc.w $E701, $201F, $200F, 4
+	dc.w $F405, $4F8, $27C, $FFE8
+	dc.w $F405, $4FC, $27E, $FFF8
+	dc.w $404, $4B2, $259, $FFF8
+	dc.w $F406, $4B4, $25A, 8
+
+	even
