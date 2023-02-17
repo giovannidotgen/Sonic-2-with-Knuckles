@@ -13466,12 +13466,11 @@ loc_A30A:
 	move.b	#AniIDSonAni_Float2,anim(a1)
 	move.w	#$A0,x_pos(a1)
 	move.w	#$50,y_pos(a1)
-	cmpi.w	#8,(Ending_Routine).w
-	beq.s	+
 	cmpi.w	#2,(Ending_Routine).w
 	beq.s	+
 	bra.s	++
 +	move.w	#$1000,inertia(a1)
+	move.b	#AniIDSonAni_Walk,anim(a1)
 +
 	rts
 ; ===========================================================================
@@ -28333,6 +28332,11 @@ Obj6F_InitAndMoveSuperMsg:
 	move.b	#$14,routine(a1)						; => BranchTo3_Obj34_MoveTowardsTargetPosition
 	move.b	#$1C,mapping_frame(a1)					; "Super Sonic"
 	move.l	#Obj6F_MapUnc_14ED0,mappings(a1)
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	move.l	#Obj6F_MapUnc_Knux,mappings(a1)
+	move.w	#$128,objoff_30(a1)	
++		
 	move.b	#$78,width_pixels(a1)
 	move.b	#0,render_flags(a1)
 	bra.w	DisplaySprite
@@ -92752,6 +92756,8 @@ Mus_Credits:	include		"sound/music/9E - Credits.asm"
 ;       a sound can get dropped if a higher-priority sound is already playing.
 ;	see zSFXPriority for the priority allocation itself.
 ; loc_FEE91: SoundPoint:
+	align $8000
+soundBankStart	:= *
 SoundIndex:
 SndPtr_Jump:		rom_ptr_z80	Sound20	; jumping sound
 SndPtr_Checkpoint:	rom_ptr_z80	Sound21	; checkpoint ding-dong sound
@@ -92838,6 +92844,9 @@ SndPtr_Error:		rom_ptr_z80	Sound6D	; error sound
 SndPtr_MechaSonicBuzz:	rom_ptr_z80	Sound6E	; Silver Sonic buzz saw
 SndPtr_LargeLaser:	rom_ptr_z80	Sound6F
 SndPtr_OilSlide:	rom_ptr_z80	Sound70
+SndPtr_WallGrab:	rom_ptr_z80	Snd_WallGrab
+SndPtr_Land:		rom_ptr_z80	Snd_Land
+SndPtr_Slide:		rom_ptr_z80	Snd_Slide
 SndPtr__End:
 
 Sound20:	include "sound/sfx/A0 - Jump.asm"
@@ -92921,7 +92930,9 @@ Sound6D:	include "sound/sfx/ED - Error.asm"
 Sound6E:	include "sound/sfx/EE - Mecha Sonic Buzz.asm"
 Sound6F:	include "sound/sfx/EF - Large Laser.asm"
 Sound70:	include "sound/sfx/F0 - Oil Slide.asm"
-
+Snd_WallGrab:	include	"sound/sfx/wallgrab.asm"
+Snd_Land:	include	"sound/sfx/land.asm"
+Snd_Slide:	include	"sound/sfx/slide.asm"
 	finishBank
 
 ; end of 'ROM'

@@ -19,7 +19,7 @@ SME_cczka:
 		dc.w SME_cczka_5CA-SME_cczka, SME_cczka_63C-SME_cczka	
 		dc.w SME_cczka_68E-SME_cczka, SME_cczka_6F8-SME_cczka	
 		dc.w SME_cczka_74A-SME_cczka	
-SME_cczka_3E:	dc.b 0, $C	
+SME_cczka_3E:	dc.b 0, $C						; Matches Sonic's
 		dc.b 0, 5, $80, $2A, $80, $15, $FF, $A0	
 		dc.b 0, 5, $80, $22, $80, $11, $FF, $B0	
 		dc.b 0, 5, $85, $80, $85, $C0, $FF, $C0	
@@ -32,7 +32,7 @@ SME_cczka_3E:	dc.b 0, $C
 		dc.b 0, 5, $80, 2, $80, 1, 0, $2C	
 		dc.b 0, 5, $80, $E, $80, 7, 0, $3C	
 		dc.b 0, 5, $85, $80, $85, $C0, 0, $4C	
-SME_cczka_A0:	dc.b 0, $C	
+SME_cczka_A0:	dc.b 0, $C						; Doesn't match Sonic's
 		dc.b 0, 5, $80, $2A, $80, $15, 0, 8	
 		dc.b 0, 5, $85, $84, $85, $C2, $FF, $A8	
 		dc.b 0, 5, $80, $E, $80, 7, 0, $20	
@@ -45,7 +45,7 @@ SME_cczka_A0:	dc.b 0, $C
 		dc.b 0, 5, 0, $3C, 0, $1E, $FF, $D8	
 		dc.b 0, 5, 0, $18, 0, $C, $FF, $E8	
 		dc.b 0, 5, 5, $80, 5, $C0, $FF, $F8	
-SME_cczka_102:	dc.b 0, 9	
+SME_cczka_102:	dc.b 0, 9						; Doesn't match Sonic's, but is as long as
 		dc.b 0, 9, $80, $1C, $80, $E, $FF, $B4	
 		dc.b 0, 1, $80, $16, $80, $B, $FF, $CC	
 		dc.b 0, 5, $80, $18, $80, $C, $FF, $D4	
@@ -55,7 +55,7 @@ SME_cczka_102:	dc.b 0, 9
 		dc.b 0, 5, $85, $88, $85, $C4, 0, $1C	
 		dc.b 0, 5, $80, $2E, $80, $17, 0, $2C	
 		dc.b 0, 5, $80, 2, $80, 1, 0, $44	
-SME_cczka_14C:	dc.b 0, 9	
+SME_cczka_14C:	dc.b 0, 9						; Doesn't match Sonic's, but is as long as
 		dc.b 0, 5, $80, $2E, $80, $17, $FF, $BB	
 		dc.b 0, 5, $80, 2, $80, 1, $FF, $C8	
 		dc.b 0, 1, $80, $16, $80, $B, $FF, $D8	
@@ -65,7 +65,7 @@ SME_cczka_14C:	dc.b 0, 9
 		dc.b 0, 5, $85, $88, $85, $C4, 0, $18	
 		dc.b 0, 5, $80, $2E, $80, $17, 0, $28	
 		dc.b 0, 5, $80, 2, $80, 1, 0, $40	
-SME_cczka_196:	dc.b 0, $C	
+SME_cczka_196:	dc.b 0, $C				
 		dc.b 0, 5, $80, 6, $80, 3, $FF, $98	
 		dc.b 0, 5, $80, $12, $80, 9, $FF, $A8	
 		dc.b 0, 5, $80, 2, $80, 1, $FF, $B8	

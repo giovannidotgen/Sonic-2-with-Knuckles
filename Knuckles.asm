@@ -240,7 +240,7 @@ loc_3155C0:					  ; ...
 		asr	$12(a0)
 		beq.s	return_31556C
 		move.w	#$100,($FFFFD11C).w
-		move.w	#$AA,d0
+		move.w	#SndID_Splash,d0
 		jmp	PlaySound
 ; ---------------------------------------------------------------------------
 
@@ -274,7 +274,7 @@ loc_315622:					  ; ...
 		move.w	#$F000,$12(a0)
 
 loc_315644:					  ; ...
-		move.w	#$AA,d0
+		move.w	#SndID_Splash,d0
 		jmp	PlaySound
 ; End of function Knuckles_Water
 
@@ -447,7 +447,8 @@ loc_315804:					  ; ...
 		move.b	#0,$1B(a0)
 		move.b	#3,$1F(a0)
 		move.w	8(a0),$A(a0)
-		rts
+		move.w	#SndID_WallGrab,d0
+		jmp	PlaySound
 ; ---------------------------------------------------------------------------
 
 Knuckles_FallFromGlide:				  ; ...
@@ -516,6 +517,8 @@ loc_3158F0:					  ; ...
 		bsr.w	Knuckles_ResetOnFloor_Part2
 		move.w	#$F,$2E(a0)
 		move.b	#$23,$1C(a0)
+		move.w	#SndID_Land,d0
+		jmp	PlaySound		
 
 return_315900:					  ; ...
 		rts
@@ -565,6 +568,12 @@ loc_315958:					  ; ...
 		move.b	d3,$26(a0)
 		move.b	#$13,$16(a0)
 		move.b	#9,$17(a0)
+		move.b	(Timer_frames+1).w,d0
+		andi.b	#7,d0
+		bne.s	+
+		move.b	#SndID_Slide,d0
+		jmp	PlaySound
++
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1281,7 +1290,7 @@ loc_3160EA:					  ; ...
 		blt.s	return_31612C
 		move.b	#$D,$1C(a0)
 		bclr	#0,$22(a0)
-		move.w	#$A4,d0
+		move.w	#SndID_Skidding,d0
 		jsr	PlaySound
 		cmp.b	#$C,$28(a0)
 		bcs.s	return_31612C
@@ -1334,7 +1343,7 @@ loc_31616A:					  ; ...
 		bgt.s	return_3161AC
 		move.b	#$D,$1C(a0)
 		bset	#0,$22(a0)
-		move.w	#$A4,d0
+		move.w	#SndID_Skidding,d0
 		jsr	PlaySound
 		cmp.b	#$C,$28(a0)
 		bcs.s	return_3161AC
@@ -1658,7 +1667,7 @@ Obj4C_DoRoll:					  ; ...
 		move.b	#7,$17(a0)
 		move.b	#2,$1C(a0)
 		addq.w	#5,$C(a0)
-		move.w	#$BE,d0
+		move.w	#SndID_Roll,d0
 		jsr	PlaySound
 		tst.w	$14(a0)
 		bne.s	return_31643C
@@ -1710,7 +1719,7 @@ loc_31647A:					  ; ...
 		clr.b	$38(a0)
 
 loc_3164B2:
-		move.w	#$A0,d0
+		move.w	#SndID_Jump,d0
 		jsr	PlaySound
 		move.b	#$13,$16(a0)
 		move.b	#9,$17(a0)
@@ -1827,7 +1836,7 @@ Knuckles_TurnSuper:				  ; ...
 		move.w	#$C0,($FFFFF764).w
 		move.w	#0,$32(a0)
 		bset	#1,$2B(a0)
-		move.w	#$DF,d0
+		move.w	#SndID_SpindashRev,d0
 		jsr	PlaySound
 		move.w	#$96,d0
 		jmp	PlayMusic
@@ -1896,7 +1905,7 @@ Knuckles_Spindash:				  ; ...
 		and.b	#$70,d0
 		beq.w	return_316718
 		move.b	#9,$1C(a0)
-		move.w	#$E0,d0
+		move.w	#SndID_SpindashRev,d0
 		jsr	PlaySound
 		addq.l	#4,sp
 		move.b	#1,$39(a0)
@@ -1945,7 +1954,7 @@ loc_31675C:					  ; ...
 loc_316780:					  ; ...
 		bset	#2,$22(a0)
 		move.b	#0,($FFFFD11C).w
-		move.w	#$BC,d0
+		move.w	#SndID_SpindashRelease,d0
 		jsr	PlaySound
 		bra.s	Obj4C_Spindash_ResetScreen
 ; ---------------------------------------------------------------------------
@@ -1969,7 +1978,7 @@ loc_3167D4:					  ; ...
 		and.b	#$70,d0
 		beq.w	Obj4C_Spindash_ResetScreen
 		move.w	#$900,$1C(a0)
-		move.w	#$E0,d0
+		move.w	#SndID_SpindashRev,d0
 		jsr	PlaySound
 		add.w	#$200,$3A(a0)
 		cmp.w	#$800,$3A(a0)
