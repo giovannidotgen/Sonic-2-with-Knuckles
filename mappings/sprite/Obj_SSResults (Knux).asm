@@ -93,7 +93,7 @@ SME_cczka_22A:	dc.b 0, 1
 SME_cczka_234:	dc.b 0, 1	
 		dc.b 0, 5, $A5, $A8, $A5, $D4, 0, 0	
 SME_cczka_23E:	dc.b 0, 5	
-		dc.b 0, 1, $A6, $CA, $A3, $65, $FF, $C0	
+		dc.b 0, 1, $A6, $E0, $A3, $65, $FF, $C0	
 		dc.b 0, $D, $A6, $CA, $A6, $65, $FF, $A0	
 		dc.b 0, 5, $85, $A0, $85, $D0, $FF, $BC	
 		dc.b 0, 9, $86, $E4, $86, $72, 0, $28	
