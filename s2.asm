@@ -28051,6 +28051,10 @@ Obj6F_Init:
 +
 	movea.l	a0,a1
 	lea	byte_14752(pc),a2
+	cmpi.w	#3,(Player_mode).w
+	bne.s	+
+	lea	byte_14752K(pc),a2
++	
 	moveq	#$C,d1
 
 -	_move.b	id(a0),id(a1) ; load obj6F
@@ -28317,7 +28321,7 @@ Obj6F_InitAndMoveSuperMsg:
 	move.b	#$32,next_object+routine(a0)			; => Obj6F_MoveToTargetPos
 	move.w	x_pos(a0),d0
 	cmp.w	objoff_32(a0),d0
-	bne.s	Obj6F_MoveToTargetPos
+	bne.w	Obj6F_MoveToTargetPos
 	move.b	#$14,next_object+routine(a0)			; => BranchTo3_Obj34_MoveTowardsTargetPosition
 	subq.w	#8,next_object+y_pixel(a0)
 	move.b	#$1A,next_object+mapping_frame(a0)		; "Now Sonic can"
@@ -28327,6 +28331,10 @@ Obj6F_InitAndMoveSuperMsg:
 	lea	(SpecialStageResults2).w,a1
 	_move.b	id(a0),id(a1) ; load obj6F; (uses screen-space)
 	clr.w	x_pixel(a1)
+;	cmpi.w	#3,(Player_mode).w
+;	bne.s	+
+;	move.w	#-$80,x_pixel(a1)
+;+		
 	move.w	#$120,objoff_30(a1)
 	move.w	#$B4,y_pixel(a1)
 	move.b	#$14,routine(a1)						; => BranchTo3_Obj34_MoveTowardsTargetPosition
@@ -28335,7 +28343,8 @@ Obj6F_InitAndMoveSuperMsg:
 	cmpi.w	#3,(Player_mode).w
 	bne.s	+
 	move.l	#Obj6F_MapUnc_Knux,mappings(a1)
-	move.w	#$128,objoff_30(a1)	
+	add.w	#$10,objoff_30(a1)
+	add.w	#$10,x_pixel(a1)
 +		
 	move.b	#$78,width_pixels(a1)
 	move.b	#0,render_flags(a1)
@@ -28384,6 +28393,22 @@ byte_14752:
 	results_screen_object  $340, $120, $118, $16,  $D		; Sonic Rings
 	results_screen_object  $350, $120, $128, $18,  $E		; Miles Rings
 	results_screen_object  $360, $120, $138, $1A, $10		; Gems Bonus
+	
+byte_14752K:
+	;      startx  targx   starty  routine   map frame
+	results_screen_object  $240, $120,  $AA,   2,   0		; "Special Stage"
+	results_screen_object   $50, $120,  $98,   4,   1		; "Knuckles got a"
+	results_screen_object  $118,    0,  $C4,   6,   5		; Emerald 0
+	results_screen_object  $130,    0,  $D0,   8,   6		; Emerald 1
+	results_screen_object  $130,    0,  $E8,  $A,   7		; Emerald 2
+	results_screen_object  $118,    0,  $F4,  $C,   8		; Emerald 3
+	results_screen_object  $100,    0,  $E8,  $E,   9		; Emerald 4
+	results_screen_object  $100,    0,  $D0, $10,  $A		; Emerald 5
+	results_screen_object  $118,    0,  $DC, $12,  $B		; Emerald 6
+	results_screen_object  $330, $120, $108, $14,  $C		; Score
+	results_screen_object  $340, $120, $118, $16,  $D		; Sonic Rings
+	results_screen_object  $350, $120, $128, $18,  $E		; Miles Rings
+	results_screen_object  $360, $120, $138, $1A, $10		; Gems Bonus	
 ; -------------------------------------------------------------------------------
 ; sprite mappings
 ; -------------------------------------------------------------------------------

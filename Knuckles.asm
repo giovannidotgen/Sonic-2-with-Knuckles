@@ -1836,7 +1836,7 @@ Knuckles_TurnSuper:				  ; ...
 		move.w	#$C0,($FFFFF764).w
 		move.w	#0,$32(a0)
 		bset	#1,$2B(a0)
-		move.w	#SndID_SpindashRev,d0
+		move.w	#SndID_SuperTransform,d0
 		jsr	PlaySound
 		move.w	#$96,d0
 		jmp	PlayMusic
