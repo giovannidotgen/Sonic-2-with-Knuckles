@@ -113,6 +113,7 @@ Obj02_Control_Part2:
 	andi.w	#$7FF,y_pos(a0)			; perform wrapping of Sonic's y position
 +
 	bsr.s	Tails_Display
+;	bsr.w	Tails_Super	
 	bsr.w	Tails_RecordPos
 	bsr.w	Tails_Water
 	move.b	(Primary_Angle).w,next_tilt(a0)
@@ -655,6 +656,10 @@ Tails_RecordPos:
 ; End of subroutine Tails_RecordPos
 
 ; ---------------------------------------------------------------------------
+; TODO: Port Tails_Carry_Sonic
+; ---------------------------------------------------------------------------
+
+; ---------------------------------------------------------------------------
 ; Subroutine for Tails when he's underwater
 ; ---------------------------------------------------------------------------
 
@@ -744,6 +749,9 @@ Obj02_MdNormal:
 ; Called if Tails is airborne, but not in a ball (thus, probably not jumping)
 ; loc_1C032: Obj02_MdJump
 Obj02_MdAir:
+	tst.b	double_jump_flag(a0)
+	bne.s	Tails_FlyingSwimming
+	
 	bsr.w	Tails_JumpHeight
 	bsr.w	Tails_ChgJumpDir
 	bsr.w	Tails_LevelBound
@@ -755,7 +763,155 @@ Obj02_MdAir:
 	bsr.w	Tails_JumpAngle
 	bsr.w	Tails_DoLevelCollision
 	rts
+	
+Tails_FlyingSwimming:
+	bsr.w	Tails_Move_FlySwim
+	bsr.w	Tails_ChgJumpDir
+	bsr.w	Tails_LevelBound
+	jsr	(ObjectMove).l
+	bsr.w	Sonic_JumpAngle
+	movem.l	a4-a6,-(sp)
+	bsr.w	Tails_DoLevelCollision
+	movem.l	(sp)+,a4-a6
+;	lea	(Flying_carrying_Sonic_flag).w,a2
+;	lea	(MainCharacter).w,a1
+;	bsr.w	Tails_Carry_Sonic
+
+locret_14820:
+		rts	
 ; End of subroutine Obj02_MdAir
+
+; =============== S U B R O U T I N E =======================================
+
+
+Tails_Move_FlySwim:
+		move.b	(Timer_frames+1).w,d0
+		andi.b	#1,d0
+		beq.s	loc_14836
+		cmpi.b	#1,double_jump_property(a0)
+		beq.s	loc_14836
+		subq.b	#1,double_jump_property(a0)
+
+loc_14836:
+		cmpi.b	#1,double_jump_flag(a0)
+		beq.s	loc_14860
+		cmpi.w	#-$100,y_vel(a0)
+		blt.s	loc_14858
+		subi.w	#$20,y_vel(a0)
+		addq.b	#1,double_jump_flag(a0)
+		cmpi.b	#$20,double_jump_flag(a0)
+		bne.s	loc_14892
+
+loc_14858:
+		move.b	#1,double_jump_flag(a0)
+		bra.s	loc_14892
+; ---------------------------------------------------------------------------
+
+loc_14860:
+		move.b	(Ctrl_2_Press_Logical).w,d0
+		andi.b	#$70,d0
+		beq.s	loc_1488C
+		cmpi.w	#-$100,y_vel(a0)
+		blt.s	loc_1488C
+		cmpi.b	#1,double_jump_property(a0)
+		beq.s	loc_1488C
+		btst	#6,status(a0)
+		beq.s	loc_14886
+;		tst.b	(Flying_carrying_Sonic_flag).w
+;		bne.s	loc_1488C
+
+loc_14886:
+		move.b	#2,double_jump_flag(a0)
+
+loc_1488C:
+		addi.w	#8,y_vel(a0)
+
+loc_14892:
+		move.w	(Camera_Min_Y_pos).w,d0
+		addi.w	#$10,d0
+		cmp.w	y_pos(a0),d0
+		blt.s	Tails_Set_Flying_Animation
+		tst.w	y_vel(a0)
+		bpl.s	Tails_Set_Flying_Animation
+		move.w	#0,y_vel(a0)
+; End of function Tails_Move_FlySwim
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+Tails_Set_Flying_Animation:
+	;	btst	#6,status(a0)
+	;	bne.w	Tails_FlyAnim_Underwater
+
+Tails_FlyAnim_Tired:
+	;	cmpi.b	#1,double_jump_property(a0) ; Is tails tired?
+	;	bne.s	Tails_FlyAnim_NotTired ; If not, branch
+		
+	;	move.b	#AniIDTailsAni_FlyTired,anim(a0)
+	;	tst.b	(Flying_carrying_Sonic_flag).w
+	;	beq.s	+
+	;	move.b	#AniIDTailsAni_FlyCarryTired,anim(a0)
+;+
+;		tst.b	render_flags(a0) ; ???
+;		bpl.s	+
+
+		; Play flight SFX every few frames
+;		move.b	(Timer_frames+1).w,d0
+;		addq.b	#8,d0
+;		andi.b	#$F,d0
+;		bne.s	+
+
+;		sfx		sfx_FlyTired
+
+;+		rts
+; ---------------------------------------------------------------------------
+
+Tails_FlyAnim_NotTired:
+		move.b	#AniIDTailsAni_Fly,anim(a0)
+;		tst.b	(Flying_carrying_Sonic_flag).w
+;		beq.s	+
+;		move.b	#AniIDTailsAni_FlyCarry,anim(a0)
+		
+		; Change anim if moving up (only when carrying)
+;		tst.w	y_vel(a0)
+;		bpl.s	+
+;		move.b	#AniIDTailsAni_FlyCarryUp,anim(a0)
+;+
+;		tst.b	render_flags(a0) ; ???
+;		bpl.s	+
+
+		; Play flight SFX every few frames
+;		move.b	(Timer_frames+1).w,d0
+;		addq.b	#8,d0
+;		andi.b	#$F,d0
+;		bne.s	+
+
+;		sfx		sfx_Flying
+
++		rts
+; ---------------------------------------------------------------------------
+
+Tails_FlyAnim_Underwater:
+;		move.b	#AniIDTailsAni_Swim,anim(a0)
+;		tst.w	y_vel(a0)
+;		bpl.s	loc_1491E
+;		move.b	#AniIDTailsAni_SwimFast,anim(a0)
+
+;loc_1491E:
+;		tst.b	(Flying_carrying_Sonic_flag).w
+;		beq.s	loc_14926
+;		move.b	#AniIDTailsAni_SwimCarry,anim(a0)
+
+;loc_14926:
+;		cmpi.b	#1,double_jump_property(a0)
+;		bne.s	loc_1492E
+;		move.b	#AniIDTailsAni_SwimTired,anim(a0)
+
+;loc_1492E:
+;		rts
+; End of function Tails_Set_Flying_Animation
+
 ; ===========================================================================
 ; Start of subroutine Obj02_MdRoll
 ; Called if Tails is in a ball, but not airborne (thus, probably rolling)
@@ -1552,7 +1708,7 @@ Tails_JumpHeight:
 	move.w	#-$200,d1
 +
 	cmp.w	y_vel(a0),d1	; is Tails going up faster than d1?
-	ble.s	+		; if not, branch
+	ble.s	Tails_Test_For_Flight		; if not, branch
 	move.b	(Ctrl_2_Held_Logical).w,d0
 	andi.b	#button_B_mask|button_C_mask|button_A_mask,d0 ; is a jump button pressed?
 	bne.s	+		; if yes, branch
@@ -1570,6 +1726,67 @@ Tails_UpVelCap:
 
 return_1C70C:
 	rts
+	
+Tails_Test_For_Flight:
+	; Disable all moves in 2P
+	tst.w	(Two_player_mode).w
+	bne.s	+
+	tst.b	double_jump_flag(a0) ; Is tails already flying?
+	beq.w	Tails_Test_For_Flight_2P ; If not, branch
++
+	rts
+
+Tails_Test_For_Flight_2P:
+		move.b	(Ctrl_2_Press_Logical).w,d0
+		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
+		beq.w	locret_151A2
+		cmpi.b	#2,(Player_mode).w
+		beq.s	Tails_DoFly
+		tst.w	(Tails_control_counter).w
+		bne.s	Tails_DoFly
+
+;Tails_Test_For_Flight_Assist:
+;		cmpi.b	#1,(Option_TailsFlight).w
+;		beq.s	locret_151A2
+
+;		move.b	(Ctrl_1_Press_Logical).w,d0
+;		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
+;		beq.w	locret_151A2
+;		move.b	(Ctrl_1_Held_Logical).w,d0
+;		andi.b	#button_up_mask,d0
+;		beq.w	locret_151A2
+
+Tails_DoFly:
+;		cmpi.b	#2,(Option_TailsFlight).w
+;		beq.s	locret_151A2
+
+		btst	#2,status(a0)
+		beq.s	loc_1518C
+		bclr	#2,status(a0)
+		move.b	y_radius(a0),d1
+		move.b	#$F,y_radius(a0)
+		move.b	#9,x_radius(a0)
+		sub.b	#$F,d1
+		ext.w	d1
+		;tst.b	(Reverse_gravity_flag).w
+		;beq.s	loc_15188
+		;neg.w	d0
+
+;loc_15188:
+		add.w	d1,y_pos(a0)
+
+loc_1518C:
+		tst.b	double_jump_property(a0)
+		bne.s	+
+		move.b	#-$F,double_jump_property(a0)
++
+		bclr	#4,status(a0)
+		move.b	#1,double_jump_flag(a0)
+		bsr.w	Tails_Set_Flying_Animation
+
+locret_151A2:
+		rts
+	
 ; End of subroutine Tails_JumpHeight
 
 ; ---------------------------------------------------------------------------
@@ -2105,6 +2322,13 @@ return_1CB4E:
 
 ; loc_1CB50:
 Tails_ResetOnFloor:
+;	tst.b	(Flying_carrying_Sonic_flag).w
+;	beq.s	+
+;	lea		(MainCharacter).w,a1
+;	clr.b	obj_control(a1)
+;	bset	#1,status(a1)
++
+;	clr.b	(Flying_carrying_Sonic_flag).w
 	tst.b	pinball_mode(a0)
 	bne.s	Tails_ResetOnFloor_Part3
 	move.b	#AniIDSonAni_Walk,anim(a0)
@@ -2129,7 +2353,13 @@ Tails_ResetOnFloor_Part3:
 	move.b	#0,flips_remaining(a0)
 	move.w	#0,(Tails_Look_delay_counter).w
 	cmpi.b	#AniIDSonAni_Hang2,anim(a0)
+	beq.s	Tails_ResetAnim
+	tst.b	double_jump_flag
 	bne.s	return_1CBC4
+	move.b	#0,double_jump_flag(a0)
+	move.b	#0,double_jump_property(a0)
+
+Tails_ResetAnim:	
 	move.b	#AniIDSonAni_Walk,anim(a0)
 
 return_1CBC4:

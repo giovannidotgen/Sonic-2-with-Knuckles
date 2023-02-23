@@ -82632,32 +82632,43 @@ return_3F78A:
 ; ===========================================================================
 ; loc_3F78C:
 Touch_Enemy:
-	cmpi.b	#ObjID_Knuckles,id(a0)
-	bne.s	Touch_NotKnuckles
-	cmp.b	#1,$21(a0)
-	beq.s	+
-	cmp.b	#3,$21(a0)
-	beq.s	+
-
-Touch_NotKnuckles:
 	btst	#status_sec_isInvincible,status_secondary(a0)	; is Sonic invincible?
-	bne.s	+			; if yes, branch
+	bne.s	.checkhurtenemy			; if yes, branch
+;	cmpi.b	#AniIDSonAni_Dropdash,anim(a0)
+;	beq.s	.checkhurtenemy
 	cmpi.b	#AniIDSonAni_Spindash,anim(a0)
-	beq.s	+
+	beq.s	.checkhurtenemy
 	cmpi.b	#AniIDSonAni_Roll,anim(a0)		; is Sonic rolling?
-	bne.w	Touch_ChkHurt		; if not, branch
-+
+	beq.s	.checkhurtenemy		; if so, branch
+	cmpi.b	#ObjID_Knuckles,id(a0)
+	bne.s	.notknuckles
+	cmp.b	#1,glidemode(a0)
+	beq.s	.checkhurtenemy
+	cmp.b	#3,glidemode(a0)
+	beq.s	.checkhurtenemy
+	bra.w	Touch_ChkHurt
+
+  .notknuckles:
+	cmpi.b	#ObjID_Tails,id(a0)			; Is player Tails
+	bne.w	Touch_ChkHurt				; If not, branch
+	tst.b	double_jump_flag(a0)			; Is Tails flying ("gravity-affected")
+	beq.w	Touch_ChkHurt				; If not, branch
+	btst	#6,status(a0)		; Is Tails underwater
+	bne.w	Touch_ChkHurt				; If not, branch
+	move.w	x_pos(a0),d1
+	move.w	y_pos(a0),d2
+	sub.w	x_pos(a1),d1
+	sub.w	y_pos(a1),d2
+	jsr	(CalcAngle).l
+	subi.b	#$20,d0
+	cmpi.b	#$40,d0
+	bhs.w	Touch_ChkHurt
+
+  .checkhurtenemy:	
 	btst	#6,render_flags(a1)
 	beq.s	Touch_Enemy_Part2
 	tst.b	boss_hitcount2(a1)
 	beq.s	return_3F7C6
-	cmpi.b	#ObjID_Knuckles,id(a0)
-	bne.s	+
-	cmp.b	#1,$21(a0)
-	bne.s	+
-	move.b	#2,$21(a0)
-	move.b	#$21,anim(a0)
-+
 	neg.w	x_vel(a0)
 	neg.w	y_vel(a0)
 	move.b	#0,collision_flags(a1)
