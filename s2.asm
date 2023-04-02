@@ -36122,10 +36122,13 @@ Obj01_InWater:
 	move.w	#$18,(Sonic_acceleration).w
 	move.w	#$80,(Sonic_deceleration).w
 +
+	tst.b	(Flying_carrying_Sonic_flag).w
+	bne.s	+
 	asr.w	x_vel(a0)
 	asr.w	y_vel(a0)	; memory operands can only be shifted one bit at a time
 	asr.w	y_vel(a0)
 	beq.s	return_1A18C
++
 	move.w	#$100,(Sonic_Dust+anim).w	; splash animation
 	move.w	#SndID_Splash,d0	; splash sound
 	jmp	(PlaySound).l
@@ -36146,8 +36149,10 @@ Obj01_OutWater:
 	move.w	#$30,(Sonic_acceleration).w
 	move.w	#$100,(Sonic_deceleration).w
 +
-	cmpi.b	#4,routine(a0)	; is Sonic falling back from getting hurt?
-	beq.s	+		; if yes, branch
+;	cmpi.b	#4,routine(a0)	; is Sonic falling back from getting hurt?
+;	beq.s	+		; if yes, branch
+	tst.b	(Flying_carrying_Sonic_flag).w
+	bne.s	+
 	asl	y_vel(a0)
 +
 	tst.w	y_vel(a0)
@@ -56579,13 +56584,13 @@ ObjD6_Main:
 	move.w	#$10,d2
 	move.w	#$11,d3
 	move.w	x_pos(a0),d4
-	lea	objoff_30(a0),a2
+	lea	objoff_30(a0),a3
 	lea	(MainCharacter).w,a1 ; a1=character
 	moveq	#p1_standing_bit,d6
 	movem.l	d1-d4,-(sp)
 	bsr.w	loc_2BBE8
 	movem.l	(sp)+,d1-d4
-	lea	objoff_34(a0),a2 ; a2=object
+	lea	objoff_34(a0),a3 ; a3=object
 	lea	(Sidekick).w,a1 ; a1=character
 	moveq	#p2_standing_bit,d6
 	bsr.w	loc_2BBE8
@@ -56595,7 +56600,7 @@ ObjD6_Main:
 ; ===========================================================================
 
 loc_2BBE8:
-	move.w	(a2),d0
+	move.w	(a3),d0
 	move.w	off_2BBF2(pc,d0.w),d0
 	jmp	off_2BBF2(pc,d0.w)
 ; ===========================================================================
@@ -56611,12 +56616,19 @@ loc_2BBF8:
 	tst.b	subtype(a0)
 	beq.s	loc_2BC0C
 	tst.w	(SlotMachineInUse).w
-	bne.s	return_2BC84
+	bne.w	return_2BC84
 
 loc_2BC0C:
 	jsrto	SolidObject_Always_SingleCharacter, JmpTo7_SolidObject_Always_SingleCharacter
 	tst.w	d4
-	bpl.s	return_2BC84
+	bpl.w	return_2BC84
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a2
+	clr.b	obj_control(a2)
+	bset	#1,status(a2)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++		
 	move.w	x_pos(a0),x_pos(a1)
 	move.w	y_pos(a0),y_pos(a1)
 	move.w	#0,x_vel(a1)
@@ -56628,8 +56640,8 @@ loc_2BC0C:
 	move.b	#7,x_radius(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
 	move.b	#1,anim(a0)
-	addq.w	#2,(a2)+
-	move.w	#$78,(a2)
+	addq.w	#2,(a3)+
+	move.w	#$78,(a3)
 	move.w	a1,parent(a0)
 	tst.b	subtype(a0)
 	beq.s	return_2BC84
@@ -56681,8 +56693,8 @@ loc_2BC86:
 	add.w	casino_prize_machine_y_pos(a1),d0
 	move.w	d0,casino_prize_y_pos(a1)
 	move.w	d0,y_pos(a1)
-	lea	objoff_2C(a0),a2
-	move.l	a2,objoff_2A(a1)
+	lea	objoff_2C(a0),a3
+	move.l	a3,objoff_2A(a1)
 	move.w	parent(a0),parent(a1)
 	addq.w	#1,objoff_2C(a0)
 	subq.w	#1,objoff_2A(a0)
@@ -56725,8 +56737,8 @@ loc_2BD4E:
 	add.w	casino_prize_machine_y_pos(a1),d0
 	move.w	d0,casino_prize_y_pos(a1)
 	move.w	d0,y_pos(a1)
-	lea	objoff_2C(a0),a2
-	move.l	a2,objoff_2A(a1)
+	lea	objoff_2C(a0),a3
+	move.l	a3,objoff_2A(a1)
 	move.w	parent(a0),parent(a1)
 	addq.w	#1,objoff_2C(a0)
 	subq.w	#1,(SlotMachine_Reward).w
@@ -56756,7 +56768,7 @@ loc_2BDF8:
 ; ===========================================================================
 
 loc_2BE28:
-	subq.w	#1,2(a2)
+	subq.w	#1,2(a3)
 	bpl.s	loc_2BE5E
 
 loc_2BE2E:
@@ -56767,13 +56779,13 @@ loc_2BE2E:
 	bclr	#3,status(a1)
 	bset	#1,status(a1)
 	move.w	#$400,y_vel(a1)
-	addq.w	#2,(a2)+
-	move.w	#$1E,(a2)
+	addq.w	#2,(a3)+
+	move.w	#$1E,(a3)
 	rts
 ; ===========================================================================
 
 loc_2BE5E:
-	move.w	2(a2),d0
+	move.w	2(a3),d0
 	andi.w	#$F,d0
 	bne.s	+	; rts
 	move.w	#SndID_CasinoBonus,d0
@@ -56792,9 +56804,9 @@ loc_2BE5E:
 ; ===========================================================================
 
 loc_2BE9C:
-	subq.w	#1,2(a2)
+	subq.w	#1,2(a3)
 	bpl.s	+	; rts
-	clr.w	(a2)
+	clr.w	(a3)
 	tst.b	subtype(a0)
 	beq.s	+	; rts
 	clr.w	(SlotMachineInUse).w
@@ -56924,18 +56936,18 @@ SlotMachine_Routine3:
 	_addq.b	#4,slot_rout(a4)		; => SlotMachine_Routine4
 	move.b	(Vint_runcount+3).w,d0		; 'Random' seed
 	ror.b	#3,d0				; Mess it around
-	lea	(SlotTargetValues).l,a2
+	lea	(SlotTargetValues).l,a3
 
--	sub.b	(a2),d0				; Subtract from random seed
+-	sub.b	(a3),d0				; Subtract from random seed
 	bcs.s	+				; Branch if result is less than zero
-	addq.w	#3,a2				; Advance 3 bytes
+	addq.w	#3,a3				; Advance 3 bytes
 	bra.s	-				; Keep looping
 ; ===========================================================================
 +
-	cmpi.b	#-1,(a2)			; Is the previous value -1?
+	cmpi.b	#-1,(a3)			; Is the previous value -1?
 	beq.s	+				; Branch if yes (end of array)
-	move.b	1(a2),slot1_targ(a4)		; Target value for slot 1
-	move.b	2(a2),slot23_targ(a4)		; Target values for slots 2 and 3
+	move.b	1(a3),slot1_targ(a4)		; Target value for slot 1
+	move.b	2(a3),slot23_targ(a4)		; Target values for slots 2 and 3
 	rts
 ; ===========================================================================
 +
@@ -56989,9 +57001,9 @@ SlotMachine_Routine5:
 	move.b	slot_index(a4),d0		; Get current slot index
 	lea	slots_data(a4),a1		; a1 = pointer to slots data
 	adda.w	d0,a1				; a1 = pointer to current slot data
-	lea	(SlotSequence1).l,a3		; Get pointer to slot sequences
+	lea	(SlotSequence1).l,a5		; Get pointer to slot sequences
 	add.w	d0,d0				; Turn into index
-	adda.w	d0,a3				; Get sequence for this slot
+	adda.w	d0,a5				; Get sequence for this slot
 	moveq	#0,d0				; Clear d0 again
 	move.b	slot1_rout-slot1_index(a1),d0	; Slot routine
 	jmp	SlotMachine_Routine5_JmpTable(pc,d0.w)
@@ -57052,7 +57064,7 @@ SlotMachine_Routine5_1:
 	subi.w	#$A0,d0					; Subtract 20 lines (2.5 tiles) from it
 	lsr.w	#8,d0					; Get effective slot index
 	andi.w	#7,d0					; Only want 3 bits
-	move.b	(a3,d0.w),d0				; Get face from sequence
+	move.b	(a5,d0.w),d0				; Get face from sequence
 	cmp.b	d1,d0					; Are we close to target?
 	beq.s	+					; Branch if yes
 	rts
@@ -57069,7 +57081,7 @@ SlotMachine_Routine5_2:
 	addi.w	#$F0,d0					; Add 30 lines (3.75 tiles) to it
 	andi.w	#$700,d0				; Limit to 8 faces
 	lsr.w	#8,d0					; Get effective slot index
-	move.b	(a3,d0.w),d0				; Get face from sequence
+	move.b	(a5,d0.w),d0				; Get face from sequence
 	cmp.b	d0,d1					; Are we this close to target?
 	beq.s	loc_2C1AE				; Branch if yes
 	cmpi.b	#$20,slot1_speed-slot1_index(a1)	; Is slot speed more than $20?
@@ -57099,7 +57111,7 @@ loc_2C1AE:
 	move.w	d1,(a1)				; Store new value for index/offset
 	lsr.w	#8,d0				; Convert to index
 	andi.w	#7,d0				; Limit to 8 faces
-	move.b	(a3,d0.w),d1			; Get face from sequence
+	move.b	(a5,d0.w),d1			; Get face from sequence
 	bsr.w	SlotMachine_ChangeTarget	; Set slot index to face number, indtead of sequence index
 	move.b	#-8,slot1_speed-slot1_index(a1)	; Rotate slowly on the other direction
 	addq.b	#4,slot1_rout-slot1_index(a1)	; => SlotMachine_Routine5_3
@@ -57136,9 +57148,9 @@ SlotMachine_DrawSlot:
 	move.b	slot_index(a4),d0		; d0 = index of slot to draw
 	lea	slots_data(a4),a1		; a1 = pointer to slots data
 	adda.w	d0,a1				; a1 = pointer to current slot data
-	lea	(SlotSequence1).l,a3		; Get slot sequence
-	adda.w	d0,a3				; Add offset...
-	adda.w	d0,a3				; ...twice
+	lea	(SlotSequence1).l,a5		; Get slot sequence
+	adda.w	d0,a5				; Add offset...
+	adda.w	d0,a5				; ...twice
 	jmp	BranchTo_SlotMachine_Subroutine(pc,d0.w)
 ; ===========================================================================
 
@@ -57179,10 +57191,10 @@ SlotMachine_Subroutine2:
 	lea	(Block_Table+$1000).w,a1	; Destination for pixel rows
 
 	move.w	#4*8-1,d1			; Slot picture is 4 tiles
--	move.l	$80(a2),$80(a1)			; Copy pixel row for second column
-	move.l	$100(a2),$100(a1)		; Copy pixel row for third column
-	move.l	$180(a2),$180(a1)		; Copy pixel row for fourth column
-	move.l	(a2)+,(a1)+			; Copy pixel row for first column, advance destination to next line
+-	move.l	$80(a3),$80(a1)			; Copy pixel row for second column
+	move.l	$100(a3),$100(a1)		; Copy pixel row for third column
+	move.l	$180(a3),$180(a1)		; Copy pixel row for fourth column
+	move.l	(a3)+,(a1)+			; Copy pixel row for first column, advance destination to next line
 	addq.b	#8,d3				; Increase offset by 8 (byte operation)
 	bne.s	+				; If the result is not zero, branch
 	addi.w	#$100,d3			; Advance to next slot picture
@@ -57207,40 +57219,40 @@ SlotMachine_GetPixelRow:
 	move.w	d3,d0				; d0 = pixel offset into slot picture
 	lsr.w	#8,d0				; Convert offset into index
 	andi.w	#7,d0				; Limit each sequence to 8 pictures
-	move.b	(a3,d0.w),d0			; Get slot pic id
+	move.b	(a5,d0.w),d0			; Get slot pic id
 	andi.w	#7,d0				; Get only lower 3 bits; leaves space for 2 more images
 	ror.w	#7,d0				; Equal to shifting left 9 places, or multiplying by 4*4 tiles, in bytes
-	lea	(ArtUnc_CNZSlotPics).l,a2	; Load slot pictures
-	adda.w	d0,a2				; a2 = pointer to first tile of slot picture
+	lea	(ArtUnc_CNZSlotPics).l,a3	; Load slot pictures
+	adda.w	d0,a3				; a3 = pointer to first tile of slot picture
 	move.w	d3,d0				; d0 = d3
 	andi.w	#$F8,d0				; Strip high word (picture index)
 	lsr.w	#1,d0				; Convert into bytes
-	adda.w	d0,a2				; a2 = pointer to desired pixel row
+	adda.w	d0,a3				; a3 = pointer to desired pixel row
 	rts
 	
 sub_325964:					  ; ...
 	move.w	d3,d0
 	lsr.w	#8,d0
 	and.w	#7,d0
-	move.b	(a3,d0.w),d0
+	move.b	(a5,d0.w),d0
 	and.w	#7,d0
 	beq.s	loc_32598C
 	ror.w	#7,d0
-	lea	(ArtUnc_CNZSlotPics).l,a2
-	add.w	d0,a2
+	lea	(ArtUnc_CNZSlotPics).l,a3
+	add.w	d0,a3
 	move.w	d3,d0
 	and.w	#$F8,d0
 	lsr.w	#1,d0
-	add.w	d0,a2
+	add.w	d0,a3
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_32598C:					  ; ...
-	lea	(byte_33B1F0).l,a2
+	lea	(byte_33B1F0).l,a3
 	move.w	d3,d0
 	and.w	#$F8,d0
 	lsr.w	#1,d0
-	add.w	d0,a2
+	add.w	d0,a3
 	rts
 ; End of function sub_325964
 
@@ -57357,8 +57369,8 @@ SlotMachine_CheckBars:
 ;loc_2C3CA
 SlotMachine_GetReward:
 	add.w	d0,d0				; Convert to index
-	lea	(SlotRingRewards).l,a2		; Ring reward array
-	move.w	(a2,d0.w),d0			; Get ring reward
+	lea	(SlotRingRewards).l,a3		; Ring reward array
+	move.w	(a3,d0.w),d0			; Get ring reward
 	rts
 ; ===========================================================================
 ;loc_2C3D8
@@ -90195,6 +90207,8 @@ SndPtr_OilSlide:	rom_ptr_z80	Sound70
 SndPtr_WallGrab:	rom_ptr_z80	Snd_WallGrab
 SndPtr_Land:		rom_ptr_z80	Snd_Land
 SndPtr_Slide:		rom_ptr_z80	Snd_Slide
+SndPtr_Fly:			rom_ptr_z80 Snd_Fly
+SndPtr_FlyTired		rom_ptr_z80	Snd_FlyTired
 SndPtr__End:
 
 Sound20:	include "sound/sfx/A0 - Jump.asm"
@@ -90281,6 +90295,8 @@ Sound70:	include "sound/sfx/F0 - Oil Slide.asm"
 Snd_WallGrab:	include	"sound/sfx/wallgrab.asm"
 Snd_Land:	include	"sound/sfx/land.asm"
 Snd_Slide:	include	"sound/sfx/slide.asm"
+Snd_Fly:	include "sound/sfx/fly.asm"
+Snd_FlyTired:	include "sound/sfx/tired.asm"
 	finishBank
 
 ; end of 'ROM'

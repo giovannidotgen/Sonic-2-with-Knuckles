@@ -890,7 +890,9 @@ SndID_OilSlide =	id(SndPtr_OilSlide)		; F0
 SndID_WallGrab =	id(SndPtr_WallGrab)		; F1
 SndID_Land =		id(SndPtr_Land)			; F2
 SndID_Slide =		id(SndPtr_Slide)		; F3
-SndID__End =		id(SndPtr__End)			; F4
+SndID_Fly =			id(SndPtr_Fly)			; F4
+SndID_FlyTired =	id(SndPtr_FlyTired)		; F5
+SndID__End =		id(SndPtr__End)			; F6
     if MOMPASS == 2
 	if SndID__End > CmdID__First
 		fatal "You have too many SndPtrs. SndID__End ($\{SndID__End}) can't exceed CmdID__First ($\{CmdID__First})."

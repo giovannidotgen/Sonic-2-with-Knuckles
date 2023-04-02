@@ -3606,7 +3606,7 @@ zSFXPriority:
 	db	6Fh,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,6Fh,70h,70h
 	db	70h,60h,60h,70h,70h,70h,70h,70h,70h,70h,60h,62h,60h,60h,60h,70h
 	db	70h,70h,70h,70h,60h,60h,60h,6Fh,70h,70h,6Fh,6Fh,70h,71h,70h,70h
-	db	6Fh
+	db	6Fh,70h,70h,6Fh,6Fh
 
 ; zoff_1029 zPSG_Index zPSG_FlutterTbl
 zPSG_EnvTbl:

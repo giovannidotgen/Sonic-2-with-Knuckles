@@ -364,17 +364,17 @@ loc_1BC68:
 	move.b	2(a2,d3.w),d2
 	
 	; HJW: Hack to allow underwater respawn
-	tst.b	(Water_flag).w
-	beq.s	+
-	move.w  y_pos(a0),d3
-	cmp.w 	(Water_Level_1).w,d3
-	bge.s	++
-+
-	andi.b	#$D2,d2
-	jne		return_1BCDE
-+
+;	tst.b	(Water_flag).w
+;	beq.s	+
+;	move.w  y_pos(a0),d3
+;	cmp.w 	(Water_Level_1).w,d3
+;	bge.s	++
+;+
+	andi.b	#$92,d2
+	bne.w	return_1BCDE
+;+
 	or.w	d0,d1
-	jne		return_1BCDE
+	bne.w	return_1BCDE
 	
 	move.l	a1,-(sp)		; Backup a1
 	lea		(Tails_top_speed).w,a2	; Load Tails_top_speed into a2
@@ -701,9 +701,9 @@ Tails_Carry_Sonic:
 		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
 		beq.w	loc_14474
 		
-		move.b	(Ctrl_1_Held_Logical).w,d1
-		andi.b	#button_down_mask,d1
-		beq.w	loc_14474
+;		move.b	(Ctrl_1_Held_Logical).w,d1
+;		andi.b	#button_down_mask,d1
+;		beq.w	loc_14474
 		
 		clr.b	obj_control(a1)
 		clr.b	(a2) ; ???
@@ -854,7 +854,8 @@ loc_1456C:
 		clr.b 	double_jump_flag(a1)
 		clr.b 	glidemode(a1)
         ; Play grabbing sound (is this even in S2? [no, it's not])
-;		sfx		sfx_Grab
+		move.w	#SndID_WallGrab,d0
+		jsr	PlaySound2
 		move.b	#AniIDSonAni_Hang2,anim(a1)
 		move.b	#1,(a2) ; ???
 
@@ -1096,17 +1097,18 @@ Tails_FlyAnim_Tired:
 		tst.b	(Flying_carrying_Sonic_flag).w
 		beq.s	+
 		move.b	#AniIDTailsAni_FlyCarryTired,anim(a0)
-;+
-;		tst.b	render_flags(a0) ; ???
-;		bpl.s	+
++
+		tst.b	render_flags(a0) ; ???
+		bpl.s	+
 
 		; Play flight SFX every few frames
-;		move.b	(Timer_frames+1).w,d0
-;		addq.b	#8,d0
-;		andi.b	#$F,d0
-;		bne.s	+
+		move.b	(Timer_frames+1).w,d0
+		addq.b	#8,d0
+		andi.b	#$F,d0
+		bne.s	+
 
-;		sfx		sfx_FlyTired
+		move.b	#SndID_FlyTired,d0
+		jmp		PlaySound2
 
 +		rts
 ; ---------------------------------------------------------------------------
@@ -1121,18 +1123,19 @@ Tails_FlyAnim_NotTired:
 		tst.w	y_vel(a0)
 		bpl.s	+
 		move.b	#AniIDTailsAni_FlyCarryUp,anim(a0)
-;+
-;		tst.b	render_flags(a0) ; ???
-;		bpl.s	+
++
+		tst.b	render_flags(a0) ; ???
+		bpl.s	+
 
 		; Play flight SFX every few frames
-;		move.b	(Timer_frames+1).w,d0
-;		addq.b	#8,d0
-;		andi.b	#$F,d0
-;		bne.s	+
+		move.b	(Timer_frames+1).w,d0
+		addq.b	#8,d0
+		andi.b	#$F,d0
+		bne.s	+
 
-;		sfx		sfx_Flying
-
+		move.b	#SndID_Fly,d0
+		jmp		PlaySound2
+		
 +		rts
 ; ---------------------------------------------------------------------------
 
@@ -1991,7 +1994,7 @@ Tails_Test_For_Flight_2P:
 		move.b	(Ctrl_2_Press_Logical).w,d0
 		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
 		beq.w	locret_151A2
-		cmpi.b	#2,(Player_mode).w
+		cmpi.w	#2,(Player_mode).w
 		beq.s	Tails_DoFly
 		tst.w	(Tails_control_counter).w
 		bne.s	Tails_DoFly
