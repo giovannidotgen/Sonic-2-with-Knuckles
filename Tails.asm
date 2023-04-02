@@ -1928,15 +1928,13 @@ Tails_Jump:
 	clr.b	stick_to_convex(a0)
 	move.w	#SndID_Jump,d0
 	jsr	(PlaySound).l	; play jumping sound
-	move.b	#$F,y_radius(a0)
-	move.b	#9,x_radius(a0)
-	btst	#2,status(a0)
-	bne.s	Tails_RollJump
 	move.b	#$E,y_radius(a0)
 	move.b	#7,x_radius(a0)
+	btst	#2,status(a0)
+	bne.s	Tails_RollJump
 	move.b	#AniIDSonAni_Roll,anim(a0)	; use "jumping" animation
 	bset	#2,status(a0)
-	addq.w	#1,y_pos(a0)
+	addq.w	#1,y_pos(a0)		
 
 return_1C6C2:
 	rts

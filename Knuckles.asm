@@ -1721,12 +1721,10 @@ loc_31647A:					  ; ...
 loc_3164B2:
 		move.w	#SndID_Jump,d0
 		jsr	PlaySound
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
-		btst	#2,$22(a0)
-		bne.s	Knuckles_RollJump
 		move.b	#$E,$16(a0)
 		move.b	#7,$17(a0)
+		btst	#2,$22(a0)
+		bne.s	Knuckles_RollJump
 		move.b	#2,$1C(a0)
 		bset	#2,$22(a0)
 		addq.w	#5,$C(a0)
