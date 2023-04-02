@@ -46,6 +46,7 @@ subtype =		$28
 ; ---------------------------------------------------------------------------
 ; conventions specific to Sonic/Tails (Obj01, Obj02, and ObjDB):
 ; note: $1F, $20, and $21 are unused and available
+ground_vel =	inertia
 inertia =		$14 ; and $15 ; directionless representation of speed... not updated in the air
 double_jump_flag =	$1F	; self explanatory
 double_jump_property = $20 ; for Tails, it's flight related
@@ -1497,7 +1498,11 @@ Demo_press_counter:		ds.b	1	; frames remaining until next button press, for play
 				ds.b	1	; $FFFFF793 ; seems unused
 PalChangeSpeed:			ds.w	1
 Collision_addr:			ds.l	1
-				ds.b	$D	; $FFFFF79A-$FFFFF7A6 ; seems unused
+Flying_x_vel_unk:		ds.w 	1
+Flying_y_vel_unk:       ds.w 	1
+Flying_carrying_Sonic_flag:				ds.b 1
+Flying_picking_Sonic_timer:				ds.b 1
+				ds.b	$7	; $FFFFF79E-$FFFFF7A6 ; seems unused
 Boss_defeated_flag:		ds.b	1
 				ds.b	2	; $FFFFF7A8-$FFFFF7A9 ; seems unused
 Current_Boss_ID:		ds.b	1

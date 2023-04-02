@@ -355,10 +355,23 @@ loc_1BC64:
 loc_1BC68:
 	lea	(Sonic_Stat_Record_Buf).w,a2
 	move.b	2(a2,d3.w),d2
+	tst.b	(Water_flag).w
+	beq.s	+
+	move.w  y_pos(a0),d3
+	cmp.w 	(Water_Level_1).w,d3
+	bge.s	++
++
 	andi.b	#$D2,d2
-	bne.s	return_1BCDE
+	jne		return_1BCDE
++
 	or.w	d0,d1
-	bne.s	return_1BCDE
+	jne		return_1BCDE
+	
+	move.l	a1,-(sp)		; Backup a1
+	lea		(Tails_top_speed).w,a2	; Load Tails_top_speed into a2
+	jsr		ApplySpeedSettings	; Fetch Speed settings
+	move.l	(sp)+,a1		; Restore a1
+	
 	move.w	#6,(Tails_CPU_routine).w	; => TailsCPU_Normal
 	move.b	#0,obj_control(a0)
 	move.b	#AniIDSonAni_Walk,anim(a0)
@@ -656,8 +669,222 @@ Tails_RecordPos:
 ; End of subroutine Tails_RecordPos
 
 ; ---------------------------------------------------------------------------
-; TODO: Port Tails_Carry_Sonic
+Tails_Carry_Sonic:
+		; a1 = MainCharacter
+		move.w	(Ctrl_1_Logical).w,d0
+		tst.b	(a2) ; a2 = Flying_carrying_Sonic_flag but only sometimes
+		beq.w	loc_14534
+		cmpi.b	#4,routine(a1)
+		bhs.w	loc_14466
+		btst	#1,status(a1)
+		beq.w	loc_1445A
+		move.w	(Flying_x_vel_unk).w,d1 ; ????
+		cmp.w	x_vel(a1),d1
+		bne.w	loc_1445A
+		move.w	(Flying_y_vel_unk).w,d1 ; ????
+		cmp.w	y_vel(a1),d1
+		bne.w	loc_14460
+		tst.b	obj_control(a1)
+		bmi.w	loc_1446A
+
+		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
+		beq.w	loc_14474
+		
+		move.b	(Ctrl_1_Held_Logical).w,d1
+		andi.b	#button_down_mask,d1
+		beq.w	loc_14474
+		
+		clr.b	obj_control(a1)
+		clr.b	(a2) ; ???
+		move.b	#$12,1(a2) ; ???
+		andi.w	#$F00,d0
+		beq.w	loc_14410
+		move.b	#$3C,1(a2) ; ???
+
+loc_14410:
+		btst	#$A,d0
+		beq.s	loc_1441C
+		move.w	#-$200,x_vel(a1)
+
+loc_1441C:
+		btst	#$B,d0
+		beq.s	loc_14428
+		move.w	#$200,x_vel(a1)
+
+loc_14428:
+		move.w	#-$380,y_vel(a1)
+		bset	#1,status(a1)
+		move.b	#1,jumping(a1)
+		move.b	#$E,y_radius(a1)
+		move.b	#7,x_radius(a1)
+		move.b	#AniIDSonAni_Roll,anim(a1)
+		bset	#2,status(a1)
+		bclr	#4,status(a1)
+		rts
 ; ---------------------------------------------------------------------------
+
+loc_1445A:
+		move.w	#-$100,y_vel(a1)
+
+loc_14460:
+		move.b	#0,jumping(a1)
+
+loc_14466:
+		clr.b	obj_control(a1)
+
+loc_1446A:
+		clr.b	(a2) ; ???
+		move.b	#$3C,1(a2) ; ???
+		rts
+; ---------------------------------------------------------------------------
+
+loc_14474:
+		move.w	x_pos(a0),x_pos(a1)
+		move.w	y_pos(a0),y_pos(a1)
+		addi.w	#$1C+6,y_pos(a1)
+		;tst.b	(Reverse_gravity_flag).w
+		;beq.s	loc_14492
+		;subi.w	#$38,y_pos(a1)
+
+loc_14492:
+		andi.b	#-4,render_flags(a1)
+		andi.b	#-2,status(a1)
+		move.b	status(a0),d0
+		andi.b	#1,d0
+		or.b	d0,render_flags(a1)
+		or.b	d0,status(a1)
+		;tst.b	(Reverse_gravity_flag).w
+		;beq.s	loc_144BA
+		;eori.b	#2,render_flags(a1)
+
+loc_144BA:
+		;subq.b	#1,anim_frame_duration(a1)
+		;bpl.s	loc_144F8
+		;move.b	#$B,anim_frame_duration(a1)
+		;moveq	#0,d1
+		;move.b	anim_frame(a1),d1
+		;addq.b	#1,anim_frame(a1)
+		;move.b	byte_14522(pc,d1.w),d0
+		;cmpi.b	#-1,d0
+		;bne.s	loc_144E4
+		;move.b	#0,anim_frame(a1)
+		;move.b	byte_14522(pc),d0
+
+loc_144E4:
+		;move.b	d0,mapping_frame(a1)
+		;moveq	#0,d0
+		;move.b	mapping_frame(a1),d0
+		;move.l	a2,-(sp) ; ???
+		;jsr	(Perform_Player_DPLC).l
+		;movea.l	(sp)+,a2 ; ???
+
+loc_144F8:
+		move.w	x_vel(a0),(MainCharacter+x_vel).w
+		move.w	x_vel(a0),(Flying_x_vel_unk).w ; ????
+		move.w	y_vel(a0),(MainCharacter+y_vel).w
+		move.w	y_vel(a0),(Flying_y_vel_unk).w ; ????
+		movem.l	d0-a6,-(sp)
+		lea	(MainCharacter).w,a0
+		bsr.w	Sonic_DoLevelCollision
+		movem.l	(sp)+,d0-a6
+		rts
+; ---------------------------------------------------------------------------
+byte_14522:	dc.b $91
+		dc.b $91
+		dc.b $90
+		dc.b $90
+		dc.b $90
+		dc.b $90
+		dc.b $90
+		dc.b $90
+		dc.b $92
+		dc.b $92
+		dc.b $92
+		dc.b $92
+		dc.b $92
+		dc.b $92
+		dc.b $91
+		dc.b $91
+		dc.b $FF
+		dc.b 0
+; ---------------------------------------------------------------------------
+
+loc_14534:
+		tst.b	1(a2) ; ???
+		beq.s	loc_14542
+		subq.b	#1,1(a2) ; ???
+		bne.w	locret_1459C
+
+loc_14542:
+		move.w	x_pos(a1),d0
+		sub.w	x_pos(a0),d0
+		addi.w	#$10,d0
+		cmpi.w	#$20,d0
+		bhs.w	locret_1459C
+		move.w	y_pos(a1),d1
+		sub.w	y_pos(a0),d1
+		subi.w	#$20,d1
+		;tst.b	(Reverse_gravity_flag).w
+		;beq.s	loc_1456C
+		;addi.w	#$50,d1
+
+loc_1456C:
+		cmpi.w	#$10,d1
+		bhs.w	locret_1459C
+		tst.b	obj_control(a1)
+		bne.s	locret_1459C
+		cmpi.b	#4,routine(a1)
+		bhs.s	locret_1459C
+		tst.w	(Debug_placement_mode).w
+		bne.s	locret_1459C
+		cmpi.b	#1,spindash_flag(a1)
+		beq.s	locret_1459C
+		bsr.s	sub_1459E
+		clr.b 	double_jump_flag(a1)
+		clr.b 	glidemode(a1)
+        ; Play grabbing sound (is this even in S2? [no, it's not])
+;		sfx		sfx_Grab
+		move.b	#AniIDSonAni_Hang2,anim(a1)
+		move.b	#1,(a2) ; ???
+
+locret_1459C:
+		rts
+; End of function Tails_Carry_Sonic
+; ---------------------------------------------------------------------------
+
+sub_1459E:
+		clr.w	x_vel(a1)
+		clr.w	y_vel(a1)
+		clr.w	ground_vel(a1)
+		clr.w	angle(a1)
+		move.w	x_pos(a0),x_pos(a1)
+		move.w	y_pos(a0),y_pos(a1)
+		addi.w	#$1C+6,y_pos(a1)
+		;move.w	#$2200,anim(a1)
+		;move.b	#0,anim_frame_duration(a1)
+		;move.b	#0,anim_frame(a1)
+		move.b	#3,obj_control(a1)
+		bset	#1,status(a1)
+		bclr	#4,status(a1)
+		move.b	#0,spindash_flag(a1)
+		andi.b	#-4,render_flags(a1)
+		andi.b	#-2,status(a1)
+		move.b	status(a0),d0
+		andi.b	#1,d0
+		or.b	d0,render_flags(a1)
+		or.b	d0,status(a1)
+		move.w	x_vel(a0),(Flying_x_vel_unk).w ; ????
+		move.w	x_vel(a0),x_vel(a1)
+		move.w	y_vel(a0),(Flying_y_vel_unk).w ; ????
+		move.w	y_vel(a0),y_vel(a1)
+		;tst.b	(Reverse_gravity_flag).w
+		;beq.s	locret_14630
+		;subi.w	#$38,y_pos(a1)
+		;eori.b	#2,render_flags(a1)
+
+locret_14630:
+		rts
+; End of function sub_1459E
 
 ; ---------------------------------------------------------------------------
 ; Subroutine for Tails when he's underwater
@@ -773,9 +1000,15 @@ Tails_FlyingSwimming:
 	movem.l	a4-a6,-(sp)
 	bsr.w	Tails_DoLevelCollision
 	movem.l	(sp)+,a4-a6
-;	lea	(Flying_carrying_Sonic_flag).w,a2
-;	lea	(MainCharacter).w,a1
-;	bsr.w	Tails_Carry_Sonic
+	; GIO: For whatever bizarre reason, the game will try running Tails' carrying Sonic function, even after the flag gets disabled by Tails_ResetOnFloor.
+	; Such an event will cause undesirable behavior when it comes to Tails dropping Sonic. So, if Tails_ResetOnFloor gets ran while the flag is active,
+	; the string of text "STOP" will be stored in d2. Should it be there when the program counter reaches this point in the code, Tails' carring Sonic
+	; function will not be ran at all.
+	cmpi.l	#"STOP",d2
+	beq.s	locret_14820
+	lea	(Flying_carrying_Sonic_flag).w,a2
+	lea	(MainCharacter).w,a1
+	bsr.w	Tails_Carry_Sonic
 
 locret_14820:
 		rts	
@@ -817,8 +1050,8 @@ loc_14860:
 		beq.s	loc_1488C
 		btst	#6,status(a0)
 		beq.s	loc_14886
-;		tst.b	(Flying_carrying_Sonic_flag).w
-;		bne.s	loc_1488C
+		tst.b	(Flying_carrying_Sonic_flag).w
+		bne.s	loc_1488C
 
 loc_14886:
 		move.b	#2,double_jump_flag(a0)
@@ -849,9 +1082,9 @@ Tails_FlyAnim_Tired:
 		bne.s	Tails_FlyAnim_NotTired ; If not, branch
 		
 		move.b	#AniIDTailsAni_FlyTired,anim(a0)
-	;	tst.b	(Flying_carrying_Sonic_flag).w
-	;	beq.s	+
-	;	move.b	#AniIDTailsAni_FlyCarryTired,anim(a0)
+		tst.b	(Flying_carrying_Sonic_flag).w
+		beq.s	+
+		move.b	#AniIDTailsAni_FlyCarryTired,anim(a0)
 ;+
 ;		tst.b	render_flags(a0) ; ???
 ;		bpl.s	+
@@ -869,14 +1102,14 @@ Tails_FlyAnim_Tired:
 
 Tails_FlyAnim_NotTired:
 		move.b	#AniIDTailsAni_Fly,anim(a0)
-;		tst.b	(Flying_carrying_Sonic_flag).w
-;		beq.s	+
-;		move.b	#AniIDTailsAni_FlyCarry,anim(a0)
+		tst.b	(Flying_carrying_Sonic_flag).w
+		beq.s	+
+		move.b	#AniIDTailsAni_FlyCarry,anim(a0)
 		
 		; Change anim if moving up (only when carrying)
-;		tst.w	y_vel(a0)
-;		bpl.s	+
-;		move.b	#AniIDTailsAni_FlyCarryUp,anim(a0)
+		tst.w	y_vel(a0)
+		bpl.s	+
+		move.b	#AniIDTailsAni_FlyCarryUp,anim(a0)
 ;+
 ;		tst.b	render_flags(a0) ; ???
 ;		bpl.s	+
@@ -899,9 +1132,9 @@ Tails_FlyAnim_Underwater:
 		move.b	#AniIDTailsAni_SwimFast,anim(a0)
 
 loc_1491E:
-;		tst.b	(Flying_carrying_Sonic_flag).w
-;		beq.s	loc_14926
-;		move.b	#AniIDTailsAni_SwimCarry,anim(a0)
+		tst.b	(Flying_carrying_Sonic_flag).w
+		beq.s	loc_14926
+		move.b	#AniIDTailsAni_SwimCarry,anim(a0)
 
 loc_14926:
 		cmpi.b	#1,double_jump_property(a0)
@@ -1751,6 +1984,7 @@ Tails_Test_For_Flight_2P:
 		beq.s	Tails_DoFly
 		tst.w	(Tails_control_counter).w
 		bne.s	Tails_DoFly
+		bra.s	locret_151A2
 
 ;Tails_Test_For_Flight_Assist:
 ;		cmpi.b	#1,(Option_TailsFlight).w
@@ -2329,18 +2563,20 @@ return_1CB4E:
 
 ; loc_1CB50:
 Tails_ResetOnFloor:
-;	tst.b	(Flying_carrying_Sonic_flag).w
-;	beq.s	+
-;	lea		(MainCharacter).w,a1
-;	clr.b	obj_control(a1)
-;	bset	#1,status(a1)
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a1
+	clr.b	obj_control(a1)
+	bset	#1,status(a1)
+	move.l	#"STOP",d2 ; GIO: Hacked in fix that makes Tails drop Sonic correctly.
 +
-;	clr.b	(Flying_carrying_Sonic_flag).w
+	clr.b	(Flying_carrying_Sonic_flag).w	
 	tst.b	pinball_mode(a0)
 	bne.s	Tails_ResetOnFloor_Part3
 	move.b	#AniIDSonAni_Walk,anim(a0)
 ; loc_1CB5C:
 Tails_ResetOnFloor_Part2:
+	
 	btst	#2,status(a0)
 	beq.s	Tails_ResetOnFloor_Part3
 	bclr	#2,status(a0)
@@ -2359,12 +2595,10 @@ Tails_ResetOnFloor_Part3:
 	move.b	#0,flip_turned(a0)
 	move.b	#0,flips_remaining(a0)
 	move.w	#0,(Tails_Look_delay_counter).w
+	move.b	#0,double_jump_flag(a0)
+	move.b	#0,double_jump_property(a0)	
 	cmpi.b	#AniIDSonAni_Hang2,anim(a0)
 	beq.s	Tails_ResetAnim
-	tst.b	double_jump_flag
-	bne.s	return_1CBC4
-	move.b	#0,double_jump_flag(a0)
-	move.b	#0,double_jump_property(a0)
 
 Tails_ResetAnim:	
 	move.b	#AniIDSonAni_Walk,anim(a0)
@@ -2379,6 +2613,13 @@ return_1CBC4:
 ; ---------------------------------------------------------------------------
 ; loc_1CBC6:
 Obj02_Hurt:
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a1
+	clr.b	obj_control(a1)
+	bset	#1,status(a1)
+	clr.b	(Flying_carrying_Sonic_flag).w
++
 	jsr	(ObjectMove).l
 	addi.w	#$30,y_vel(a0)
 	btst	#6,status(a0)

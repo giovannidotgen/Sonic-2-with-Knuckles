@@ -35731,7 +35731,17 @@ loc_19E76:
 
 loc_19E7C:
 	movea.l	(sp)+,a0 ; a0=character
-
+; GIO: Hacked in fix that makes Tails drop Sonic correctly	
+	cmpi.b	#ObjID_Tails,(a0)
+	beq.s	+
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a2
+	clr.b	obj_control(a2)
+	bset	#1,status(a2)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++	
+	
 loc_19E7E:
 	bset	#3,status(a1)
 	bclr	#1,status(a1)
@@ -35817,8 +35827,54 @@ loc_19F4C:
 	moveq	#0,d4
 	rts
 
+; ----------------------------------------------------------------------------
+; Speed Settings Array
 
+; This array defines what speeds the character should be set to
+; ----------------------------------------------------------------------------
+;		top_speed	acceleration	deceleration	; #	; Comment
+Speedsettings:
+	dc.w	$600,		$C,		$80		; $00	; Normal
+	dc.w	$C00,		$18,		$80		; $08	; Normal Speedshoes
+	dc.w	$300,		$6,		$40		; $16	; Normal Underwater
+	dc.w	$600,		$C,		$40		; $24	; Normal Underwater Speedshoes
+	dc.w	$A00,		$30,		$100		; $32	; Super
+	dc.w	$C00,		$30,		$100		; $40	; Super Speedshoes
+	dc.w	$500,		$18,		$80		; $48	; Super Underwater
+	dc.w	$A00,		$30,		$80		; $56	; Super Underwater Speedshoes
+; ===========================================================================
 
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Subroutine to collect the right speed setting for a character
+; a0 must be character
+; a1 will be the result and have the correct speed settings
+; a2 is characters' speed
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+
+ApplySpeedSettings:
+	moveq	#0,d0				; Quickly clear d0
+	tst.w	speedshoes_time(a0)		; Does character have speedshoes?
+	beq.s	+				; If not, branch
+	addq.b	#6,d0				; Quickly add 6 to d0
++
+	btst	#6,status(a0)			; Is the character underwater?
+	beq.s	+				; If not, branch
+	addi.b	#12,d0				; Add 12 to d0
++
+	cmpa.w	#MainCharacter,a0		; Is it Tails currently following this code?
+	bne.s	+				; If so, branch and ignore next question
+	tst.b	(Super_Sonic_flag).w		; Is the character Super?
+	beq.s	+				; If not, branch
+	addi.b	#24,d0				; Add 24 to d0
++
+	lea	Speedsettings(pc,d0.w),a1	; Load correct speed settings into a1
+	move.l	(a1)+,(a2)+			; Set character's new top speed and acceleration
+	move.w	(a1),(a2)			; Set character's deceleration
+	rts					; Finish subroutine
+; ===========================================================================
 
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
@@ -37744,6 +37800,10 @@ return_1B09E:
 
 ; loc_1B0A0:
 Sonic_ResetOnFloor:
+	cmpi.b	#ObjID_Knuckles,id(a0)	; is this object ID Knuckles?
+	beq.w	Knuckles_ResetOnFloor	; if it is, branch to the Knuckles version of this code
+	cmpi.b	#ObjID_Tails,id(a0)	; is this object ID Tails (obj02)?
+	beq.w	Tails_ResetOnFloor	; if not, branch to the Tails version of this code
 	tst.b	pinball_mode(a0)
 	bne.s	Sonic_ResetOnFloor_Part3
 	move.b	#AniIDSonAni_Walk,anim(a0)
@@ -87882,6 +87942,7 @@ ArtUnc_Waterfall3:	BINCLUDE	"art/uncompressed/ARZ waterfall patterns - 3.bin"
 ;---------------------------------------------------------------------------------------
 	align $20
 ArtUnc_Sonic:	BINCLUDE	"art/uncompressed/Sonic's art.bin"
+	align $20000
 ;---------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Patterns for Tails  ; ArtUnc_64320:
