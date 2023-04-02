@@ -247,7 +247,7 @@ TailsCPU_Spawning:
 	tst.b	obj_control(a1)
 	bne.s	return_1BB88
 	move.b	status(a1),d0
-	andi.b	#$D2,d0
+	andi.b	#$92,d0
 	bne.s	return_1BB88
 ; loc_1BB54:
 TailsCPU_Respawn:
@@ -282,11 +282,18 @@ TailsCPU_Flying:
 	move.b	#2,status(a0)
 	move.w	#0,x_pos(a0)
 	move.w	#0,y_pos(a0)
-	move.b	#AniIDTailsAni_Fly,anim(a0)
 	rts
 ; ---------------------------------------------------------------------------
 ; loc_1BBC8:
 TailsCPU_FlyingOnscreen:
+	tst.b	(Water_flag).w
+	beq.s	+
+	move.w  y_pos(a0),d0
+	move.b	#AniIDTailsAni_Fly,anim(a0)
+	cmp.w 	(Water_Level_1).w,d0
+	ble.s	+
+	move.b	#AniIDTailsAni_Swim,anim(a0)
++
 	move.w	#0,(Tails_respawn_counter).w
 ; loc_1BBCE:
 TailsCPU_Flying_Part2:
@@ -298,14 +305,14 @@ TailsCPU_Flying_Part2:
 	sub.b	d2,d3
 	move.w	(a2,d3.w),(Tails_CPU_target_x).w
 	move.w	2(a2,d3.w),(Tails_CPU_target_y).w
-	tst.b	(Water_flag).w
-	beq.s	+
-	move.w	(Water_Level_1).w,d0
-	subi.w	#$10,d0
-	cmp.w	(Tails_CPU_target_y).w,d0
-	bge.s	+
-	move.w	d0,(Tails_CPU_target_y).w
-+
+	; tst.b	(Water_flag).w
+	; beq.s	+
+	; move.w	(Water_Level_1).w,d0
+	; subi.w	#$10,d0
+	; cmp.w	(Tails_CPU_target_y).w,d0
+	; bge.s	+
+	; move.w	d0,(Tails_CPU_target_y).w
+; +
 	move.w	x_pos(a0),d0
 	sub.w	(Tails_CPU_target_x).w,d0
 	beq.s	loc_1BC54
@@ -355,6 +362,8 @@ loc_1BC64:
 loc_1BC68:
 	lea	(Sonic_Stat_Record_Buf).w,a2
 	move.b	2(a2,d3.w),d2
+	
+	; HJW: Hack to allow underwater respawn
 	tst.b	(Water_flag).w
 	beq.s	+
 	move.w  y_pos(a0),d3
@@ -380,6 +389,8 @@ loc_1BC68:
 	move.w	#0,inertia(a0)
 	move.b	#2,status(a0)
 	move.w	#0,move_lock(a0)
+	move.b	#0,double_jump_flag(a0)
+	move.b	#0,double_jump_property(a0)	
 	andi.w	#drawing_mask,art_tile(a0)
 	tst.b	art_tile(a1)
 	bpl.s	+
