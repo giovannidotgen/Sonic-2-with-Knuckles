@@ -18,7 +18,7 @@
                     ],
                     "art": {
                         "path": "art\\nemesis\\Knuckles text patterns from special stage.bin",
-                        "compression": "Nemesis",
+                        "compression": "Uncompressed",
                         "offset": 0
                     },
                     "mappings": {

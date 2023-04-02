@@ -841,14 +841,14 @@ loc_14892:
 
 
 Tails_Set_Flying_Animation:
-	;	btst	#6,status(a0)
-	;	bne.w	Tails_FlyAnim_Underwater
+		btst	#6,status(a0)
+		bne.w	Tails_FlyAnim_Underwater
 
 Tails_FlyAnim_Tired:
-	;	cmpi.b	#1,double_jump_property(a0) ; Is tails tired?
-	;	bne.s	Tails_FlyAnim_NotTired ; If not, branch
+		cmpi.b	#1,double_jump_property(a0) ; Is tails tired?
+		bne.s	Tails_FlyAnim_NotTired ; If not, branch
 		
-	;	move.b	#AniIDTailsAni_FlyTired,anim(a0)
+		move.b	#AniIDTailsAni_FlyTired,anim(a0)
 	;	tst.b	(Flying_carrying_Sonic_flag).w
 	;	beq.s	+
 	;	move.b	#AniIDTailsAni_FlyCarryTired,anim(a0)
@@ -864,7 +864,7 @@ Tails_FlyAnim_Tired:
 
 ;		sfx		sfx_FlyTired
 
-;+		rts
++		rts
 ; ---------------------------------------------------------------------------
 
 Tails_FlyAnim_NotTired:
@@ -893,23 +893,23 @@ Tails_FlyAnim_NotTired:
 ; ---------------------------------------------------------------------------
 
 Tails_FlyAnim_Underwater:
-;		move.b	#AniIDTailsAni_Swim,anim(a0)
-;		tst.w	y_vel(a0)
-;		bpl.s	loc_1491E
-;		move.b	#AniIDTailsAni_SwimFast,anim(a0)
+		move.b	#AniIDTailsAni_Swim,anim(a0)
+		tst.w	y_vel(a0)
+		bpl.s	loc_1491E
+		move.b	#AniIDTailsAni_SwimFast,anim(a0)
 
-;loc_1491E:
+loc_1491E:
 ;		tst.b	(Flying_carrying_Sonic_flag).w
 ;		beq.s	loc_14926
 ;		move.b	#AniIDTailsAni_SwimCarry,anim(a0)
 
-;loc_14926:
-;		cmpi.b	#1,double_jump_property(a0)
-;		bne.s	loc_1492E
-;		move.b	#AniIDTailsAni_SwimTired,anim(a0)
+loc_14926:
+		cmpi.b	#1,double_jump_property(a0)
+		bne.s	loc_1492E
+		move.b	#AniIDTailsAni_SwimTired,anim(a0)
 
-;loc_1492E:
-;		rts
+loc_1492E:
+		rts
 ; End of function Tails_Set_Flying_Animation
 
 ; ===========================================================================
@@ -1482,7 +1482,11 @@ Tails_ChgJumpDir:
 	neg.w	d1
 	cmp.w	d1,d0	; compare new speed with top speed
 	bgt.s	+	; if new speed is less than the maximum, branch
+	add.w	d5,d0		; +++ remove this frame's acceleration change
+	cmp.w	d1,d0		; +++ compare speed with top speed
+	ble.s	+	; +++ if speed was already greater than the maximum, branch		
 	move.w	d1,d0	; limit speed in air going left, even if Tails was already going faster (speed limit/cap)
+
 +
 	btst	#button_right,(Ctrl_2_Held_Logical).w
 	beq.s	+	; if not holding right, branch
@@ -1491,6 +1495,9 @@ Tails_ChgJumpDir:
 	add.w	d5,d0	; accelerate right in the air
 	cmp.w	d6,d0	; compare new speed with top speed
 	blt.s	+	; if new speed is less than the maximum, branch
+	sub.w	d5,d0		; +++ remove this frame's acceleration change
+	cmp.w	d6,d0		; +++ compare speed with top speed
+	bge.s	+	; +++ if speed was already greater than the maximum, branch
 	move.w	d6,d0	; limit speed in air going right, even if Tails was already going faster (speed limit/cap)
 ; Obj02_JumpMove:
 +	move.w	d0,x_vel(a0)
@@ -2847,6 +2854,15 @@ TailsAniData:		offsetTable
 			offsetTableEntry.w TailsAni_Dummy5	; 30 ; $1E
 TailsAni_HaulAss_ptr:	offsetTableEntry.w TailsAni_HaulAss	; 31 ; $1F
 TailsAni_Fly_ptr:	offsetTableEntry.w TailsAni_Fly		; 32 ; $20
+TailsAni_FlyTired_ptr:	offsetTableEntry.w TailsAni_FlyTired
+TailsAni_FlyCarry_ptr:	offsetTableEntry.w TailsAni_FlyCarry
+TailsAni_FlyCarryUp_ptr:	offsetTableEntry.w TailsAni_FlyCarryUp
+TailsAni_FlyCarryTired_ptr:	offsetTableEntry.w TailsAni_FlyCarryTired
+TailsAni_Swim_ptr:			offsetTableEntry.w TailsAni_Swim
+TailsAni_SwimFast_ptr:			offsetTableEntry.w TailsAni_SwimFast
+TailsAni_SwimTired_ptr:			offsetTableEntry.w TailsAni_SwimTired
+TailsAni_SwimCarry_ptr:			offsetTableEntry.w TailsAni_SwimCarry
+TailsAni_Transform_ptr:			offsetTableEntry.w TailsAni_Transform
 
 TailsAni_Walk:	dc.b $FF,$10,$11,$12,$13,$14,$15, $E, $F,$FF
 	rev02even
@@ -2919,6 +2935,24 @@ TailsAni_HaulAss:	dc.b $FF,$32,$33,$FF
 	rev02even
 TailsAni_Fly:		dc.b   1,$5E,$5F,$FF
 	even
+TailsAni_FlyTired:		dc.b   4,$8B,$8C,$8D,$8E,$FF
+	even
+TailsAni_FlyCarry:		dc.b   1,$8F,$90,$FF
+	even
+TailsAni_FlyCarryUp:		dc.b   1,$91,$92,$FF
+	even
+TailsAni_FlyCarryTired:		dc.b   4,$93,$94,$95,$96,$FF
+	even
+TailsAni_Swim:		dc.b   4,$9A,$9B,$9C,$9D,$9E,$FF
+	even
+TailsAni_SwimFast:		dc.b   2,$9A,$9B,$9C,$9D,$9E,$FF
+	even
+TailsAni_SwimTired:		dc.b   4,$97,$98,$99,$FF
+	even
+TailsAni_SwimCarry:		dc.b   4,$9F,$A0,$FF
+	even
+TailsAni_Transform:		dc.b    2, $A1, $A1, $A2, $A3, $A2, $A3, $A2, $A3, $A2, $A3, $A2, $A3, $FD,   0
+	even	
 
 ; ===========================================================================
 

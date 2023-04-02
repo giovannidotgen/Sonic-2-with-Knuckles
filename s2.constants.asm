@@ -971,7 +971,15 @@ idstart :=	0
 
 AniIDTailsAni_HaulAss		= id(TailsAni_HaulAss_ptr)	; 31 ; $1F
 AniIDTailsAni_Fly		= id(TailsAni_Fly_ptr)		; 32 ; $20
-
+AniIDTailsAni_FlyTired		= id(TailsAni_FlyTired_ptr)
+AniIDTailsAni_FlyCarry		= id(TailsAni_FlyCarry_ptr)
+AniIDTailsAni_FlyCarryUp	= id(TailsAni_FlyCarryUp_ptr)
+AniIDTailsAni_FlyCarryTired	= id(TailsAni_FlyCarryTired_ptr)
+AniIDTailsAni_Swim			= id(TailsAni_Swim_ptr)
+AniIDTailsAni_SwimFast		= id(TailsAni_SwimFast_ptr)
+AniIDTailsAni_SwimTired		= id(TailsAni_SwimTired_ptr)
+AniIDTailsAni_SwimCarry		= id(TailsAni_SwimCarry_ptr)
+AniIDTailsAni_Transform		= id(TailsAni_Transform_ptr)
 
 ; Other sizes
 palette_line_size =	$10*2	; 16 word entries
