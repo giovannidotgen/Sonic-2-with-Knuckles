@@ -43722,8 +43722,15 @@ Obj84_MainX:
 	cmp.w	d3,d4
 	bhs.s	return_21284
 	btst	#0,render_flags(a0)
-	bne.s	+
+	bne.s	++
 	move.b	#1,pinball_mode(a1) ; enable must-roll "pinball mode"
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	move.b	#AniIDSonAni_Roll,anim(a3)
++	
 	bra.s	loc_212C4
 ; ---------------------------------------------------------------------------
 +	move.b	#0,pinball_mode(a1) ; disable pinball mode
@@ -43747,8 +43754,15 @@ Obj84_MainX_Alt:
 	cmp.w	d3,d4
 	bhs.s	return_21284
 	btst	#0,render_flags(a0)
+	beq.s	++
+	move.b	#1,pinball_mode(a1) ; enable must-roll "pinball mode"
+	tst.b	(Flying_carrying_Sonic_flag).w
 	beq.s	+
-	move.b	#1,pinball_mode(a1)
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	move.b	#AniIDSonAni_Roll,anim(a3)
++	
 	bra.s	loc_212C4
 ; ---------------------------------------------------------------------------
 +	move.b	#0,pinball_mode(a1)
@@ -43796,9 +43810,15 @@ Obj84_MainY:
 	blo.s	return_21350
 	cmp.w	d3,d4
 	bhs.s	return_21350
-	btst	#0,render_flags(a0)
-	bne.s	+
-	move.b	#1,pinball_mode(a1)
+	bne.s	++
+	move.b	#1,pinball_mode(a1) ; enable must-roll "pinball mode"
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	move.b	#AniIDSonAni_Roll,anim(a3)
++	
 	bra.w	loc_212C4
 ; ---------------------------------------------------------------------------
 +	move.b	#0,pinball_mode(a1)
@@ -43822,7 +43842,15 @@ Obj84_MainY_Alt:
 	cmp.w	d3,d4
 	bhs.s	return_21350
 	btst	#0,render_flags(a0)
+	beq.s	++
+	move.b	#1,pinball_mode(a1) ; enable must-roll "pinball mode"
+	tst.b	(Flying_carrying_Sonic_flag).w
 	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	move.b	#AniIDSonAni_Roll,anim(a3)
++	
 	move.b	#1,pinball_mode(a1)
 	bra.w	loc_212C4
 ; ---------------------------------------------------------------------------
