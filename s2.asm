@@ -44250,19 +44250,12 @@ Obj06_Cylinder:
 +
 	btst	d6,status(a0)
 	bne.w	loc_2188C
-	tst.b	(Flying_carrying_Sonic_flag).w
-	beq.s	+
-	lea		(MainCharacter).w,a3
-	clr.b	obj_control(a3)
-	bset	#1,status(a3)
-	clr.b	(Flying_carrying_Sonic_flag).w		
-+			
 	move.w	x_pos(a1),d0
 	sub.w	x_pos(a0),d0
 	cmpi.w	#-$C0,d0
 	blt.s	return_2188A
 	cmpi.w	#$C0,d0
-	bge.s	return_2188A
+	bge.s	return_2188A			
 	move.w	y_pos(a0),d0
 	addi.w	#$3C,d0
 	move.w	y_pos(a1),d2
@@ -44276,6 +44269,13 @@ Obj06_Cylinder:
 	blo.s	return_2188A
 	cmpi.b	#6,routine(a1)
 	bhs.s	return_2188A
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++			
 	add.w	d0,d2
 	addq.w	#3,d2
 	move.w	d2,y_pos(a1)
@@ -44302,6 +44302,13 @@ loc_2188C:
 	blo.s	loc_218E0
 
 loc_218A8:
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++				
 	bclr	#3,status(a1)
 	bclr	d6,status(a0)
 	move.b	#0,flips_remaining(a1)
