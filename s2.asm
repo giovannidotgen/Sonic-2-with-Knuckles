@@ -48193,11 +48193,20 @@ loc_24FAA:
 	bne.s	loc_24FC2
 	cmpi.w	#4,(Tails_CPU_routine).w ; TailsCPU_Flying
 	beq.w	return_25034
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++		
 
 loc_24FC2:
-	addq.b	#2,(a4)
+	addq.b	#2,(a4)	
 	move.b	#$81,obj_control(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
 	move.w	#$800,inertia(a1)
 	tst.b	subtype(a0)
 	beq.s	loc_24FF0
@@ -48234,9 +48243,11 @@ return_25034:
 ; ===========================================================================
 
 loc_25036:
+	btst	#0,obj_control(a1)
+	beq.s	+
 	tst.b	render_flags(a1)
 	bmi.s	Obj3D_MoveCharacter
-	move.b	#0,obj_control(a1)
++	move.b	#0,obj_control(a1)
 	bset	#1,status(a1)
 	bclr	#3,status(a1)
 	move.b	#0,(a4)
@@ -48426,6 +48437,13 @@ loc_252F0:
 	bhs.w	return_253C4
 	tst.w	(Debug_placement_mode).w
 	bne.w	return_253C4
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++		
 	btst	#3,status(a1)
 	beq.s	+
 	moveq	#0,d0
@@ -48530,9 +48548,11 @@ word_25464:
 ; ===========================================================================
 
 loc_25474:
+	btst	#0,obj_control(a1)
+	beq.s	+
 	tst.b	render_flags(a1)
 	bmi.s	loc_25492
-	move.b	#0,obj_control(a1)
++	move.b	#0,obj_control(a1)
 	bset	#1,status(a1)
 	bclr	#3,status(a1)
 	move.b	#0,(a4)
@@ -53967,6 +53987,7 @@ Obj7F_Action:
 	move.b	#$3C,2(a2)
 +
 	move.w	#-$300,y_vel(a1)
+	move.b	#AniIDSonAni_Roll,anim(a1)
 	move.b	subtype(a0),d0
 	andi.w	#$F,d0
 	lea	(ButtonVine_Trigger).w,a3
@@ -53997,11 +54018,11 @@ loc_29890:
 	cmpi.w	#$10,d1
 	bhs.w	return_29936
 	tst.b	obj_control(a1)
-	bmi.s	return_29936
+	bmi.w	return_29936
 	cmpi.b	#4,routine(a1)
-	bhs.s	return_29936
+	bhs.w	return_29936
 	tst.w	(Debug_placement_mode).w
-	bne.s	return_29936
+	bne.w	return_29936
 	clr.w	x_vel(a1)
 	clr.w	y_vel(a1)
 	clr.w	inertia(a1)
@@ -54009,6 +54030,15 @@ loc_29890:
 	move.w	y_pos(a0),y_pos(a1)
 	addi.w	#$30,y_pos(a1)
 	move.b	#AniIDSonAni_Hang2,anim(a1)
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)	
+	clr.b	(Flying_carrying_Sonic_flag).w
++	
 	move.b	#1,obj_control(a1)
 	move.b	#1,(a2)
 	move.b	subtype(a0),d0
@@ -54191,6 +54221,7 @@ Obj80_Action:
 	move.w	#$200,x_vel(a1)
 +
 	move.w	#-$380,y_vel(a1)
+	move.b	#AniIDSonAni_Roll,anim(a1)
 	bset	#1,status(a1)
 	tst.b	objoff_34(a0)
 	beq.s	+	; rts
@@ -54245,6 +54276,15 @@ loc_29B5E:
 	move.w	y_pos(a0),y_pos(a1)
 	addi.w	#$94,y_pos(a1)
 	move.b	#AniIDSonAni_Hang2,anim(a1)
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)	
+	clr.b	(Flying_carrying_Sonic_flag).w
++	
 	move.b	#1,obj_control(a1)
 	move.b	#1,(a2)
 	tst.b	objoff_34(a0)
@@ -57921,6 +57961,7 @@ ObjD9_CheckCharacter:
 	beq.s	+
 	move.b	#$3C,2(a2)
 +
+	move.b	#AniIDSonAni_Roll,anim(a1)
 	move.w	#-$300,y_vel(a1)
 	bra.w	ObjD9_CheckCharacter_End
 ; ===========================================================================
@@ -57951,6 +57992,14 @@ loc_2C9A0:
 	clr.w	inertia(a1)
 	move.w	y_pos(a0),y_pos(a1)
 	move.b	#AniIDSonAni_Hang2,anim(a1)
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
 	move.b	#1,obj_control(a1)
 	move.b	#1,(a2)
 ; return_2CA08:
