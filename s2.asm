@@ -44250,6 +44250,13 @@ Obj06_Cylinder:
 +
 	btst	d6,status(a0)
 	bne.w	loc_2188C
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++			
 	move.w	x_pos(a1),d0
 	sub.w	x_pos(a0),d0
 	cmpi.w	#-$C0,d0
@@ -50512,6 +50519,9 @@ Obj66_Main:
 	bne.s	loc_26FF6
 	btst	#1,status(a1)
 	beq.s	loc_26FF6
+	bclr	#4,status(a1)	; GIO: clear roll jump lock flag
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
 	move.b	status(a0),d1
 	move.w	x_pos(a0),d0
 	sub.w	x_pos(a1),d0
@@ -50531,7 +50541,17 @@ loc_26FF6:
 	bne.s	loc_2702C
 	btst	#1,status(a1)
 	beq.s	loc_2702C
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++		
 	move.b	status(a0),d1
+	bclr	#4,status(a1)	; GIO: clear roll jump lock flag+
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)	
 	move.w	x_pos(a0),d0
 	sub.w	x_pos(a1),d0
 	bcs.s	+
