@@ -48486,6 +48486,8 @@ loc_252F0:
 	bset	#1,status(a3)
 	clr.b	(Flying_carrying_Sonic_flag).w		
 +		
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
 	btst	#3,status(a1)
 	beq.s	+
 	moveq	#0,d0
@@ -50529,6 +50531,7 @@ Obj66_Main:
 	bclr	#4,status(a1)	; GIO: clear roll jump lock flag
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
+	clr.b	jumping(a1)		; GIO: while this deviates from the faithful behavior, this is the only way to fix tails' flight error
 	move.b	status(a0),d1
 	move.w	x_pos(a0),d0
 	sub.w	x_pos(a1),d0
@@ -50764,6 +50767,8 @@ loc_271D0:
 	move.w	x_pos(a0),x_pos(a1)
 	move.w	y_pos(a0),y_pos(a1)
 	clr.b	1(a4)
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
 	move.w	#SndID_Roll,d0
 	jsr	(PlaySound).l
 	move.w	#$100,anim(a0)
@@ -55397,6 +55402,9 @@ loc_2A990:
 	bne.s	+
 	clr.b	$21(a1)
 +
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
+	clr.b	jumping(a1)
 	addi.w	#$60,d1
 	neg.w	d1
 	asr.w	#4,d1
@@ -58055,6 +58063,7 @@ loc_2C9A0:
 	clr.b	obj_control(a3)
 	bset	#1,status(a3)
 	clr.b	(Flying_carrying_Sonic_flag).w		
++
 	move.b	#1,obj_control(a1)
 	move.b	#1,(a2)
 ; return_2CA08:
@@ -70713,6 +70722,8 @@ Ani_obj8C:	offsetTable
 ; ------------------------------------------------------------------------
 Obj8C_MapUnc_36A4E:	BINCLUDE "mappings/sprite/obj8C.bin"
 ; ===========================================================================
+JmpTo27_ObjectMove:
+	jmp		ObjectMove
 ; ----------------------------------------------------------------------------
 ; Object 8D - Grounder in wall, from ARZ
 ; ----------------------------------------------------------------------------
@@ -70793,7 +70804,7 @@ Obj8D_Directions:
 ; ===========================================================================
 
 loc_36B34:
-	jsrto	ObjectMove, JmpTo26_ObjectMove
+	jsrto	ObjectMove, JmpTo27_ObjectMove
 	jsr	(ObjCheckFloorDist).l
 	cmpi.w	#-1,d1
 	blt.s	loc_36B5C
@@ -74142,6 +74153,15 @@ ObjA7_GrabCharacter:
 	; flag, like this:
 	clr.b spindash_flag(a1)
     endif
+	clr.b double_jump_flag(a1)
+	clr.b double_jump_property(a1)
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++		
 	move.b	#1,mapping_frame(a0)
 	tst.w	y_vel(a0)
 	bmi.s	loc_38F2A
@@ -77179,6 +77199,9 @@ ObjB5_CheckPlayer:
 	clr.b	$21(a1)
 
 ObjB5_NotKnuckles:
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
+	clr.b	jumping(a1)
 	addi.w	#$60,d1
 	neg.w	d1
 	asr.w	#4,d1
