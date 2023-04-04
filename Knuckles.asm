@@ -1778,6 +1778,8 @@ Knuckles_CheckGlide:				  ; ...
 		bne.w	return_3165D2
 		tst.b	$21(a0)
 		bne.w	return_3165D2
+		tst.b	(WindTunnel_flag).w
+		bne.w	return_3165D2		
 		move.b	($FFFFF603).w,d0
 		and.b	#$70,d0
 		beq.w	return_3165D2

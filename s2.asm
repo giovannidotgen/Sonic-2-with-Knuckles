@@ -5342,6 +5342,9 @@ WindTunnel:
 	move.w	#0,y_vel(a1)
 	move.b	#AniIDSonAni_Float2,anim(a1)
 	bset	#1,status(a1)	; set "in-air" bit
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
+	clr.b	jumping(a1)
 	cmpi.b	#ObjID_Knuckles,id(a1)
 	bne.s	+
 	clr.b	$21(a1)

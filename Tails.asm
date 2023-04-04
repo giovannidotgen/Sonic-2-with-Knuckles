@@ -1983,6 +1983,8 @@ Tails_Test_For_Flight:
 	; Disable all moves in 2P
 	tst.w	(Two_player_mode).w
 	bne.s	+
+	tst.b	(WindTunnel_flag).w
+	bne.s	+
 	tst.b	double_jump_flag(a0) ; Is tails already flying?
 	beq.w	Tails_Test_For_Flight_2P ; If not, branch
 +
