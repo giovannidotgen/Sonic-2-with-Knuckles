@@ -2612,7 +2612,7 @@ Tails_ResetOnFloor_Part3:
 	move.b	#0,double_jump_flag(a0)
 	move.b	#0,double_jump_property(a0)	
 	cmpi.b	#AniIDSonAni_Hang2,anim(a0)
-	beq.s	Tails_ResetAnim
+	beq.w	Tails_ResetAnim
 
 Tails_ResetAnim:	
 	move.b	#AniIDSonAni_Walk,anim(a0)
