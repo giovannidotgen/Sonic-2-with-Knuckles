@@ -80,6 +80,12 @@ x_pixel =		x_pos ; and 1+x_pos ; x coordinate for objects using screen-space coo
 parent =		$3E ; and $3F ; address of object that owns or spawned this one, if applicable
 ; TODO: $2C is often parent instead (see LoadChildObject); consider defining parent2 = $2C and changing some objoff_2Cs to that
 ; ---------------------------------------------------------------------------
+; conventions followed by the Insta-Shield
+vram_art =			$2A
+Art_Address =		$2C
+DPLC_Address =		$30
+LastLoadedDPLC =	$34
+; ---------------------------------------------------------------------------
 ; conventions followed by some/most bosses:
 boss_subtype		= $A
 boss_invulnerable_time	= $14
@@ -741,6 +747,8 @@ ObjID_EndingSeqBird =		id(ObjPtr_EndingSeqBird)	; CD
 ObjID_EndingSeqSonic =		id(ObjPtr_EndingSeqSonic)	; CE
 ObjID_EndingSeqTails =		id(ObjPtr_EndingSeqTails)	; CE
 ObjID_TornadoHelixes =		id(ObjPtr_TornadoHelixes)	; CF
+ObjID_InstaShield =			id(ObjPtr_InstaShield)		; D0
+ObjID_Insta_Shield_Main =	id(ObjPtr_InstaShieldMain)	; D1
 ObjID_CNZRectBlocks =		id(ObjPtr_CNZRectBlocks)	; D2
 ObjID_BombPrize =		id(ObjPtr_BombPrize)		; D3
 ObjID_CNZBigBlock =		id(ObjPtr_CNZBigBlock)		; D4
@@ -1077,6 +1085,7 @@ Sonic_Dust:			; Sonic's spin dash dust
 				ds.b	object_size
 Tails_Dust:			; Tails' spin dash dust
 				ds.b	object_size
+Shield:
 Sonic_Shield:
 				ds.b	object_size
 Tails_Shield:
@@ -2514,6 +2523,7 @@ ArtTile_ArtNem_Checkpoint             = $047C
 ArtTile_ArtNem_TailsDust              = $048C
 ArtTile_ArtNem_SonicDust              = $049C
 ArtTile_ArtNem_Numbers                = $04AC
+ArtTile_Shield						  = $04BE
 ArtTile_ArtNem_Shield                 = $04BE
 ArtTile_ArtNem_Invincible_stars       = $04DE
 ArtTile_ArtNem_Powerups               = $0680
