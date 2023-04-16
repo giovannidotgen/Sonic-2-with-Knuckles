@@ -79979,6 +79979,25 @@ JmpTo20_SingleObjLoad ; JmpTo
 TouchResponse:
 	nop
 	jsrto	Touch_Rings, JmpTo_Touch_Rings
+	cmpi.b	#ObjID_Sonic,(MainCharacter+id).w	; Are we playing as Sonic?
+	bne.s	.noinstashield    ; if not, branch
+	tst.b	double_jump_flag(a0)        ; are you performing a insta-attack?
+	beq.w	.noinstashield    ; if not, branch	
+	; By this point, we're focussing purely on the Insta-Shield
+	bset	#status_sec_isInvincible,status_secondary(a0)	; give invincibility status
+	move.w	x_pos(a0),d2		; Get player's x_pos
+	move.w	y_pos(a0),d3		; Get player's y_pos
+	subi.w	#$18,d2				; Subtract width of Insta-Shield
+	subi.w	#$18,d3				; Subtract height of Insta-Shield      
+	move.w	#$30,d4				; Player's width
+	move.w	#$30,d5				; Player's height
+	bsr.w	Touch_Process
+	bclr	#status_sec_isInvincible,status_secondary(a0)	; clear invincibility status 
+	moveq	#0,d0
+	rts	
+; ---------------------------------------------------------------------------
+; Normal TouchResponse comes after this	
+.noinstashield:	
 	; Bumpers in CNZ
 	cmpi.b	#casino_night_zone,(Current_Zone).w
 	bne.s	+
@@ -80008,6 +80027,7 @@ TouchResponse:
 Touch_NoDuck:
 	move.w	#$10,d4
 	add.w	d5,d5
+Touch_Process:	
 	lea	(Dynamic_Object_RAM).w,a1
 	move.w	#(Dynamic_Object_RAM_End-Dynamic_Object_RAM)/object_size-1,d6
 ; loc_3F5A0:
