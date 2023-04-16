@@ -4664,6 +4664,7 @@ Level_NoTails:
 
 ; loc_3F48:
 Level_ClrRam:
+	clr.b	(Super_Sonic_flag).w
 	clearRAM Sprite_Table_Input,Sprite_Table_Input_End
 	clearRAM Object_RAM,LevelOnly_Object_RAM_End ; clear object RAM and level-only object RAM
 	clearRAM MiscLevelVariables,MiscLevelVariables_End
@@ -25819,20 +25820,26 @@ super_shoes:
 	addq.w	#1,(a2)
 	bset	#status_sec_hasSpeedShoes,status_secondary(a1)	; give super sneakers status
 	move.w	#$4B0,speedshoes_time(a1)
-	cmpa.w	#MainCharacter,a1	; did the main character break the monitor?
-	bne.s	super_shoes_Tails	; if not, branch
-	cmpi.w	#2,(Player_mode).w	; is player using Tails?
-	beq.s	super_shoes_Tails	; if yes, branch
-	move.w	#$C00,(Sonic_top_speed).w	; set stats
-	move.w	#$18,(Sonic_acceleration).w
-	move.w	#$80,(Sonic_deceleration).w
+	movem.l	a0-a2,-(sp)		; Move a0, a1 and a2 onto stack
+	lea	(MainCharacter).w,a0	; Load main character to a0
+	cmpa.w	a0,a1			; Did the main character break the monitor?
+	bne.s	loc_12A10		; If not, branch
+	cmpi.w	#2,(Player_mode).w	; Is player using Tails?
+	beq.s	loc_12A10		; If yes, branch
+	lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
+	jsr	ApplySpeedSettings	; Fetch Speed settings
+	movem.l	(sp)+,a0-a2		; Move a0, a1 and a2 from stack
 	bra.s	+
 ; ---------------------------------------------------------------------------
-;loc_12A10:
+loc_12A10:
 super_shoes_Tails:
-	move.w	#$C00,(Tails_top_speed).w
-	move.w	#$18,(Tails_acceleration).w
-	move.w	#$80,(Tails_deceleration).w
+	tst.w	(Two_player_mode).w	; Is this two-player mode?
+	beq.s	.nottwoplayer		; If not, branch
+	lea	(Sidekick).w,a0		; If so, Tails isn't the main character; use correct RAM
+.nottwoplayer:
+	lea	(Tails_top_speed).w,a2	; Load Tails_top_speed into a2
+	jsr	ApplySpeedSettings	; Fetch Speed settings
+	movem.l	(sp)+,a0-a2		; Move a0, a1 and a2 from stack
 +
 	move.w	#MusID_SpeedUp,d0
 	jmp	(PlayMusic).l	; Speed up tempo

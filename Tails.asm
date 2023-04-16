@@ -34,9 +34,8 @@ Obj02_Init:
 	move.b	#2,priority(a0)
 	move.b	#$18,width_pixels(a0)
 	move.b	#$84,render_flags(a0) ; render_flags(Tails) = $80 | initial render_flags(Sonic)
-	move.w	#$600,(Tails_top_speed).w	; set Tails' top speed
-	move.w	#$C,(Tails_acceleration).w	; set Tails' acceleration
-	move.w	#$80,(Tails_deceleration).w	; set Tails' deceleration
+	lea	(Tails_top_speed).w,a2	; Load Tails_top_speed into a2
+	bsr.w	ApplySpeedSettings	; Fetch Speed settings
 	cmpi.w	#2,(Player_mode).w
 	bne.s	Obj02_Init_2Pmode
 	tst.b	(Last_star_pole_hit).w
@@ -178,9 +177,8 @@ Obj02_ChkShoes:		; Checks if Speed Shoes have expired and disables them if they 
 	beq.s	Obj02_ExitChk
 	subq.w	#1,speedshoes_time(a0)
 	bne.s	Obj02_ExitChk
-	move.w	#$600,(Tails_top_speed).w
-	move.w	#$C,(Tails_acceleration).w
-	move.w	#$80,(Tails_deceleration).w
+	lea	(Tails_top_speed).w,a2	; Load Tails_top_speed into a2
+	bsr.w	ApplySpeedSettings	; Fetch Speed settings
 ; Obj02_RmvSpeed:
 	bclr	#status_sec_hasSpeedShoes,status_secondary(a0)
 	move.w	#MusID_SlowDown,d0	; Slow down tempo
@@ -926,9 +924,8 @@ Obj02_InWater:
 	move.b	#ObjID_SmallBubbles,(Tails_BreathingBubbles+id).w ; load Obj0A (tail's breathing bubbles) at $FFFFD0C0
 	move.b	#$81,(Tails_BreathingBubbles+subtype).w
 	move.l	a0,(Tails_BreathingBubbles+obj0a_character).w ; set its parent to be this (obj0A uses $3C instead of $3E for some reason)
-	move.w	#$300,(Tails_top_speed).w
-	move.w	#6,(Tails_acceleration).w
-	move.w	#$40,(Tails_deceleration).w
+	lea	(Tails_top_speed).w,a2	; Load Tails_top_speed into a2
+	bsr.w	ApplySpeedSettings	; Fetch Speed settings
 	asr	x_vel(a0)
 	asr	y_vel(a0)
 	asr	y_vel(a0)
@@ -944,9 +941,8 @@ Obj02_OutWater:
 
 	movea.l	a0,a1
 	bsr.w	ResumeMusic
-	move.w	#$600,(Tails_top_speed).w
-	move.w	#$C,(Tails_acceleration).w
-	move.w	#$80,(Tails_deceleration).w
+	lea	(Tails_top_speed).w,a2	; Load Tails_top_speed into a2
+	bsr.w	ApplySpeedSettings	; Fetch Speed settings
 
 	cmpi.b	#4,routine(a0)	; is Tails falling back from getting hurt?
 	beq.s	+		; if yes, branch
