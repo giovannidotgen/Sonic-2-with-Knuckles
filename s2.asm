@@ -80003,28 +80003,51 @@ JmpTo20_SingleObjLoad ; JmpTo
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 ; loc_3F554:
+IsInstaShielding:
+	cmpi.b	#ObjID_Sonic,id(a0)			; Is the player Sonic?
+	bne.s	+			; If not, branch
+	btst	#status_sec_hasShield,status_secondary(a0)	; Got a shield?
+	bne.s	+ ; no insta for you then :(
+	btst	#status_sec_isInvincible,status_secondary(a0)	; Got invincibility?
+	bne.s	+
+	; By this point, we're focussing purely on the Insta-Shield
+	cmpi.b	#1,(Shield+anim).w			; Is the Insta-Shield currently in its 'attacking' mode?
+	bne.s	+			; If not, branch
+	moveq	#1,d0
+	rts
++
+	moveq	#0,d0
+	rts
+
+; loc_3F554:
 TouchResponse:
 	nop
-	jsrto	Touch_Rings, JmpTo_Touch_Rings
-	cmpi.b	#ObjID_Sonic,(MainCharacter+id).w	; Are we playing as Sonic?
-	bne.s	.noinstashield    ; if not, branch
-	tst.b	double_jump_flag(a0)        ; are you performing a insta-attack?
-	beq.w	.noinstashield    ; if not, branch	
-	; By this point, we're focussing purely on the Insta-Shield
-	bset	#status_sec_isInvincible,status_secondary(a0)	; give invincibility status
-	move.w	x_pos(a0),d2		; Get player's x_pos
-	move.w	y_pos(a0),d3		; Get player's y_pos
-	subi.w	#$18,d2				; Subtract width of Insta-Shield
-	subi.w	#$18,d3				; Subtract height of Insta-Shield      
-	move.w	#$30,d4				; Player's width
-	move.w	#$30,d5				; Player's height
-	bsr.w	Touch_Process
-	bclr	#status_sec_isInvincible,status_secondary(a0)	; clear invincibility status 
+	jsrto	(Touch_Rings).l, JmpTo_Touch_Rings
+
+	bsr.s	IsInstaShielding
+	tst.b	d0
+	beq.s	Touch_NoInstaShield
+
+	move.b	status_secondary(a0),d0			; Get status_secondary...
+	move.w	d0,-(sp)				; ...and save it
+	bset	#status_sec_isInvincible,status_secondary(a0)	; Make the player invincible
+	move.w	x_pos(a0),d2				; Get player's x_pos
+	move.w	y_pos(a0),d3				; Get player's y_pos
+	subi.w	#$18,d2					; Subtract width of Insta-Shield
+	subi.w	#$18,d3					; Subtract height of Insta-Shield
+	move.w	#$30,d4					; Player's width
+	move.w	#$30,d5					; Player's height
+	bsr.s	Touch_Process
+	move.w	(sp)+,d0				; Get the backed-up status_secondary
+	btst	#status_sec_isInvincible,d0			; Was the player already invincible (wait, what? An earlier check ensures that this can't happen [HJW: it can now ;)])
+	bne.s	.alreadyinvincible			; If so, branch
+	bclr	#status_sec_isInvincible,status_secondary(a0)	; Make the player vulnerable again
+
+  .alreadyinvincible:
 	moveq	#0,d0
-	rts	
-; ---------------------------------------------------------------------------
-; Normal TouchResponse comes after this	
-.noinstashield:	
+	rts
+
+Touch_NoInstaShield:
 	; Bumpers in CNZ
 	cmpi.b	#casino_night_zone,(Current_Zone).w
 	bne.s	+
@@ -84341,7 +84364,7 @@ PlrList_Std2: plrlistheader
 	plreq ArtTile_ArtNem_Checkpoint, ArtNem_Checkpoint
 	plreq ArtTile_ArtNem_Powerups, ArtNem_Powerups
 ;	plreq ArtTile_ArtNem_Shield, ArtNem_Shield
-;	plreq ArtTile_ArtNem_Invincible_stars, ArtNem_Invincible_stars
+	plreq ArtTile_ArtNem_Invincible_stars, ArtNem_Invincible_stars
 PlrList_Std2_End
 ;---------------------------------------------------------------------------------------
 ; PATTERN LOAD REQUEST LIST
@@ -84965,7 +84988,7 @@ PlrList_Std2Knuckles: plrlistheader
 	plreq ArtTile_ArtNem_Checkpoint, ArtNem_Checkpoint
 	plreq ArtTile_ArtNem_Powerups, ArtNem_Powerups
 	plreq ArtTile_ArtNem_Powerups+$2C, ArtNem_MonitorIconsMod
-	plreq ArtTile_ArtNem_Shield, ArtNem_InvincibilityShield
+	plreq ArtTile_ArtNem_Shield, ArtNem_Invincible_stars_K
 PlrList_Std2Knuckles_End
 ;---------------------------------------------------------------------------------------
 ; Pattern load queue
@@ -85636,6 +85659,11 @@ ArtUnc_InstaShield:	BINCLUDE	"art/uncompressed/Insta-Shield.bin"
 ; Invincibility stars		; ArtNem_71F14:
 ArtNem_Invincible_stars:	BINCLUDE	"art/nemesis/Invincibility stars.bin"
 	even
+;--------------------------------------------------------------------------------------
+; Nemesis compressed art (34 blocks)
+; Invincibility stars		; ArtNem_71F14:
+ArtNem_Invincible_stars_K:	BINCLUDE	"art/nemesis/Invincibility stars (KiS2).bin"
+	even	
 ;--------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Splash in water and dust from skidding	; ArtUnc_71FFC:

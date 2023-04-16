@@ -416,17 +416,20 @@ Sonic_InstaShield:
 	; rts
 
 Sonic_InstaShieldCont:
+	btst	#status_sec_isInvincible,status_secondary(a0)	; is Sonic invincible?
+	bne.s	+
 	btst	#status_sec_hasShield,status_secondary(a0)	; does Sonic have an S2 shield (The Elementals were already filtered out at this point)?
-	bne.s	locret_11A14				; if yes, branch
+	bne.s	+						; if yes, branch
 	tst.b	jumping(a0)
-	beq.s	locret_11A14				; if not, branch
+	beq.s	+						; if not, branch
 	move.b	#1,(Shield+anim).w
-	bclr	#4,status(a0)
-	move.b	#1,double_jump_flag(a0)
+	move.b	#1,double_jump_flag(a0)	
 ;	sfx		sfx_InstaAttack			; play Insta-Shield sound
-	rts
 
-locret_11A14:
++
+	bclr	#4,status(a0)
+	
+locret_11A14:	
 	rts
 
 Sonic_Dropdash:
