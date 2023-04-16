@@ -36602,16 +36602,19 @@ Obj38_Main:
 	move.l	#Obj38_MapUnc_1DBE4,mappings(a0)
 	move.b	#4,render_flags(a0)
 	move.b	#1,priority(a0)
+	clr.l	mapping_frame(a0)				; clear a whole lot of graphics stuff
+	clr.w	anim_frame_duration(a0)			; clear more graphics stuff
+	bsr.w	LoadShieldGraphics
 	move.b	#$18,width_pixels(a0)
 	move.w	#make_art_tile(ArtTile_ArtNem_Shield,0,0),art_tile(a0)
 	bsr.w	Adjust2PArtPointer
 ; loc_1D92C:
 Obj38_Shield:
-	movea.w	parent(a0),a2 ; a2=character
+	movea.w	parent(a0),a2
 	btst	#status_sec_isInvincible,status_secondary(a2)
 	bne.s	return_1D976
 	btst	#status_sec_hasShield,status_secondary(a2)
-	beq.s	JmpTo7_DeleteObject
+	beq.s	Obj38_Delete
 	move.w	x_pos(a2),x_pos(a0)
 	move.w	y_pos(a2),y_pos(a0)
 	move.b	status(a2),status(a0)
@@ -36630,8 +36633,32 @@ return_1D976:
 	rts
 ; ===========================================================================
 
+Obj38_Delete:
+	cmpi.w	#MainCharacter,parent(a0)		; check if it's the main character losing the shield
+	bne.s	JmpTo7_DeleteObject				; if not, perform standard behavior
+	cmpi.b	#ObjID_Sonic,(MainCharacter).w	; check if Sonic has lost the shield
+	bne.s	JmpTo7_DeleteObject				; if not, perform standard behavior
+	jsr	(DeleteObject).l			; reset object RAM slot
+	move.b	#ObjID_InstaShield,(a0)	; replace with Insta-Shield object
+	move.w	#MainCharacter,parent(a0)	; set parent
+	rts
+
 JmpTo7_DeleteObject ; JmpTo
-	jmp	(DeleteObject).l
+	jmp	(DeleteObject).l	
+
+LoadShieldGraphics:
+	cmpi.w	#3,(Player_mode).w		; check if playing as Knuckles
+	beq.s	+						; if yes, load alternate graphics
+	dma68kToVDP ArtUnc_Shield,tiles_to_bytes(ArtTile_ArtNem_Shield),\
+	            ArtUnc_Shield_End-ArtUnc_Shield,VRAM	
+	rts
+	
++	dma68kToVDP ArtUnc_ShieldK,tiles_to_bytes(ArtTile_ArtNem_Shield),\
+	            ArtUnc_Shield_End-ArtUnc_Shield,VRAM	
+	rts			
+	
+	
+	
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
 ; Object 35 - Invincibility Stars
@@ -84313,8 +84340,8 @@ PlrList_Std1_End
 PlrList_Std2: plrlistheader
 	plreq ArtTile_ArtNem_Checkpoint, ArtNem_Checkpoint
 	plreq ArtTile_ArtNem_Powerups, ArtNem_Powerups
-	plreq ArtTile_ArtNem_Shield, ArtNem_Shield
-	plreq ArtTile_ArtNem_Invincible_stars, ArtNem_Invincible_stars
+;	plreq ArtTile_ArtNem_Shield, ArtNem_Shield
+;	plreq ArtTile_ArtNem_Invincible_stars, ArtNem_Invincible_stars
 PlrList_Std2_End
 ;---------------------------------------------------------------------------------------
 ; PATTERN LOAD REQUEST LIST
@@ -85589,11 +85616,19 @@ MapRUnc_Sonic:	BINCLUDE	"mappings/spriteDPLC/Sonic.bin"
 ;--------------------------------------------------------------------------------------
 SK_PLC_Knuckles:	include	"mappings/spriteDPLC/Knuckles.asm"
 ;--------------------------------------------------------------------------------------
-; Nemesis compressed art (32 blocks)
+; Uncompressed art
 ; Shield			; ArtNem_71D8E:
-ArtNem_Shield:	BINCLUDE	"art/nemesis/Shield.bin"
+ArtUnc_Shield:	BINCLUDE	"art/uncompressed/Shield.bin"
+ArtUnc_Shield_End:
 	even
 ;--------------------------------------------------------------------------------------
+; Uncompressed art
+; Shield (Knuckles			; ArtNem_71D8E:
+ArtUnc_ShieldK:	BINCLUDE	"art/uncompressed/Shield (KiS2).bin"
+ArtUnc_ShieldK_End:
+	even
+;--------------------------------------------------------------------------------------
+
 ArtUnc_InstaShield:	BINCLUDE	"art/uncompressed/Insta-Shield.bin"
 	even	
 ;--------------------------------------------------------------------------------------
