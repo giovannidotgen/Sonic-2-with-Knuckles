@@ -864,6 +864,7 @@ SndID_Blip =		id(SndPtr_Blip)			; CD
 SndID_RingLeft =	id(SndPtr_RingLeft)		; CE
 SndID_Signpost =	id(SndPtr_Signpost)		; CF
 SndID_CNZBossZap =	id(SndPtr_CNZBossZap)		; D0
+SndID_InstaShield = id(SndPtr_InstaShield)		; D1
 SndID_Signpost2P =	id(SndPtr_Signpost2P)		; D3
 SndID_OOZLidPop =	id(SndPtr_OOZLidPop)		; D4
 SndID_SlidingSpike =	id(SndPtr_SlidingSpike)		; D5

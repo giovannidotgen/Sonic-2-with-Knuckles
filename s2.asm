@@ -87843,7 +87843,7 @@ SndPtr_Blip:		rom_ptr_z80	Sound4D	; selection blip
 SndPtr_RingLeft:	rom_ptr_z80	Sound4E	; another ring sound (only plays in the left speaker?)
 SndPtr_Signpost:	rom_ptr_z80	Sound4F	; signpost spin sound
 SndPtr_CNZBossZap:	rom_ptr_z80	Sound50	; mosquito zapper
-			rom_ptr_z80	Sound51	; (unused)
+SndPtr_InstaShield:	rom_ptr_z80	Sound51	; Insta-Shield
 			rom_ptr_z80	Sound52	; (unused)
 SndPtr_Signpost2P:	rom_ptr_z80	Sound53
 SndPtr_OOZLidPop:	rom_ptr_z80	Sound54	; OOZ lid pop sound
@@ -87933,7 +87933,7 @@ Sound4D:	include "sound/sfx/CD - Switch.asm"
 Sound4E:	include "sound/sfx/CE - Ring Left Speaker.asm"
 Sound4F:	include "sound/sfx/CF - Signpost.asm"
 Sound50:	include "sound/sfx/D0 - CNZ Boss Zap.asm"
-Sound51:	include "sound/sfx/D1 - Unknown (Unused).asm"
+Sound51:	include "sound/sfx/D1 - Insta-Shield.asm"
 Sound52:	include "sound/sfx/D2 - Unknown (Unused).asm"
 Sound53:	include "sound/sfx/D3 - Signpost 2P.asm"
 Sound54:	include "sound/sfx/D4 - OOZ Lid Pop.asm"

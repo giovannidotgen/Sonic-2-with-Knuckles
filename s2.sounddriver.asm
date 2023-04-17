@@ -5,8 +5,8 @@
 ; RAS' work merged into SVN by Flamewing
 ; ---------------------------------------------------------------------------
 
-FixDriverBugs = 0
-OptimiseDriver = 0
+FixDriverBugs = 1
+OptimiseDriver = 1
 
 ; ---------------------------------------------------------------------------
 ; NOTES:
@@ -3604,7 +3604,7 @@ zSFXPriority:
 	db	80h,70h,70h,70h,70h,70h,70h,70h,70h,70h,68h,70h,70h,70h,60h,70h
 	db	70h,60h,70h,60h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,7Fh
 	db	6Fh,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,6Fh,70h,70h
-	db	70h,60h,60h,70h,70h,70h,70h,70h,70h,70h,60h,62h,60h,60h,60h,70h
+	db	70h,70h,60h,70h,70h,70h,70h,70h,70h,70h,60h,62h,60h,60h,60h,70h
 	db	70h,70h,70h,70h,60h,60h,60h,6Fh,70h,70h,6Fh,6Fh,70h,71h,70h,70h
 	db	6Fh,70h,70h,6Fh,6Fh
 
@@ -3619,7 +3619,7 @@ zPSG_EnvTbl:
 	dw	PSG_EV1, PSG_EV2, PSG_EV3, PSG_EV4
 	dw	PSG_EV5, PSG_EV6, PSG_EV7, PSG_EV8
 	dw	PSG_EV9, PSG_EV10, PSG_EV11, PSG_EV12
-	dw	PSG_EV13
+	dw	PSG_EV13, PSG_EV14
 
 ; byte_1043
 PSG_EV1:
@@ -3691,6 +3691,9 @@ PSG_EV12:
 ; byte_11E5
 PSG_EV13:
 	db	0Eh,0Dh,0Ch,0Bh,0Ah,9,8,7,6,5,4,3,2,1,0,80h
+	
+PSG_EV14:	db    1,   0,   0,   0,   0,   1,   1,   1,   2,   2,   2,   3,   3,   3,   3,   4
+			db    4,   4,   5,   5, 81h
 
 ;	END of zPSG_EnvTbl -------------------------------
 
