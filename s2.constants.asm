@@ -45,7 +45,6 @@ respawn_index =		$23
 subtype =		$28
 ; ---------------------------------------------------------------------------
 ; conventions specific to Sonic/Tails (Obj01, Obj02, and ObjDB):
-; note: $1F, $20, and $21 are unused and available
 ground_vel =	inertia
 inertia =		$14 ; and $15 ; directionless representation of speed... not updated in the air
 double_jump_flag =	$1F	; self explanatory

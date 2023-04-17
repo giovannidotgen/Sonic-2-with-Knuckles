@@ -13,7 +13,7 @@ Obj4C:						  ; ...
 
 Obj4C_Normal:					  ; ...
 		moveq	#0,d0
-		move.b	$24(a0),d0
+		move.b	routine(a0),d0
 		move.w	Obj4C_Index(pc,d0.w),d1
 		jmp	Obj4C_Index(pc,d1.w)
 ; End of function Obj4C
@@ -28,34 +28,34 @@ Obj4C_Index:	dc.w Obj4C_Init-Obj4C_Index	  ; 0 ;	...
 ; ---------------------------------------------------------------------------
 
 Obj4C_Init:					  ; ...
-		addq.b	#2,$24(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
-		move.l	#SK_Map_Knuckles,4(a0)	  ; SK_Map_Knuckles
-		move.b	#2,$18(a0)
-		move.b	#$18,$19(a0)
-		move.b	#4,1(a0)
+		addq.b	#2,routine(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
+		move.l	#SK_Map_Knuckles,mappings(a0)	  ; SK_Map_Knuckles
+		move.b	#2,priority(a0)
+		move.b	#$18,width_pixels(a0)
+		move.b	#4,render_flags(a0)
 		move.w	#$600,($FFFFF760).w
 		move.w	#$C,($FFFFF762).w
 		move.w	#$80,($FFFFF764).w
 		tst.b	($FFFFFE30).w
 		bne.s	Obj4C_Init_Continued
-		move.w	#$780,2(a0)
+		move.w	#$780,art_tile(a0)
 		jsr	Adjust2PArtPointer
-		move.b	#$C,$3E(a0)
-		move.b	#$D,$3F(a0)
-		move.w	8(a0),($FFFFFE32).w
-		move.w	$C(a0),($FFFFFE34).w
-		move.w	2(a0),($FFFFFE3C).w
-		move.w	$3E(a0),($FFFFFE3E).w
+		move.b	#$C,top_solid_bit(a0)
+		move.b	#$D,lrb_solid_bit(a0)
+		move.w	x_pos(a0),($FFFFFE32).w
+		move.w	y_pos(a0),($FFFFFE34).w
+		move.w	art_tile(a0),($FFFFFE3C).w
+		move.w	top_solid_bit(a0),($FFFFFE3E).w
 
 Obj4C_Init_Continued:				  ; ...
-		move.b	#0,$2C(a0)
-		move.b	#4,$2D(a0)
+		move.b	#0,flips_remaining(a0)
+		move.b	#4,flip_speed(a0)
 		move.b	#0,($FFFFFE19).w
-		move.b	#$1E,$28(a0)
-		sub.w	#$20,8(a0)
-		add.w	#4,$C(a0)
+		move.b	#$1E,air_left(a0)
+		sub.w	#$20,x_pos(a0)
+		add.w	#4,y_pos(a0)
 		move.w	#0,($FFFFEED2).w
 		move.w	#$3F,d2
 
@@ -64,8 +64,8 @@ loc_3153EC:					  ; ...
 		subq.w	#4,a1
 		move.l	#0,(a1)
 		dbf	d2,loc_3153EC
-		add.w	#$20,8(a0)
-		sub.w	#4,$C(a0)
+		add.w	#$20,x_pos(a0)
+		sub.w	#4,y_pos(a0)
 
 Obj4C_Control:					  ; ...
 		tst.w	($FFFFFFDA).w
@@ -83,15 +83,15 @@ loc_315422:					  ; ...
 		move.w	($FFFFF604).w,($FFFFF602).w
 
 loc_31542E:					  ; ...
-		btst	#0,$2A(a0)
+		btst	#0,obj_control(a0)
 		beq.s	loc_31543E
-		move.b	#0,$21(a0)
+		move.b	#0,glidemode(a0)
 		bra.s	loc_315450
 ; ---------------------------------------------------------------------------
 
 loc_31543E:					  ; ...
 		moveq	#0,d0
-		move.b	$22(a0),d0
+		move.b	status(a0),d0
 		and.w	#6,d0
 		move.w	Obj4C_Modes(pc,d0.w),d1
 		jsr	Obj4C_Modes(pc,d1.w)
@@ -99,24 +99,24 @@ loc_31543E:					  ; ...
 loc_315450:					  ; ...
 		cmp.w	#$FF00,($FFFFEECC).w
 		bne.s	loc_31545E
-		and.w	#$7FF,$C(a0)
+		and.w	#$7FF,y_pos(a0)
 
 loc_31545E:					  ; ...
 		bsr.s	Knuckles_Display
 		bsr.w	Knuckles_Super
 		bsr.w	Knuckles_RecordPositions
 		bsr.w	Knuckles_Water
-		move.b	($FFFFF768).w,$36(a0)
-		move.b	($FFFFF76A).w,$37(a0)
+		move.b	($FFFFF768).w,next_tilt(a0)
+		move.b	($FFFFF76A).w,tilt(a0)
 		tst.b	($FFFFF7C7).w
 		beq.s	loc_31548A
-		tst.b	$1C(a0)
+		tst.b	anim(a0)
 		bne.s	loc_31548A
-		move.b	$1D(a0),$1C(a0)
+		move.b	prev_anim(a0),anim(a0)
 
 loc_31548A:					  ; ...
 		bsr.w	Knuckles_Animate
-		tst.b	$2A(a0)
+		tst.b	obj_control(a0)
 		bmi.s	loc_31549A
 		jsr	TouchResponse
 
@@ -132,9 +132,9 @@ Obj4C_Modes:	dc.w Obj4C_MdNormal-Obj4C_Modes	  ; 0 ;	...
 
 
 Knuckles_Display:				  ; ...
-		move.w	$30(a0),d0
+		move.w	invulnerable_time(a0),d0
 		beq.s	Obj4C_Display
-		subq.w	#1,$30(a0)
+		subq.w	#1,invulnerable_time(a0)
 		lsr.w	#3,d0
 		bcc.s	Obj4C_CheckInvincibility
 
@@ -142,28 +142,28 @@ Obj4C_Display:					  ; ...
 		jsr	DisplaySprite
 
 Obj4C_CheckInvincibility:			  ; ...
-		btst	#1,$2B(a0)
+		btst	#1,status_secondary(a0)
 		beq.s	Obj4C_CheckSpeedShoes
-		tst.w	$32(a0)
+		tst.w	invincibility_time(a0)
 		beq.s	Obj4C_CheckSpeedShoes
-		subq.w	#1,$32(a0)
+		subq.w	#1,invincibility_time(a0)
 		bne.s	Obj4C_CheckSpeedShoes
 		tst.b	($FFFFF7AA).w
 		bne.s	Obj4C_RemoveInvincibility
-		cmp.b	#$C,$28(a0)
+		cmp.b	#$C,air_left(a0)
 		bcs.s	Obj4C_RemoveInvincibility
 		move.w	($FFFFFF90).w,d0
 		jsr	PlayMusic
 
 Obj4C_RemoveInvincibility:			  ; ...
-		bclr	#1,$2B(a0)
+		bclr	#1,status_secondary(a0)
 
 Obj4C_CheckSpeedShoes:				  ; ...
-		btst	#2,$2B(a0)
+		btst	#2,status_secondary(a0)
 		beq.s	Obj4C_ExitCheck
-		tst.w	$34(a0)
+		tst.w	speedshoes_time(a0)
 		beq.s	Obj4C_ExitCheck
-		subq.w	#1,$34(a0)
+		subq.w	#1,speedshoes_time(a0)
 		bne.s	Obj4C_ExitCheck
 		move.w	#$600,($FFFFF760).w
 		move.w	#$C,($FFFFF762).w
@@ -175,7 +175,7 @@ Obj4C_CheckSpeedShoes:				  ; ...
 		move.w	#$C0,($FFFFF764).w
 
 Obj4C_RemoveSpeedShoes:				  ; ...
-		bclr	#2,$2B(a0)
+		bclr	#2,status_secondary(a0)
 		move.w	#$FC,d0
 		jmp	PlayMusic
 ; ---------------------------------------------------------------------------
@@ -192,13 +192,13 @@ Knuckles_RecordPositions:			  ; ...
 		move.w	($FFFFEED2).w,d0
 		lea	($FFFFE500).w,a1
 		lea	(a1,d0.w),a1
-		move.w	8(a0),(a1)+
-		move.w	$C(a0),(a1)+
+		move.w	x_pos(a0),(a1)+
+		move.w	y_pos(a0),(a1)+
 		addq.b	#4,($FFFFEED3).w
 		lea	($FFFFE400).w,a1
 		lea	(a1,d0.w),a1
 		move.w	($FFFFF602).w,(a1)+
-		move.w	$22(a0),(a1)+
+		move.w	status(a0),(a1)+
 		rts
 ; End of function Knuckles_RecordPositions
 
@@ -216,9 +216,9 @@ return_31556C:					  ; ...
 
 Obj4C_InWater:					  ; ...
 		move.w	($FFFFF646).w,d0
-		cmp.w	$C(a0),d0
+		cmp.w	y_pos(a0),d0
 		bge.s	Obj4C_OutWater
-		bset	#6,$22(a0)
+		bset	#6,status(a0)
 		bne.s	return_31556C
 		move.l	a0,a1
 		bsr.w	ResumeMusic
@@ -235,9 +235,9 @@ Obj4C_InWater:					  ; ...
 		move.w	#$60,($FFFFF764).w
 
 loc_3155C0:					  ; ...
-		asr	$10(a0)
-		asr	$12(a0)
-		asr	$12(a0)
+		asr	x_vel(a0)
+		asr	y_vel(a0)
+		asr	y_vel(a0)
 		beq.s	return_31556C
 		move.w	#$100,($FFFFD11C).w
 		move.w	#SndID_Splash,d0
@@ -245,7 +245,7 @@ loc_3155C0:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Obj4C_OutWater:					  ; ...
-		bclr	#6,$22(a0)
+		bclr	#6,status(a0)
 		beq.s	return_31556C
 		move.l	a0,a1
 		bsr.w	ResumeMusic
@@ -259,19 +259,19 @@ Obj4C_OutWater:					  ; ...
 		move.w	#$C0,($FFFFF764).w
 
 loc_315616:					  ; ...
-		cmp.b	#4,$24(a0)
+		cmp.b	#4,routine(a0)
 		beq.s	loc_315622
-		asl	$12(a0)
+		asl	y_vel(a0)
 
 loc_315622:					  ; ...
-		tst.w	$12(a0)
+		tst.w	y_vel(a0)
 		beq.w	return_31556C
 		move.w	#$100,($FFFFD11C).w
 		move.l	a0,a1
 		bsr.w	ResumeMusic
-		cmp.w	#$F000,$12(a0)
+		cmp.w	#$F000,y_vel(a0)
 		bgt.s	loc_315644
-		move.w	#$F000,$12(a0)
+		move.w	#$F000,y_vel(a0)
 
 loc_315644:					  ; ...
 		move.w	#SndID_Splash,d0
@@ -300,15 +300,15 @@ Obj4C_MdNormal:					  ; ...
 
 
 Obj4C_MdAir:					  ; ...
-		tst.b	$21(a0)
+		tst.b	glidemode(a0)
 		bne.s	Obj4C_MdAir_Gliding
 		bsr.w	Knuckles_JumpHeight
 		bsr.w	Knuckles_ChgJumpDir
 		bsr.w	Knuckles_LevelBoundaries
 		jsr	ObjectMoveAndFall
-		btst	#6,$22(a0)
+		btst	#6,status(a0)
 		beq.s	loc_31569C
-		sub.w	#$28,$12(a0)
+		sub.w	#$28,y_vel(a0)
 
 loc_31569C:					  ; ...
 		bsr.w	Knuckles_JumpAngle
@@ -334,7 +334,7 @@ Knuckles_GlideControl:				  ; ...
 
 ; FUNCTION CHUNK AT 00315C40 SIZE 0000003C BYTES
 
-		move.b	$21(a0),d0
+		move.b	glidemode(a0),d0
 		beq.s	return_3156B8
 		cmp.b	#2,d0
 		beq.w	Knuckles_FallingFromGlide
@@ -346,30 +346,30 @@ Knuckles_GlideControl:				  ; ...
 		beq.w	Knuckles_Climbing_Up
 
 Knuckles_NormalGlide:
-		move.b	#$A,$16(a0)
-		move.b	#$A,$17(a0)
+		move.b	#$A,y_radius(a0)
+		move.b	#$A,x_radius(a0)
 		bsr.w	Knuckles_DoLevelCollision2
 		btst	#5,($FFFFF7AC).w
 		bne.w	Knuckles_BeginClimb
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		btst	#1,($FFFFF7AC).w
 		beq.s	Knuckles_BeginSlide
 		move.b	($FFFFF602).w,d0
 		and.b	#$70,d0
 		bne.s	loc_31574C
-		move.b	#2,$21(a0)
-		move.b	#$21,$1C(a0)
-		bclr	#0,$22(a0)
-		tst.w	$10(a0)
+		move.b	#2,glidemode(a0)
+		move.b	#$21,anim(a0)
+		bclr	#0,status(a0)
+		tst.w	x_vel(a0)
 		bpl.s	loc_315736
-		bset	#0,$22(a0)
+		bset	#0,status(a0)
 
 loc_315736:					  ; ...
-		asr	$10(a0)
-		asr	$10(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		asr	x_vel(a0)
+		asr	x_vel(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -378,27 +378,27 @@ loc_31574C:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_BeginSlide:				  ; ...
-		bclr	#0,$22(a0)
-		tst.w	$10(a0)
+		bclr	#0,status(a0)
+		tst.w	x_vel(a0)
 		bpl.s	loc_315762
-		bset	#0,$22(a0)
+		bset	#0,status(a0)
 
 loc_315762:					  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	#$20,d0
 		and.b	#$C0,d0
 		beq.s	loc_315780
-		move.w	$14(a0),$10(a0)
-		move.w	#0,$12(a0)
+		move.w	inertia(a0),x_vel(a0)
+		move.w	#0,y_vel(a0)
 		bra.w	Knuckles_ResetOnFloor_Part2
 ; ---------------------------------------------------------------------------
 
 loc_315780:					  ; ...
-		move.b	#3,$21(a0)
-		move.b	#$CC,$1A(a0)
-		move.b	#$7F,$1E(a0)
-		move.b	#0,$1B(a0)
-		cmp.b	#$C,$28(a0)
+		move.b	#3,glidemode(a0)
+		move.b	#$CC,mapping_frame(a0)
+		move.b	#$7F,anim_frame_duration(a0)
+		move.b	#0,anim_frame(a0)
+		cmp.b	#$C,air_left(a0)
 		bcs.s	return_3157AC
 		move.b	#6,($FFFFD124).w
 		move.b	#$15,($FFFFD11A).w
@@ -410,69 +410,69 @@ return_3157AC:					  ; ...
 Knuckles_BeginClimb:				  ; ...
 		tst.b	($FFFFF7AD).w
 		bmi.w	loc_31587A
-		move.b	$3F(a0),d5
-		move.b	$1F(a0),d0
+		move.b	lrb_solid_bit(a0),d5
+		move.b	double_jump_flag(a0),d0
 		add.b	#$40,d0
 		bpl.s	loc_3157D8
-		bset	#0,$22(a0)
+		bset	#0,status(a0)
 		bsr.w	CheckLeftCeilingDist
 		or.w	d0,d1
 		bne.s	Knuckles_FallFromGlide
-		addq.w	#1,8(a0)
+		addq.w	#1,x_pos(a0)
 		bra.s	loc_3157E8
 ; ---------------------------------------------------------------------------
 
 loc_3157D8:					  ; ...
-		bclr	#0,$22(a0)
+		bclr	#0,status(a0)
 		bsr.w	CheckRightCeilingDist
 		or.w	d0,d1
 		bne.w	loc_31586A
 
 loc_3157E8:					  ; ...
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		tst.b	($FFFFFE19).w
 		beq.s	loc_315804
-		cmp.w	#$480,$14(a0)
+		cmp.w	#$480,inertia(a0)
 		bcs.s	loc_315804
 		nop
 
 loc_315804:					  ; ...
-		move.w	#0,$14(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$12(a0)
-		move.b	#4,$21(a0)
-		move.b	#$B7,$1A(a0)
-		move.b	#$7F,$1E(a0)
-		move.b	#0,$1B(a0)
-		move.b	#3,$1F(a0)
-		move.w	8(a0),$A(a0)
+		move.w	#0,inertia(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,y_vel(a0)
+		move.b	#4,glidemode(a0)
+		move.b	#$B7,mapping_frame(a0)
+		move.b	#$7F,anim_frame_duration(a0)
+		move.b	#0,anim_frame(a0)
+		move.b	#3,double_jump_flag(a0)
+		move.w	x_pos(a0),$A(a0)
 		move.w	#SndID_WallGrab,d0
 		jmp	PlaySound
 ; ---------------------------------------------------------------------------
 
 Knuckles_FallFromGlide:				  ; ...
-		move.w	8(a0),d3
-		move.b	$16(a0),d0
+		move.w	x_pos(a0),d3
+		move.b	y_radius(a0),d0
 		ext.w	d0
 		sub.w	d0,d3
 		subq.w	#1,d3
 
 loc_31584A:					  ; ...
-		move.w	$C(a0),d2
+		move.w	y_pos(a0),d2
 		sub.w	#$B,d2
 		jsr	ChkFloorEdge_Part2
 		tst.w	d1
 		bmi.s	loc_31587A
 		cmp.w	#$C,d1
 		bcc.s	loc_31587A
-		add.w	d1,$C(a0)
+		add.w	d1,y_pos(a0)
 		bra.w	loc_3157E8
 ; ---------------------------------------------------------------------------
 
 loc_31586A:					  ; ...
-		move.w	8(a0),d3
-		move.b	$16(a0),d0
+		move.w	x_pos(a0),d3
+		move.b	y_radius(a0),d0
 		ext.w	d0
 		add.w	d0,d3
 		addq.w	#1,d3
@@ -480,33 +480,33 @@ loc_31586A:					  ; ...
 ; ---------------------------------------------------------------------------
 
 loc_31587A:					  ; ...
-		move.b	#2,$21(a0)
-		move.b	#$21,$1C(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		move.b	#2,glidemode(a0)
+		move.b	#$21,anim(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		bset	#1,($FFFFF7AC).w
 		rts
 ; ---------------------------------------------------------------------------
 
 Knuckles_FallingFromGlide:			  ; ...
 		bsr.w	Knuckles_ChgJumpDir
-		add.w	#$38,$12(a0)
-		btst	#6,$22(a0)
+		add.w	#$38,y_vel(a0)
+		btst	#6,status(a0)
 		beq.s	loc_3158B2
-		sub.w	#$28,$12(a0)
+		sub.w	#$28,y_vel(a0)
 
 loc_3158B2:					  ; ...
 		bsr.w	Knuckles_DoLevelCollision2
 		btst	#1,($FFFFF7AC).w
 		bne.s	return_315900
-		move.w	#0,$14(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$12(a0)
-		move.b	$16(a0),d0
+		move.w	#0,inertia(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,y_vel(a0)
+		move.b	y_radius(a0),d0
 		sub.b	#$13,d0
 		ext.w	d0
-		add.w	d0,$C(a0)
-		move.b	$26(a0),d0
+		add.w	d0,y_pos(a0)
+		move.b	angle(a0),d0
 		add.b	#$20,d0
 		and.b	#$C0,d0
 		beq.s	loc_3158F0
@@ -515,8 +515,8 @@ loc_3158B2:					  ; ...
 
 loc_3158F0:					  ; ...
 		bsr.w	Knuckles_ResetOnFloor_Part2
-		move.w	#$F,$2E(a0)
-		move.b	#$23,$1C(a0)
+		move.w	#$F,move_lock(a0)
+		move.b	#$23,anim(a0)
 		move.w	#SndID_Land,d0
 		jmp	PlaySound		
 
@@ -528,9 +528,9 @@ Knuckles_Sliding:				  ; ...
 		move.b	($FFFFF602).w,d0
 		and.b	#$70,d0
 		beq.s	loc_315926
-		tst.w	$10(a0)
+		tst.w	x_vel(a0)
 		bpl.s	loc_31591E
-		add.w	#$20,$10(a0)
+		add.w	#$20,x_vel(a0)
 		bmi.s	loc_31591C
 		bra.s	loc_315926
 ; ---------------------------------------------------------------------------
@@ -540,34 +540,34 @@ loc_31591C:					  ; ...
 ; ---------------------------------------------------------------------------
 
 loc_31591E:					  ; ...
-		sub.w	#$20,$10(a0)
+		sub.w	#$20,x_vel(a0)
 		bpl.s	loc_315958
 
 loc_315926:					  ; ...
-		move.w	#0,$14(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$12(a0)
-		move.b	$16(a0),d0
+		move.w	#0,inertia(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,y_vel(a0)
+		move.b	y_radius(a0),d0
 		sub.b	#$13,d0
 		ext.w	d0
-		add.w	d0,$C(a0)
+		add.w	d0,y_pos(a0)
 		bsr.w	Knuckles_ResetOnFloor_Part2
-		move.w	#$F,$2E(a0)
-		move.b	#$22,$1C(a0)
+		move.w	#$F,move_lock(a0)
+		move.b	#$22,anim(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_315958:					  ; ...
-		move.b	#$A,$16(a0)
-		move.b	#$A,$17(a0)
+		move.b	#$A,y_radius(a0)
+		move.b	#$A,x_radius(a0)
 		bsr.w	Knuckles_DoLevelCollision2
 		bsr.w	Sonic_CheckFloor
 		cmp.w	#$E,d1
 		bge.s	loc_315988
-		add.w	d1,$C(a0)
-		move.b	d3,$26(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		add.w	d1,y_pos(a0)
+		move.b	d3,angle(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		move.b	(Timer_frames+1).w,d0
 		andi.b	#7,d0
 		bne.s	+
@@ -578,10 +578,10 @@ loc_315958:					  ; ...
 ; ---------------------------------------------------------------------------
 
 loc_315988:					  ; ...
-		move.b	#2,$21(a0)
-		move.b	#$21,$1C(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		move.b	#2,glidemode(a0)
+		move.b	#$21,anim(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		bset	#1,($FFFFF7AC).w
 		rts
 ; ---------------------------------------------------------------------------
@@ -589,50 +589,50 @@ loc_315988:					  ; ...
 Knuckles_Climbing_Wall:				  ; ...
 		tst.b	($FFFFF7AD).w
 		bmi.w	loc_315BAE
-		move.w	8(a0),d0
+		move.w	x_pos(a0),d0
 		cmp.w	$A(a0),d0
 		bne.w	loc_315BAE
-		btst	#3,$22(a0)
+		btst	#3,status(a0)
 		bne.w	loc_315BAE
-		move.w	#0,$14(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$12(a0)
+		move.w	#0,inertia(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,y_vel(a0)
 		move.l	#$FFFFD600,($FFFFF796).w
-		cmp.b	#$D,$3F(a0)
+		cmp.b	#$D,lrb_solid_bit(a0)
 		beq.s	loc_3159F0
 		move.l	#$FFFFD900,($FFFFF796).w
 
 loc_3159F0:					  ; ...
-		move.b	$3F(a0),d5
-		move.b	#$A,$16(a0)
-		move.b	#$A,$17(a0)
+		move.b	lrb_solid_bit(a0),d5
+		move.b	#$A,y_radius(a0)
+		move.b	#$A,x_radius(a0)
 		moveq	#0,d1
 		btst	#0,($FFFFF602).w
 		beq.w	loc_315A76
-		move.w	$C(a0),d2
+		move.w	y_pos(a0),d2
 		sub.w	#$B,d2
 		bsr.w	sub_315C22
 		cmp.w	#4,d1
 		bge.w	Knuckles_ClimbUp	  ; Climb onto the floor above you
 		tst.w	d1
 		bne.w	loc_315B30
-		move.b	$3F(a0),d5
-		move.w	$C(a0),d2
+		move.b	lrb_solid_bit(a0),d5
+		move.w	y_pos(a0),d2
 		subq.w	#8,d2
-		move.w	8(a0),d3
+		move.w	x_pos(a0),d3
 		bsr.w	sub_3192E6		  ; Doesn't exist in S2
 		tst.w	d1
 		bpl.s	loc_315A46
-		sub.w	d1,$C(a0)
+		sub.w	d1,y_pos(a0)
 		moveq	#1,d1
 		bra.w	loc_315B04
 ; ---------------------------------------------------------------------------
 
 loc_315A46:					  ; ...
-		subq.w	#1,$C(a0)
+		subq.w	#1,y_pos(a0)
 		tst.b	($FFFFFE19).w
 		beq.s	loc_315A54
-		subq.w	#1,$C(a0)
+		subq.w	#1,y_pos(a0)
 
 loc_315A54:					  ; ...
 		moveq	#1,d1
@@ -640,52 +640,52 @@ loc_315A54:					  ; ...
 		cmp.w	#-$100,d0
 		beq.w	loc_315B04
 		add.w	#$10,d0
-		cmp.w	$C(a0),d0
+		cmp.w	y_pos(a0),d0
 		ble.w	loc_315B04
-		move.w	d0,$C(a0)
+		move.w	d0,y_pos(a0)
 		bra.w	loc_315B04
 ; ---------------------------------------------------------------------------
 
 loc_315A76:					  ; ...
 		btst	#1,($FFFFF602).w
 		beq.w	loc_315B04
-		cmp.b	#$BD,$1A(a0)
+		cmp.b	#$BD,mapping_frame(a0)
 		bne.s	loc_315AA2
-		move.b	#$B7,$1A(a0)
-		addq.w	#3,$C(a0)
-		subq.w	#3,8(a0)
-		btst	#0,$22(a0)
+		move.b	#$B7,mapping_frame(a0)
+		addq.w	#3,y_pos(a0)
+		subq.w	#3,x_pos(a0)
+		btst	#0,status(a0)
 		beq.s	loc_315AA2
-		addq.w	#6,8(a0)
+		addq.w	#6,x_pos(a0)
 
 loc_315AA2:					  ; ...
-		move.w	$C(a0),d2
+		move.w	y_pos(a0),d2
 		add.w	#$B,d2
 		bsr.w	sub_315C22
 		tst.w	d1
 		bne.w	loc_315BAE
-		move.b	$3E(a0),d5
-		move.w	$C(a0),d2
+		move.b	top_solid_bit(a0),d5
+		move.w	y_pos(a0),d2
 		add.w	#9,d2
-		move.w	8(a0),d3
+		move.w	x_pos(a0),d3
 		bsr.w	sub_318FF6
 		tst.w	d1
 		bpl.s	loc_315AF4
-		add.w	d1,$C(a0)
-		move.b	($FFFFF768).w,$26(a0)
-		move.w	#0,$14(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$12(a0)
+		add.w	d1,y_pos(a0)
+		move.b	($FFFFF768).w,angle(a0)
+		move.w	#0,inertia(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,y_vel(a0)
 		bsr.w	Knuckles_ResetOnFloor_Part2
-		move.b	#5,$1C(a0)
+		move.b	#5,anim(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_315AF4:					  ; ...
-		addq.w	#1,$C(a0)
+		addq.w	#1,y_pos(a0)
 		tst.b	($FFFFFE19).w
 		beq.s	loc_315B02
-		addq.w	#1,$C(a0)
+		addq.w	#1,y_pos(a0)
 
 loc_315B02:					  ; ...
 		moveq	#-1,d1
@@ -693,10 +693,10 @@ loc_315B02:					  ; ...
 loc_315B04:					  ; ...
 		tst.w	d1
 		beq.s	loc_315B30
-		subq.b	#1,$1F(a0)
+		subq.b	#1,double_jump_flag(a0)
 		bpl.s	loc_315B30
-		move.b	#3,$1F(a0)
-		add.b	$1A(a0),d1
+		move.b	#3,double_jump_flag(a0)
+		add.b	mapping_frame(a0),d1
 		cmp.b	#$B7,d1
 		bcc.s	loc_315B22
 		move.b	#$BC,d1
@@ -707,40 +707,40 @@ loc_315B22:					  ; ...
 		move.b	#$B7,d1
 
 loc_315B2C:					  ; ...
-		move.b	d1,$1A(a0)
+		move.b	d1,mapping_frame(a0)
 
 loc_315B30:					  ; ...
-		move.b	#$20,$1E(a0)
-		move.b	#0,$1B(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		move.b	#$20,anim_frame_duration(a0)
+		move.b	#0,anim_frame(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		move.w	($FFFFF602).w,d0
 		and.w	#$70,d0
 		beq.s	return_315B94
-		move.w	#$FC80,$12(a0)
-		move.w	#$400,$10(a0)
-		bchg	#0,$22(a0)
+		move.w	#$FC80,y_vel(a0)
+		move.w	#$400,x_vel(a0)
+		bchg	#0,status(a0)
 		bne.s	loc_315B6A
-		neg.w	$10(a0)
+		neg.w	x_vel(a0)
 
 loc_315B6A:					  ; ...
-		bset	#1,$22(a0)
-		move.b	#1,$3C(a0)
-		move.b	#$E,$16(a0)
-		move.b	#7,$17(a0)
-		move.b	#2,$1C(a0)
-		bset	#2,$22(a0)
-		move.b	#0,$21(a0)
+		bset	#1,status(a0)
+		move.b	#1,jumping(a0)
+		move.b	#$E,y_radius(a0)
+		move.b	#7,x_radius(a0)
+		move.b	#2,anim(a0)
+		bset	#2,status(a0)
+		move.b	#0,glidemode(a0)
 
 return_315B94:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 Knuckles_ClimbUp:				  ; ...
-		move.b	#5,$21(a0)		  ; Climb up to	the floor above	you
-		cmp.b	#$BD,$1A(a0)
+		move.b	#5,glidemode(a0)		  ; Climb up to	the floor above	you
+		cmp.b	#$BD,mapping_frame(a0)
 		beq.s	return_315BAC
-		move.b	#0,$1F(a0)
+		move.b	#0,double_jump_flag(a0)
 		bsr.s	sub_315BDA
 
 return_315BAC:					  ; ...
@@ -748,13 +748,13 @@ return_315BAC:					  ; ...
 ; ---------------------------------------------------------------------------
 
 loc_315BAE:					  ; ...
-		move.b	#2,$21(a0)
-		move.w	#$2121,$1C(a0)
-		move.b	#$CB,$1A(a0)
-		move.b	#7,$1E(a0)
-		move.b	#1,$1B(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
+		move.b	#2,glidemode(a0)
+		move.w	#$2121,anim(a0)
+		move.b	#$CB,mapping_frame(a0)
+		move.b	#7,anim_frame_duration(a0)
+		move.b	#1,anim_frame(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
 		rts
 ; End of function Knuckles_GlideControl
 
@@ -764,23 +764,23 @@ loc_315BAE:					  ; ...
 
 sub_315BDA:					  ; ...
 		moveq	#0,d0
-		move.b	$1F(a0),d0
+		move.b	double_jump_flag(a0),d0
 		lea	word_315C12(pc,d0.w),a1
-		move.b	(a1)+,$1A(a0)
+		move.b	(a1)+,mapping_frame(a0)
 		move.b	(a1)+,d0
 		ext.w	d0
-		btst	#0,$22(a0)
+		btst	#0,status(a0)
 		beq.s	loc_315BF6
 		neg.w	d0
 
 loc_315BF6:					  ; ...
-		add.w	d0,8(a0)
+		add.w	d0,x_pos(a0)
 		move.b	(a1)+,d1
 		ext.w	d1
-		add.w	d1,$C(a0)
-		move.b	(a1)+,$1E(a0)
-		addq.b	#4,$1F(a0)
-		move.b	#0,$1B(a0)
+		add.w	d1,y_pos(a0)
+		move.b	(a1)+,anim_frame_duration(a0)
+		addq.b	#4,double_jump_flag(a0)
+		move.b	#0,anim_frame(a0)
 		rts
 ; End of function sub_315BDA
 
@@ -795,15 +795,15 @@ sub_315C22:					  ; ...
 ; FUNCTION CHUNK AT 00319208 SIZE 00000020 BYTES
 ; FUNCTION CHUNK AT 003193D2 SIZE 00000024 BYTES
 
-		move.b	$3F(a0),d5
-		btst	#0,$22(a0)
+		move.b	lrb_solid_bit(a0),d5
+		btst	#0,status(a0)
 		bne.s	loc_315C36
-		move.w	8(a0),d3
+		move.w	x_pos(a0),d3
 		bra.w	loc_319208
 ; ---------------------------------------------------------------------------
 
 loc_315C36:					  ; ...
-		move.w	8(a0),d3
+		move.w	x_pos(a0),d3
 		subq.w	#1,d3
 		bra.w	loc_3193D2
 ; End of function sub_315C22
@@ -812,21 +812,21 @@ loc_315C36:					  ; ...
 ; START	OF FUNCTION CHUNK FOR Knuckles_GlideControl
 
 Knuckles_Climbing_Up:				  ; ...
-		tst.b	$1E(a0)
+		tst.b	anim_frame_duration(a0)
 		bne.s	return_315C7A
 		bsr.w	sub_315BDA
-		cmp.b	#$10,$1F(a0)
+		cmp.b	#$10,double_jump_flag(a0)
 		bne.s	return_315C7A
-		move.w	#0,$14(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$12(a0)
-		btst	#0,$22(a0)
+		move.w	#0,inertia(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,y_vel(a0)
+		btst	#0,status(a0)
 		beq.s	loc_315C70
-		subq.w	#1,8(a0)
+		subq.w	#1,x_pos(a0)
 
 loc_315C70:					  ; ...
 		bsr.w	Knuckles_ResetOnFloor_Part2
-		move.b	#5,$1C(a0)
+		move.b	#5,anim(a0)
 
 return_315C7A:					  ; ...
 		rts
@@ -836,21 +836,21 @@ return_315C7A:					  ; ...
 
 
 sub_315C7C:					  ; ...
-		move.b	#$20,$1E(a0)
-		move.b	#0,$1B(a0)
-		move.w	#$2020,$1C(a0)
-		bclr	#5,$22(a0)
-		bclr	#0,$22(a0)
+		move.b	#$20,anim_frame_duration(a0)
+		move.b	#0,anim_frame(a0)
+		move.w	#$2020,anim(a0)
+		bclr	#5,status(a0)
+		bclr	#0,status(a0)
 		moveq	#0,d0
-		move.b	$1F(a0),d0
+		move.b	double_jump_flag(a0),d0
 		add.b	#$10,d0
 		lsr.w	#5,d0
 		move.b	byte_315CC2(pc,d0.w),d1
-		move.b	d1,$1A(a0)
+		move.b	d1,mapping_frame(a0)
 		cmp.b	#$C4,d1
 		bne.s	return_315CC0
-		bset	#0,$22(a0)
-		move.b	#$C0,$1A(a0)
+		bset	#0,status(a0)
+		move.b	#$C0,mapping_frame(a0)
 
 return_315CC0:					  ; ...
 		rts
@@ -863,9 +863,9 @@ byte_315CC2:	dc.b $C0,$C1,$C2,$C3,$C4,$C3,$C2,$C1; 0	; ...
 
 
 Knuckles_GlideSpeedControl:			  ; ...
-		cmp.b	#1,$21(a0)
+		cmp.b	#1,glidemode(a0)
 		bne.w	loc_315D88
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		cmp.w	#$400,d0
 		bcc.s	loc_315CE2
 		addq.w	#8,d0
@@ -875,7 +875,7 @@ Knuckles_GlideSpeedControl:			  ; ...
 loc_315CE2:					  ; ...
 		cmp.w	#$1800,d0
 		bcc.s	loc_315CFC
-		move.b	$1F(a0),d1
+		move.b	double_jump_flag(a0),d1
 		and.b	#$7F,d1
 		bne.s	loc_315CFC
 		addq.w	#4,d0
@@ -884,8 +884,8 @@ loc_315CE2:					  ; ...
 		addq.w	#8,d0
 
 loc_315CFC:					  ; ...
-		move.w	d0,$14(a0)
-		move.b	$1F(a0),d0
+		move.w	d0,inertia(a0)
+		move.b	double_jump_flag(a0),d0
 		btst	#2,($FFFFF602).w
 		beq.s	loc_315D1C
 		cmp.b	#$80,d0
@@ -919,30 +919,30 @@ loc_315D30:					  ; ...
 		addq.b	#2,d0
 
 loc_315D3A:					  ; ...
-		move.b	d0,$1F(a0)
-		move.b	$1F(a0),d0
+		move.b	d0,double_jump_flag(a0)
+		move.b	double_jump_flag(a0),d0
 		jsr	CalcSine
-		muls.w	$14(a0),d1
+		muls.w	inertia(a0),d1
 		asr.l	#8,d1
-		move.w	d1,$10(a0)
-		cmp.w	#$80,$12(a0)
+		move.w	d1,x_vel(a0)
+		cmp.w	#$80,y_vel(a0)
 		blt.s	loc_315D62
-		sub.w	#$20,$12(a0)
+		sub.w	#$20,y_vel(a0)
 		bra.s	loc_315D68
 ; ---------------------------------------------------------------------------
 
 loc_315D62:					  ; ...
-		add.w	#$20,$12(a0)
+		add.w	#$20,y_vel(a0)
 
 loc_315D68:					  ; ...
 		move.w	($FFFFEECC).w,d0
 		cmp.w	#$FF00,d0
 		beq.w	loc_315D88
 		add.w	#$10,d0
-		cmp.w	$C(a0),d0
+		cmp.w	y_pos(a0),d0
 		ble.w	loc_315D88
-		asr	$10(a0)
-		asr	$14(a0)
+		asr	x_vel(a0)
+		asr	inertia(a0)
 
 loc_315D88:					  ; ...
 		cmp.w	#$60,($FFFFEED8).w
@@ -960,7 +960,7 @@ return_315D9A:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Obj4C_MdRoll:					  ; ...
-		tst.b	$39(a0)
+		tst.b	spindash_flag(a0)
 		bne.s	loc_315DA6
 		bsr.w	Knuckles_Jump
 
@@ -979,9 +979,9 @@ Obj4C_MdJump:					  ; ...
 		bsr.w	Knuckles_ChgJumpDir
 		bsr.w	Knuckles_LevelBoundaries
 		jsr	ObjectMoveAndFall
-		btst	#6,$22(a0)
+		btst	#6,status(a0)
 		beq.s	loc_315DE2
-		sub.w	#$28,$12(a0)
+		sub.w	#$28,y_vel(a0)
 
 loc_315DE2:					  ; ...
 		bsr.w	Knuckles_JumpAngle
@@ -995,9 +995,9 @@ Knuckles_Move:					  ; ...
 		move.w	($FFFFF760).w,d6
 		move.w	($FFFFF762).w,d5
 		move.w	($FFFFF764).w,d4
-		tst.b	$2B(a0)
+		tst.b	status_secondary(a0)
 		bmi.w	Obj4C_Traction
-		tst.w	$2E(a0)
+		tst.w	move_lock(a0)
 		bne.w	Obj4C_ResetScreen
 		btst	#2,($FFFFF602).w
 		beq.s	Obj4C_NotLeft
@@ -1009,30 +1009,30 @@ Obj4C_NotLeft:					  ; ...
 		bsr.w	Knuckles_MoveRight
 
 Obj4C_NotRight:					  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	#$20,d0
 		and.b	#$C0,d0
 		bne.w	Obj4C_ResetScreen
-		tst.w	$14(a0)
+		tst.w	inertia(a0)
 		bne.w	Obj4C_ResetScreen
-		bclr	#5,$22(a0)
-		move.b	#5,$1C(a0)
-		btst	#3,$22(a0)
+		bclr	#5,status(a0)
+		move.b	#5,anim(a0)
+		btst	#3,status(a0)
 		beq.w	Knuckles_Balance
 		moveq	#0,d0
-		move.b	$3D(a0),d0
+		move.b	interact(a0),d0
 		lsl.w	#6,d0
 		lea	($FFFFB000).w,a1
 		lea	(a1,d0.w),a1
-		tst.b	$22(a1)
+		tst.b	status(a1)
 		bmi.w	Knuckles_LookUp
 		moveq	#0,d1
-		move.b	$19(a1),d1
+		move.b	width_pixels(a1),d1
 		move.w	d1,d2
 		add.w	d2,d2
 		subq.w	#2,d2
-		add.w	8(a0),d1
-		sub.w	8(a1),d1
+		add.w	x_pos(a0),d1
+		sub.w	x_pos(a1),d1
 		cmp.w	#2,d1
 		blt.s	Knuckles_BalanceOnObjLeft
 		cmp.w	d2,d1
@@ -1041,32 +1041,32 @@ Obj4C_NotRight:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_BalanceOnObjRight:			  ; ...
-		btst	#0,$22(a0)
+		btst	#0,status(a0)
 		bne.s	loc_315E9A
-		move.b	#6,$1C(a0)
+		move.b	#6,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
 loc_315E9A:					  ; ...
-		bclr	#0,$22(a0)
-		move.b	#0,$1E(a0)
-		move.b	#4,$1B(a0)
-		move.w	#$606,$1C(a0)
+		bclr	#0,status(a0)
+		move.b	#0,anim_frame_duration(a0)
+		move.b	#4,anim_frame(a0)
+		move.w	#$606,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
 Knuckles_BalanceOnObjLeft:			  ; ...
-		btst	#0,$22(a0)
+		btst	#0,status(a0)
 		beq.s	loc_315EC8
-		move.b	#6,$1C(a0)
+		move.b	#6,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
 loc_315EC8:					  ; ...
-		bset	#0,$22(a0)
-		move.b	#0,$1E(a0)
-		move.b	#4,$1B(a0)
-		move.w	#$606,$1C(a0)
+		bset	#0,status(a0)
+		move.b	#0,anim_frame_duration(a0)
+		move.b	#4,anim_frame(a0)
+		move.w	#$606,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
@@ -1074,43 +1074,43 @@ Knuckles_Balance:				  ; ...
 		jsr	ChkFloorEdge
 		cmp.w	#$C,d1
 		blt.w	Knuckles_LookUp
-		cmp.b	#3,$36(a0)
+		cmp.b	#3,next_tilt(a0)
 		bne.s	Knuckles_BalanceLeft
-		btst	#0,$22(a0)
+		btst	#0,status(a0)
 		bne.s	loc_315F0C
-		move.b	#6,$1C(a0)
+		move.b	#6,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
 loc_315F0C:					  ; ...
-		bclr	#0,$22(a0)
-		move.b	#0,$1E(a0)
-		move.b	#4,$1B(a0)
-		move.w	#$606,$1C(a0)
+		bclr	#0,status(a0)
+		move.b	#0,anim_frame_duration(a0)
+		move.b	#4,anim_frame(a0)
+		move.w	#$606,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
 Knuckles_BalanceLeft:				  ; ...
-		cmp.b	#3,$37(a0)
+		cmp.b	#3,tilt(a0)
 		bne.s	Knuckles_LookUp
-		btst	#0,$22(a0)
+		btst	#0,status(a0)
 		beq.s	loc_315F42
-		move.b	#6,$1C(a0)
+		move.b	#6,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
 loc_315F42:					  ; ...
-		bset	#0,$22(a0)
-		move.b	#0,$1E(a0)
-		move.b	#4,$1B(a0)
-		move.w	#$606,$1C(a0)
+		bset	#0,status(a0)
+		move.b	#0,anim_frame_duration(a0)
+		move.b	#4,anim_frame(a0)
+		move.w	#$606,anim(a0)
 		bra.w	Obj4C_ResetScreen
 ; ---------------------------------------------------------------------------
 
 Knuckles_LookUp:				  ; ...
 		btst	#0,($FFFFF602).w
 		beq.s	Knuckles_Duck
-		move.b	#7,$1C(a0)
+		move.b	#7,anim(a0)
 		addq.w	#1,($FFFFF66C).w
 		cmp.w	#$78,($FFFFF66C).w
 		bcs.s	Obj4C_ResetScreen_Part2
@@ -1124,7 +1124,7 @@ Knuckles_LookUp:				  ; ...
 Knuckles_Duck:					  ; ...
 		btst	#1,($FFFFF602).w
 		beq.s	Obj4C_ResetScreen
-		move.b	#8,$1C(a0)
+		move.b	#8,anim(a0)
 		addq.w	#1,($FFFFF66C).w
 		cmp.w	#$78,($FFFFF66C).w
 		bcs.s	Obj4C_ResetScreen_Part2
@@ -1156,7 +1156,7 @@ loc_315FDC:					  ; ...
 		move.b	($FFFFF602).w,d0
 		and.b	#$C,d0
 		bne.s	Obj4C_Traction
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		beq.s	Obj4C_Traction
 		bmi.s	Obj4C_SettleLeft
 		sub.w	d5,d0
@@ -1164,7 +1164,7 @@ loc_315FDC:					  ; ...
 		move.w	#0,d0
 
 loc_315FF6:					  ; ...
-		move.w	d0,$14(a0)
+		move.w	d0,inertia(a0)
 		bra.s	Obj4C_Traction
 ; ---------------------------------------------------------------------------
 
@@ -1174,30 +1174,30 @@ Obj4C_SettleLeft:				  ; ...
 		move.w	#0,d0
 
 loc_316004:					  ; ...
-		move.w	d0,$14(a0)
+		move.w	d0,inertia(a0)
 
 Obj4C_Traction:					  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		jsr	CalcSine
-		muls.w	$14(a0),d1
+		muls.w	inertia(a0),d1
 		asr.l	#8,d1
-		move.w	d1,$10(a0)
-		muls.w	$14(a0),d0
+		move.w	d1,x_vel(a0)
+		muls.w	inertia(a0),d0
 		asr.l	#8,d0
-		move.w	d0,$12(a0)
+		move.w	d0,y_vel(a0)
 
 Obj4C_CheckWallsOnGround:			  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	#$40,d0
 		bmi.s	return_3160A6
 		move.b	#$40,d1
-		tst.w	$14(a0)
+		tst.w	inertia(a0)
 		beq.s	return_3160A6
 		bmi.s	loc_31603E
 		neg.w	d1
 
 loc_31603E:					  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	d1,d0
 		move.w	d0,-(sp)
 		bsr.w	CalcRoomInFront		  ; Also known as Sonic_WalkSpeed in Sonic 1
@@ -1212,32 +1212,32 @@ loc_31603E:					  ; ...
 		beq.s	loc_316088
 		cmp.b	#$80,d0
 		beq.s	loc_316082
-		add.w	d1,$10(a0)
-		move.w	#0,$14(a0)
-		btst	#0,$22(a0)
+		add.w	d1,x_vel(a0)
+		move.w	#0,inertia(a0)
+		btst	#0,status(a0)
 		bne.s	return_316080
-		bset	#5,$22(a0)
+		bset	#5,status(a0)
 
 return_316080:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_316082:					  ; ...
-		sub.w	d1,$12(a0)
+		sub.w	d1,y_vel(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_316088:					  ; ...
-		sub.w	d1,$10(a0)
-		move.w	#0,$14(a0)
-		btst	#0,$22(a0)
+		sub.w	d1,x_vel(a0)
+		move.w	#0,inertia(a0)
+		btst	#0,status(a0)
 		beq.s	return_316080
-		bset	#5,$22(a0)
+		bset	#5,status(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_3160A2:					  ; ...
-		add.w	d1,$12(a0)
+		add.w	d1,y_vel(a0)
 
 return_3160A6:					  ; ...
 		rts
@@ -1248,15 +1248,15 @@ return_3160A6:					  ; ...
 
 
 Knuckles_MoveLeft:				  ; ...
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		beq.s	loc_3160B0
 		bpl.s	Knuckles_TurnLeft
 
 loc_3160B0:					  ; ...
-		bset	#0,$22(a0)
+		bset	#0,status(a0)
 		bne.s	loc_3160C4
-		bclr	#5,$22(a0)
-		move.b	#1,$1D(a0)
+		bclr	#5,status(a0)
+		move.b	#1,prev_anim(a0)
 
 loc_3160C4:					  ; ...
 		sub.w	d5,d0
@@ -1270,8 +1270,8 @@ loc_3160C4:					  ; ...
 		move.w	d1,d0
 
 loc_3160D6:					  ; ...
-		move.w	d0,$14(a0)
-		move.b	#0,$1C(a0)
+		move.w	d0,inertia(a0)
+		move.b	#0,anim(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1281,18 +1281,18 @@ Knuckles_TurnLeft:				  ; ...
 		move.w	#-$80,d0
 
 loc_3160EA:					  ; ...
-		move.w	d0,$14(a0)
-		move.b	$26(a0),d1
+		move.w	d0,inertia(a0)
+		move.b	angle(a0),d1
 		add.b	#$20,d1
 		and.b	#$C0,d1
 		bne.s	return_31612C
 		cmp.w	#$400,d0
 		blt.s	return_31612C
-		move.b	#$D,$1C(a0)
-		bclr	#0,$22(a0)
+		move.b	#$D,anim(a0)
+		bclr	#0,status(a0)
 		move.w	#SndID_Skidding,d0
 		jsr	PlaySound
-		cmp.b	#$C,$28(a0)
+		cmp.b	#$C,air_left(a0)
 		bcs.s	return_31612C
 		move.b	#6,($FFFFD124).w
 		move.b	#$15,($FFFFD11A).w
@@ -1306,12 +1306,12 @@ return_31612C:					  ; ...
 
 
 Knuckles_MoveRight:				  ; ...
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		bmi.s	Knuckles_TurnRight
-		bclr	#0,$22(a0)
+		bclr	#0,status(a0)
 		beq.s	loc_316148
-		bclr	#5,$22(a0)
-		move.b	#1,$1D(a0)
+		bclr	#5,status(a0)
+		move.b	#1,prev_anim(a0)
 
 loc_316148:					  ; ...
 		add.w	d5,d0
@@ -1323,8 +1323,8 @@ loc_316148:					  ; ...
 		move.w	d6,d0
 
 loc_316156:					  ; ...
-		move.w	d0,$14(a0)
-		move.b	#0,$1C(a0)
+		move.w	d0,inertia(a0)
+		move.b	#0,anim(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1334,18 +1334,18 @@ Knuckles_TurnRight:				  ; ...
 		move.w	#$80,d0
 
 loc_31616A:					  ; ...
-		move.w	d0,$14(a0)
-		move.b	$26(a0),d1
+		move.w	d0,inertia(a0)
+		move.b	angle(a0),d1
 		add.b	#$20,d1
 		and.b	#$C0,d1
 		bne.s	return_3161AC
 		cmp.w	#$FC00,d0
 		bgt.s	return_3161AC
-		move.b	#$D,$1C(a0)
-		bset	#0,$22(a0)
+		move.b	#$D,anim(a0)
+		bset	#0,status(a0)
 		move.w	#SndID_Skidding,d0
 		jsr	PlaySound
-		cmp.b	#$C,$28(a0)
+		cmp.b	#$C,air_left(a0)
 		bcs.s	return_3161AC
 		move.b	#6,($FFFFD124).w
 		move.b	#$15,($FFFFD11A).w
@@ -1364,9 +1364,9 @@ Knuckles_RollSpeed:				  ; ...
 		move.w	($FFFFF762).w,d5
 		asr.w	#1,d5
 		move.w	#$20,d4
-		tst.b	$2B(a0)
+		tst.b	status_secondary(a0)
 		bmi.w	Obj4C_Roll_ResetScreen
-		tst.w	$2E(a0)
+		tst.w	move_lock(a0)
 		bne.s	Knuckles_Apply_RollSpeed
 		btst	#2,($FFFFF602).w
 		beq.s	loc_3161D8
@@ -1378,7 +1378,7 @@ loc_3161D8:					  ; ...
 		bsr.w	Knuckles_RollRight
 
 Knuckles_Apply_RollSpeed:			  ; ...
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		beq.s	Knuckles_CheckRollStop
 		bmi.s	Knuckles_ApplyRollSpeedLeft
 		sub.w	d5,d0
@@ -1386,7 +1386,7 @@ Knuckles_Apply_RollSpeed:			  ; ...
 		move.w	#0,d0
 
 loc_3161F4:					  ; ...
-		move.w	d0,$14(a0)
+		move.w	d0,inertia(a0)
 		bra.s	Knuckles_CheckRollStop
 ; ---------------------------------------------------------------------------
 
@@ -1396,18 +1396,18 @@ Knuckles_ApplyRollSpeedLeft:			  ; ...
 		move.w	#0,d0
 
 loc_316202:					  ; ...
-		move.w	d0,$14(a0)
+		move.w	d0,inertia(a0)
 
 Knuckles_CheckRollStop:				  ; ...
-		tst.w	$14(a0)
+		tst.w	inertia(a0)
 		bne.s	Obj4C_Roll_ResetScreen
-		tst.b	$39(a0)
+		tst.b	spindash_flag(a0)
 		bne.s	Knuckles_KeepRolling
-		bclr	#2,$22(a0)
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
-		move.b	#5,$1C(a0)
-		subq.w	#5,$C(a0)
+		bclr	#2,status(a0)
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
+		move.b	#5,anim(a0)
+		subq.w	#5,y_pos(a0)
 		bra.s	Obj4C_Roll_ResetScreen
 ; ---------------------------------------------------------------------------
 ; magically gives Knuckles an extra push if he's going to stop rolling where it's not allowed
@@ -1415,10 +1415,10 @@ Knuckles_CheckRollStop:				  ; ...
 
 
 Knuckles_KeepRolling:				  ; ...
-		move.w	#$400,$14(a0)
-		btst	#0,$22(a0)
+		move.w	#$400,inertia(a0)
+		btst	#0,status(a0)
 		beq.s	Obj4C_Roll_ResetScreen
-		neg.w	$14(a0)
+		neg.w	inertia(a0)
 
 Obj4C_Roll_ResetScreen:				  ; ...
 		cmp.w	#$60,($FFFFEED8).w
@@ -1430,12 +1430,12 @@ loc_316250:					  ; ...
 		subq.w	#2,($FFFFEED8).w
 
 Knuckles_SetRollSpeeds:				  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		jsr	CalcSine
-		muls.w	$14(a0),d0
+		muls.w	inertia(a0),d0
 		asr.l	#8,d0
-		move.w	d0,$12(a0)
-		muls.w	$14(a0),d1
+		move.w	d0,y_vel(a0)
+		muls.w	inertia(a0),d1
 		asr.l	#8,d1
 		cmp.w	#$1000,d1
 		ble.s	loc_316278
@@ -1447,7 +1447,7 @@ loc_316278:					  ; ...
 		move.w	#-$1000,d1
 
 loc_316282:					  ; ...
-		move.w	d1,$10(a0)
+		move.w	d1,x_vel(a0)
 		bra.w	Obj4C_CheckWallsOnGround
 ; End of function Knuckles_RollSpeed
 
@@ -1456,13 +1456,13 @@ loc_316282:					  ; ...
 
 
 Knuckles_RollLeft:				  ; ...
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		beq.s	loc_316292
 		bpl.s	Knuckles_BrakeRollingRight
 
 loc_316292:					  ; ...
-		bset	#0,$22(a0)
-		move.b	#2,$1C(a0)
+		bset	#0,status(a0)
+		move.b	#2,anim(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1472,7 +1472,7 @@ Knuckles_BrakeRollingRight:			  ; ...
 		move.w	#-$80,d0
 
 loc_3162A8:					  ; ...
-		move.w	d0,$14(a0)
+		move.w	d0,inertia(a0)
 		rts
 ; End of function Knuckles_RollLeft
 
@@ -1481,10 +1481,10 @@ loc_3162A8:					  ; ...
 
 
 Knuckles_RollRight:				  ; ...
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		bmi.s	Knuckles_BrakeRollingLeft
-		bclr	#0,$22(a0)
-		move.b	#2,$1C(a0)
+		bclr	#0,status(a0)
+		move.b	#2,anim(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1494,7 +1494,7 @@ Knuckles_BrakeRollingLeft:			  ; ...
 		move.w	#$80,d0
 
 loc_3162CA:					  ; ...
-		move.w	d0,$14(a0)
+		move.w	d0,inertia(a0)
 		rts
 ; End of function Knuckles_RollRight
 
@@ -1509,12 +1509,12 @@ Knuckles_ChgJumpDir:				  ; ...
 		move.w	($FFFFF760).w,d6
 		move.w	($FFFFF762).w,d5
 		asl.w	#1,d5
-		btst	#4,$22(a0)
+		btst	#4,status(a0)
 		bne.s	Obj4C_Jump_ResetScreen
-		move.w	$10(a0),d0
+		move.w	x_vel(a0),d0
 		btst	#2,($FFFFF602).w
 		beq.s	loc_31630E
-		bset	#0,$22(a0)
+		bset	#0,status(a0)
 		sub.w	d5,d0
 		move.w	d6,d1
 		neg.w	d1
@@ -1532,7 +1532,7 @@ loc_31630C:					  ; ...
 loc_31630E:					  ; ...
 		btst	#3,($FFFFF602).w
 		beq.s	loc_316332
-		bclr	#0,$22(a0)
+		bclr	#0,status(a0)
 		add.w	d5,d0
 		cmp.w	d6,d0
 		blt.s	loc_316332
@@ -1546,7 +1546,7 @@ loc_316330:					  ; ...
 		move.w	d6,d0
 
 loc_316332:					  ; ...
-		move.w	d0,$10(a0)
+		move.w	d0,x_vel(a0)
 
 Obj4C_Jump_ResetScreen:				  ; ...
 		cmp.w	#$60,($FFFFEED8).w
@@ -1558,9 +1558,9 @@ loc_316344:					  ; ...
 		subq.w	#2,($FFFFEED8).w
 
 Knuckles_JumpPeakDecelerate:			  ; ...
-		cmp.w	#-$400,$12(a0)
+		cmp.w	#-$400,y_vel(a0)
 		bcs.s	return_316376
-		move.w	$10(a0),d0
+		move.w	x_vel(a0),d0
 		move.w	d0,d1
 		asr.w	#5,d1
 		beq.s	return_316376
@@ -1570,7 +1570,7 @@ Knuckles_JumpPeakDecelerate:			  ; ...
 		move.w	#0,d0
 
 loc_316364:					  ; ...
-		move.w	d0,$10(a0)
+		move.w	d0,x_vel(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1580,7 +1580,7 @@ Knuckles_JumpPeakDecelerateLeft:		  ; ...
 		move.w	#0,d0
 
 loc_316372:					  ; ...
-		move.w	d0,$10(a0)
+		move.w	d0,x_vel(a0)
 
 return_316376:					  ; ...
 		rts
@@ -1591,8 +1591,8 @@ return_316376:					  ; ...
 
 
 Knuckles_LevelBoundaries:			  ; ...
-		move.l	8(a0),d1
-		move.w	$10(a0),d0
+		move.l	x_pos(a0),d1
+		move.w	x_vel(a0),d0
 		ext.l	d0
 		asl.l	#8,d0
 		add.l	d0,d1
@@ -1614,7 +1614,7 @@ loc_3163A6:					  ; ...
 Knuckles_Boundary_CheckBottom:			  ; ...
 		move.w	($FFFFEECE).w,d0
 		add.w	#$E0,d0
-		cmp.w	$C(a0),d0
+		cmp.w	y_pos(a0),d0
 		blt.s	Knuckles_Boundary_Bottom
 		rts
 ; ---------------------------------------------------------------------------
@@ -1624,10 +1624,10 @@ Knuckles_Boundary_Bottom:			  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_Boundary_Sides:			  ; ...
-		move.w	d0,8(a0)
+		move.w	d0,x_pos(a0)
 		move.w	#0,$A(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$14(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,inertia(a0)
 		bra.s	Knuckles_Boundary_CheckBottom
 ; End of function Knuckles_LevelBoundaries
 
@@ -1636,9 +1636,9 @@ Knuckles_Boundary_Sides:			  ; ...
 
 
 Knuckles_Roll:					  ; ...
-		tst.b	$2B(a0)
+		tst.b	status_secondary(a0)
 		bmi.s	Obj4C_NoRoll
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		bpl.s	loc_3163E6
 		neg.w	d0
 
@@ -1656,22 +1656,22 @@ Obj4C_NoRoll:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Obj4C_ChkRoll:					  ; ...
-		btst	#2,$22(a0)
+		btst	#2,status(a0)
 		beq.s	Obj4C_DoRoll
 		rts
 ; ---------------------------------------------------------------------------
 
 Obj4C_DoRoll:					  ; ...
-		bset	#2,$22(a0)
-		move.b	#$E,$16(a0)
-		move.b	#7,$17(a0)
-		move.b	#2,$1C(a0)
-		addq.w	#5,$C(a0)
+		bset	#2,status(a0)
+		move.b	#$E,y_radius(a0)
+		move.b	#7,x_radius(a0)
+		move.b	#2,anim(a0)
+		addq.w	#5,y_pos(a0)
 		move.w	#SndID_Roll,d0
 		jsr	PlaySound
-		tst.w	$14(a0)
+		tst.w	inertia(a0)
 		bne.s	return_31643C
-		move.w	#$200,$14(a0)
+		move.w	#$200,inertia(a0)
 
 return_31643C:					  ; ...
 		rts
@@ -1686,13 +1686,13 @@ Knuckles_Jump:					  ; ...
 		and.b	#$70,d0
 		beq.w	return_3164EC
 		moveq	#0,d0
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	#$80,d0
 		bsr.w	CalcRoomOverHead
 		cmp.w	#6,d1
 		blt.w	return_3164EC
 		move.w	#$600,d2
-		btst	#6,$22(a0)
+		btst	#6,status(a0)
 		beq.s	loc_316470
 		move.w	#$300,d2
 
@@ -1703,38 +1703,38 @@ loc_316470:					  ; ...
 
 loc_31647A:					  ; ...
 		moveq	#0,d0
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		sub.b	#$40,d0
 		jsr	CalcSine
 		muls.w	d2,d1
 		asr.l	#8,d1
-		add.w	d1,$10(a0)
+		add.w	d1,x_vel(a0)
 		muls.w	d2,d0
 		asr.l	#8,d0
-		add.w	d0,$12(a0)
-		bset	#1,$22(a0)
-		bclr	#5,$22(a0)
+		add.w	d0,y_vel(a0)
+		bset	#1,status(a0)
+		bclr	#5,status(a0)
 		addq.l	#4,sp
-		move.b	#1,$3C(a0)
-		clr.b	$38(a0)
+		move.b	#1,jumping(a0)
+		clr.b	stick_to_convex(a0)
 
 loc_3164B2:
 		move.w	#SndID_Jump,d0
 		jsr	PlaySound
-		move.b	#$E,$16(a0)
-		move.b	#7,$17(a0)
-		btst	#2,$22(a0)
+		move.b	#$E,y_radius(a0)
+		move.b	#7,x_radius(a0)
+		btst	#2,status(a0)
 		bne.s	Knuckles_RollJump
-		move.b	#2,$1C(a0)
-		bset	#2,$22(a0)
-		addq.w	#5,$C(a0)
+		move.b	#2,anim(a0)
+		bset	#2,status(a0)
+		addq.w	#5,y_pos(a0)
 
 return_3164EC:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 Knuckles_RollJump:				  ; ...
-		bset	#4,$22(a0)
+		bset	#4,status(a0)
 		rts
 ; End of function Knuckles_Jump
 
@@ -1743,31 +1743,31 @@ Knuckles_RollJump:				  ; ...
 
 
 Knuckles_JumpHeight:				  ; ...
-		tst.b	$3C(a0)
+		tst.b	jumping(a0)
 		beq.s	Knuckles_UpwardsVelocityCap
 		move.w	#-$400,d1
-		btst	#6,$22(a0)
+		btst	#6,status(a0)
 		beq.s	loc_31650C
 		move.w	#-$200,d1
 
 loc_31650C:					  ; ...
-		cmp.w	$12(a0),d1
+		cmp.w	y_vel(a0),d1
 		ble.w	Knuckles_CheckGlide	  ; Check if Knuckles should begin a glide
 		move.b	($FFFFF602).w,d0
 		and.b	#$70,d0
 		bne.s	return_316522
-		move.w	d1,$12(a0)
+		move.w	d1,y_vel(a0)
 
 return_316522:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 Knuckles_UpwardsVelocityCap:			  ; ...
-		tst.b	$39(a0)
+		tst.b	spindash_flag(a0)
 		bne.s	return_316538
-		cmp.w	#-$FC0,$12(a0)
+		cmp.w	#-$FC0,y_vel(a0)
 		bge.s	return_316538
-		move.w	#-$FC0,$12(a0)
+		move.w	#-$FC0,y_vel(a0)
 
 return_316538:					  ; ...
 		rts
@@ -1776,7 +1776,7 @@ return_316538:					  ; ...
 Knuckles_CheckGlide:				  ; ...
 		tst.w	(Demo_mode_flag).w		  ; Don't glide on demos
 		bne.w	return_3165D2
-		tst.b	$21(a0)
+		tst.b	glidemode(a0)
 		bne.w	return_3165D2
 		tst.b	(WindTunnel_flag).w
 		bne.w	return_3165D2		
@@ -1793,28 +1793,28 @@ Knuckles_CheckGlide:				  ; ...
 		bne.s	Knuckles_TurnSuper
 
 Knuckles_BeginGlide:				  ; ...
-		bclr	#2,$22(a0)
-		move.b	#$A,$16(a0)
-		move.b	#$A,$17(a0)
-		bclr	#4,$22(a0)
-		move.b	#1,$21(a0)
-		add.w	#$200,$12(a0)
+		bclr	#2,status(a0)
+		move.b	#$A,y_radius(a0)
+		move.b	#$A,x_radius(a0)
+		bclr	#4,status(a0)
+		move.b	#1,glidemode(a0)
+		add.w	#$200,y_vel(a0)
 		bpl.s	loc_31659E
-		move.w	#0,$12(a0)
+		move.w	#0,y_vel(a0)
 
 loc_31659E:					  ; ...
 		moveq	#0,d1
 		move.w	#$400,d0
-		move.w	d0,$14(a0)
-		btst	#0,$22(a0)
+		move.w	d0,inertia(a0)
+		btst	#0,status(a0)
 		beq.s	loc_3165B4
 		neg.w	d0
 		moveq	#-$80,d1
 
 loc_3165B4:					  ; ...
-		move.w	d0,$10(a0)
-		move.b	d1,$1F(a0)
-		move.w	#0,$26(a0)
+		move.w	d0,x_vel(a0)
+		move.b	d1,double_jump_flag(a0)
+		move.w	#0,angle(a0)
 		move.b	#0,($FFFFF7AC).w
 		bset	#1,($FFFFF7AC).w
 		bsr.w	sub_315C7C
@@ -1828,14 +1828,14 @@ Knuckles_TurnSuper:				  ; ...
 		move.b	#$F,($FFFFF65E).w
 		move.b	#1,($FFFFFE19).w
 		move.w	#60,($FFFFF670).w
-		move.b	#$81,$2A(a0)
-		move.b	#$1F,$1C(a0)
+		move.b	#$81,obj_control(a0)
+		move.b	#$1F,anim(a0)
 		move.b	#$7E,($FFFFD040).w
 		move.w	#$800,($FFFFF760).w
 		move.w	#$18,($FFFFF762).w
 		move.w	#$C0,($FFFFF764).w
-		move.w	#0,$32(a0)
-		bset	#1,$2B(a0)
+		move.w	#0,invincibility_time(a0)
+		bset	#1,status_secondary(a0)
 		move.w	#SndID_SuperTransform,d0
 		jsr	PlaySound
 		move.w	#$96,d0
@@ -1877,12 +1877,12 @@ loc_31667E:					  ; ...
 		move.b	#2,($FFFFF65F).w
 		move.w	#40,($FFFFF65C).w
 		move.b	#0,($FFFFFE19).w
-		move.b	#1,$1D(a0)
-		move.w	#1,$32(a0)
+		move.b	#1,prev_anim(a0)
+		move.w	#1,invincibility_time(a0)
 		move.w	#$600,($FFFFF760).w
 		move.w	#$C,($FFFFF762).w
 		move.w	#$80,($FFFFF764).w
-		btst	#6,$22(a0)
+		btst	#6,status(a0)
 		beq.s	return_3166C8
 		move.w	#$300,($FFFFF760).w
 		move.w	#6,($FFFFF762).w
@@ -1897,20 +1897,20 @@ return_3166C8:					  ; ...
 
 
 Knuckles_Spindash:				  ; ...
-		tst.b	$39(a0)
+		tst.b	spindash_flag(a0)
 		bne.s	Knuckles_UpdateSpindash
-		cmp.b	#8,$1C(a0)
+		cmp.b	#8,anim(a0)
 		bne.s	return_316718
 		move.b	($FFFFF603).w,d0
 		and.b	#$70,d0
 		beq.w	return_316718
-		move.b	#9,$1C(a0)
+		move.b	#9,anim(a0)
 		move.w	#SndID_SpindashRev,d0
 		jsr	PlaySound
 		addq.l	#4,sp
-		move.b	#1,$39(a0)
-		move.w	#0,$3A(a0)
-		cmp.b	#$C,$28(a0)
+		move.b	#1,spindash_flag(a0)
+		move.w	#0,spindash_counter(a0)
+		cmp.b	#$C,air_left(a0)
 		bcs.s	loc_316710
 		move.b	#2,($FFFFD11C).w
 
@@ -1926,33 +1926,33 @@ Knuckles_UpdateSpindash:			  ; ...
 		move.b	($FFFFF602).w,d0
 		btst	#1,d0
 		bne.w	Knuckles_ChargingSpindash
-		move.b	#$E,$16(a0)
-		move.b	#7,$17(a0)
-		move.b	#2,$1C(a0)
-		addq.w	#5,$C(a0)
-		move.b	#0,$39(a0)
+		move.b	#$E,y_radius(a0)
+		move.b	#7,x_radius(a0)
+		move.b	#2,anim(a0)
+		addq.w	#5,y_pos(a0)
+		move.b	#0,spindash_flag(a0)
 		moveq	#0,d0
-		move.b	$3A(a0),d0
+		move.b	spindash_counter(a0),d0
 		add.w	d0,d0
-		move.w	Spindash_Speeds(pc,d0.w),$14(a0)
+		move.w	Spindash_Speeds(pc,d0.w),inertia(a0)
 		tst.b	($FFFFFE19).w
 		beq.s	loc_31675C
-		move.w	Super_Spindash_Speeds(pc,d0.w),$14(a0)
+		move.w	Super_Spindash_Speeds(pc,d0.w),inertia(a0)
 
 loc_31675C:					  ; ...
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		sub.w	#$800,d0
 		add.w	d0,d0
 		and.w	#$1F00,d0
 		neg.w	d0
 		add.w	#$2000,d0
 		move.w	d0,($FFFFEED0).w	  ; Lock camera	for a certain number of	frames
-		btst	#0,$22(a0)
+		btst	#0,status(a0)
 		beq.s	loc_316780
-		neg.w	$14(a0)
+		neg.w	inertia(a0)
 
 loc_316780:					  ; ...
-		bset	#2,$22(a0)
+		bset	#2,status(a0)
 		move.b	#0,($FFFFD11C).w
 		move.w	#SndID_SpindashRelease,d0
 		jsr	PlaySound
@@ -1965,25 +1965,25 @@ Super_Spindash_Speeds:				  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_ChargingSpindash:			  ; ...
-		tst.w	$3A(a0)
+		tst.w	spindash_counter(a0)
 		beq.s	loc_3167D4
-		move.w	$3A(a0),d0
+		move.w	spindash_counter(a0),d0
 		lsr.w	#5,d0
-		sub.w	d0,$3A(a0)
+		sub.w	d0,spindash_counter(a0)
 		bcc.s	loc_3167D4
-		move.w	#0,$3A(a0)
+		move.w	#0,spindash_counter(a0)
 
 loc_3167D4:					  ; ...
 		move.b	($FFFFF603).w,d0
 		and.b	#$70,d0
 		beq.w	Obj4C_Spindash_ResetScreen
-		move.w	#$900,$1C(a0)
+		move.w	#$900,anim(a0)
 		move.w	#SndID_SpindashRev,d0
 		jsr	PlaySound
-		add.w	#$200,$3A(a0)
-		cmp.w	#$800,$3A(a0)
+		add.w	#$200,spindash_counter(a0)
+		cmp.w	#$800,spindash_counter(a0)
 		bcs.s	Obj4C_Spindash_ResetScreen
-		move.w	#$800,$3A(a0)
+		move.w	#$800,spindash_counter(a0)
 
 Obj4C_Spindash_ResetScreen:			  ; ...
 		addq.l	#4,sp
@@ -2006,27 +2006,27 @@ loc_316818:					  ; ...
 
 
 Knuckles_SlopeResist:				  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	#$60,d0
 		cmp.b	#$C0,d0
 		bcc.s	return_316856
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		jsr	CalcSine
 		muls.w	#$20,d0
 		asr.l	#8,d0
-		tst.w	$14(a0)
+		tst.w	inertia(a0)
 		beq.s	return_316856
 		bmi.s	loc_316852
 		tst.w	d0
 		beq.s	return_316850
-		add.w	d0,$14(a0)
+		add.w	d0,inertia(a0)
 
 return_316850:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_316852:					  ; ...
-		add.w	d0,$14(a0)
+		add.w	d0,inertia(a0)
 
 return_316856:					  ; ...
 		rts
@@ -2037,22 +2037,22 @@ return_316856:					  ; ...
 
 
 Knuckles_RollRepel:				  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	#$60,d0
 		cmp.b	#$C0,d0
 		bcc.s	return_316892
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		jsr	CalcSine
 		muls.w	#$50,d0
 		asr.l	#8,d0
-		tst.w	$14(a0)
+		tst.w	inertia(a0)
 		bmi.s	loc_316888
 		tst.w	d0
 		bpl.s	loc_316882
 		asr.l	#2,d0
 
 loc_316882:					  ; ...
-		add.w	d0,$14(a0)
+		add.w	d0,inertia(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -2062,7 +2062,7 @@ loc_316888:					  ; ...
 		asr.l	#2,d0
 
 loc_31688E:					  ; ...
-		add.w	d0,$14(a0)
+		add.w	d0,inertia(a0)
 
 return_316892:					  ; ...
 		rts
@@ -2074,31 +2074,31 @@ return_316892:					  ; ...
 
 Knuckles_SlopeRepel:				  ; ...
 		nop
-		tst.b	$38(a0)
+		tst.b	stick_to_convex(a0)
 		bne.s	return_3168CE
-		tst.w	$2E(a0)
+		tst.w	move_lock(a0)
 		bne.s	loc_3168D0
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		add.b	#$20,d0
 		and.b	#$C0,d0
 		beq.s	return_3168CE
-		move.w	$14(a0),d0
+		move.w	inertia(a0),d0
 		bpl.s	loc_3168B8
 		neg.w	d0
 
 loc_3168B8:					  ; ...
 		cmp.w	#$280,d0
 		bcc.s	return_3168CE
-		clr.w	$14(a0)
-		bset	#1,$22(a0)
-		move.w	#$1E,$2E(a0)
+		clr.w	inertia(a0)
+		bset	#1,status(a0)
+		move.w	#$1E,move_lock(a0)
 
 return_3168CE:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_3168D0:					  ; ...
-		subq.w	#1,$2E(a0)
+		subq.w	#1,move_lock(a0)
 		rts
 ; End of function Knuckles_SlopeRepel
 
@@ -2107,7 +2107,7 @@ loc_3168D0:					  ; ...
 
 
 Knuckles_JumpAngle:				  ; ...
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		beq.s	Knuckles_JumpFlip
 		bpl.s	loc_3168E6
 		addq.b	#2,d0
@@ -2124,21 +2124,21 @@ loc_3168E6:					  ; ...
 		moveq	#0,d0
 
 Knuckles_JumpAngleSet:				  ; ...
-		move.b	d0,$26(a0)
+		move.b	d0,angle(a0)
 
 Knuckles_JumpFlip:				  ; ...
-		move.b	$27(a0),d0
+		move.b	flip_angle(a0),d0
 		beq.s	return_316934
-		tst.w	$14(a0)
+		tst.w	inertia(a0)
 		bmi.s	Knuckles_JumpLeftFlip
 
 Knuckles_JumpRightFlip:				  ; ...
-		move.b	$2D(a0),d1
+		move.b	flip_speed(a0),d1
 		add.b	d1,d0
 		bcc.s	BraTo_Knuckles_JumpFlipSet
-		subq.b	#1,$2C(a0)
+		subq.b	#1,flips_remaining(a0)
 		bcc.s	BraTo_Knuckles_JumpFlipSet
-		move.b	#0,$2C(a0)
+		move.b	#0,flips_remaining(a0)
 		moveq	#0,d0
 
 BraTo_Knuckles_JumpFlipSet:			  ; ...
@@ -2146,18 +2146,18 @@ BraTo_Knuckles_JumpFlipSet:			  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_JumpLeftFlip:				  ; ...
-		tst.b	$29(a0)
+		tst.b	flip_turned(a0)
 		bne.s	Knuckles_JumpRightFlip
-		move.b	$2D(a0),d1
+		move.b	flip_speed(a0),d1
 		sub.b	d1,d0
 		bcc.s	Knuckles_JumpFlipSet
-		subq.b	#1,$2C(a0)
+		subq.b	#1,flips_remaining(a0)
 		bcc.s	Knuckles_JumpFlipSet
-		move.b	#0,$2C(a0)
+		move.b	#0,flips_remaining(a0)
 		moveq	#0,d0
 
 Knuckles_JumpFlipSet:				  ; ...
-		move.b	d0,$27(a0)
+		move.b	d0,flip_angle(a0)
 
 return_316934:					  ; ...
 		rts
@@ -2169,14 +2169,14 @@ return_316934:					  ; ...
 
 Knuckles_DoLevelCollision2:			  ; ...
 		move.l	#$FFFFD600,($FFFFF796).w
-		cmp.b	#$C,$3E(a0)
+		cmp.b	#$C,top_solid_bit(a0)
 		beq.s	loc_31694E
 		move.l	#$FFFFD900,($FFFFF796).w
 
 loc_31694E:					  ; ...
-		move.b	$3F(a0),d5
-		move.w	$10(a0),d1
-		move.w	$12(a0),d2
+		move.b	lrb_solid_bit(a0),d5
+		move.w	x_vel(a0),d1
+		move.w	y_vel(a0),d2
 		jsr	CalcAngle
 		sub.b	#$20,d0
 		and.b	#$C0,d0
@@ -2189,25 +2189,25 @@ loc_31694E:					  ; ...
 		bsr.w	CheckLeftWallDist
 		tst.w	d1
 		bpl.s	loc_316998
-		sub.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		sub.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 		bset	#5,($FFFFF7AC).w
 
 loc_316998:					  ; ...
 		bsr.w	CheckRightWallDist
 		tst.w	d1
 		bpl.s	loc_3169B0
-		add.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		add.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 		bset	#5,($FFFFF7AC).w
 
 loc_3169B0:					  ; ...
 		bsr.w	Sonic_CheckFloor
 		tst.w	d1
 		bpl.s	return_3169CC
-		add.w	d1,$C(a0)
-		move.b	d3,$26(a0)
-		move.w	#0,$12(a0)
+		add.w	d1,y_pos(a0)
+		move.b	d3,angle(a0)
+		move.w	#0,y_vel(a0)
 		bclr	#1,($FFFFF7AC).w
 
 return_3169CC:					  ; ...
@@ -2218,8 +2218,8 @@ Knuckles_HitLeftWall2:				  ; ...
 		bsr.w	CheckLeftWallDist
 		tst.w	d1
 		bpl.s	Knuckles_HitCeilingAlt
-		sub.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		sub.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 		bset	#5,($FFFFF7AC).w
 
 Knuckles_HitCeilingAlt:				  ; ...
@@ -2229,10 +2229,10 @@ Knuckles_HitCeilingAlt:				  ; ...
 		neg.w	d1
 		cmp.w	#$14,d1
 		bcc.s	loc_316A08
-		add.w	d1,$C(a0)
-		tst.w	$12(a0)
+		add.w	d1,y_pos(a0)
+		tst.w	y_vel(a0)
 		bpl.s	return_316A06
-		move.w	#0,$12(a0)
+		move.w	#0,y_vel(a0)
 
 return_316A06:					  ; ...
 		rts
@@ -2242,8 +2242,8 @@ loc_316A08:					  ; ...
 		bsr.w	CheckRightWallDist
 		tst.w	d1
 		bpl.s	return_316A20
-		add.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		add.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 		bset	#5,($FFFFF7AC).w
 
 return_316A20:					  ; ...
@@ -2251,14 +2251,14 @@ return_316A20:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_HitFloor:				  ; ...
-		tst.w	$12(a0)
+		tst.w	y_vel(a0)
 		bmi.s	return_316A44
 		bsr.w	Sonic_CheckFloor
 		tst.w	d1
 		bpl.s	return_316A44
-		add.w	d1,$C(a0)
-		move.b	d3,$26(a0)
-		move.w	#0,$12(a0)
+		add.w	d1,y_pos(a0)
+		move.b	d3,angle(a0)
+		move.w	#0,y_vel(a0)
 		bclr	#1,($FFFFF7AC).w
 
 return_316A44:					  ; ...
@@ -2269,24 +2269,24 @@ Knuckles_HitCeilingAndWalls2:			  ; ...
 		bsr.w	CheckLeftWallDist
 		tst.w	d1
 		bpl.s	loc_316A5E
-		sub.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		sub.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 		bset	#5,($FFFFF7AC).w
 
 loc_316A5E:					  ; ...
 		bsr.w	CheckRightWallDist
 		tst.w	d1
 		bpl.s	loc_316A76
-		add.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		add.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 		bset	#5,($FFFFF7AC).w
 
 loc_316A76:					  ; ...
 		bsr.w	Sonic_CheckCeiling
 		tst.w	d1
 		bpl.s	return_316A88
-		sub.w	d1,$C(a0)
-		move.w	#0,$12(a0)
+		sub.w	d1,y_pos(a0)
+		move.w	#0,y_vel(a0)
 
 return_316A88:					  ; ...
 		rts
@@ -2296,32 +2296,32 @@ Knuckles_HitRightWall2:				  ; ...
 		bsr.w	CheckRightWallDist
 		tst.w	d1
 		bpl.s	loc_316AA2
-		add.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		add.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 		bset	#5,($FFFFF7AC).w
 
 loc_316AA2:					  ; ...
 		bsr.w	Sonic_CheckCeiling
 		tst.w	d1
 		bpl.s	loc_316ABC
-		sub.w	d1,$C(a0)
-		tst.w	$12(a0)
+		sub.w	d1,y_pos(a0)
+		tst.w	y_vel(a0)
 		bpl.s	return_316ABA
-		move.w	#0,$12(a0)
+		move.w	#0,y_vel(a0)
 
 return_316ABA:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_316ABC:					  ; ...
-		tst.w	$12(a0)
+		tst.w	y_vel(a0)
 		bmi.s	return_316ADE
 		bsr.w	Sonic_CheckFloor
 		tst.w	d1
 		bpl.s	return_316ADE
-		add.w	d1,$C(a0)
-		move.b	d3,$26(a0)
-		move.w	#0,$12(a0)
+		add.w	d1,y_pos(a0)
+		move.b	d3,angle(a0)
+		move.w	#0,y_vel(a0)
 		bclr	#1,($FFFFF7AC).w
 
 return_316ADE:					  ; ...
@@ -2334,14 +2334,14 @@ return_316ADE:					  ; ...
 
 Knuckles_DoLevelCollision:			  ; ...
 		move.l	#$FFFFD600,($FFFFF796).w
-		cmp.b	#$C,$3E(a0)
+		cmp.b	#$C,top_solid_bit(a0)
 		beq.s	loc_316AF8
 		move.l	#$FFFFD900,($FFFFF796).w
 
 loc_316AF8:					  ; ...
-		move.b	$3F(a0),d5
-		move.w	$10(a0),d1
-		move.w	$12(a0),d2
+		move.b	lrb_solid_bit(a0),d5
+		move.w	x_vel(a0),d1
+		move.w	y_vel(a0),d2
 		jsr	CalcAngle
 		sub.b	#$20,d0
 		and.b	#$C0,d0
@@ -2354,21 +2354,21 @@ loc_316AF8:					  ; ...
 		bsr.w	CheckLeftWallDist
 		tst.w	d1
 		bpl.s	loc_316B3C
-		sub.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		sub.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 
 loc_316B3C:					  ; ...
 		bsr.w	CheckRightWallDist
 		tst.w	d1
 		bpl.s	loc_316B4E
-		add.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		add.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 
 loc_316B4E:					  ; ...
 		bsr.w	Sonic_CheckFloor
 		tst.w	d1
 		bpl.s	return_316BC0
-		move.b	$12(a0),d2
+		move.b	y_vel(a0),d2
 		addq.b	#8,d2
 		neg.b	d2
 		cmp.b	d2,d1
@@ -2377,8 +2377,8 @@ loc_316B4E:					  ; ...
 		blt.s	return_316BC0
 
 loc_316B66:					  ; ...
-		add.w	d1,$C(a0)
-		move.b	d3,$26(a0)
+		add.w	d1,y_pos(a0)
+		move.b	d3,angle(a0)
 		bsr.w	Knuckles_ResetOnFloor
 		move.b	d3,d0
 		add.b	#$20,d0
@@ -2388,27 +2388,27 @@ loc_316B66:					  ; ...
 		add.b	#$10,d0
 		and.b	#$20,d0
 		beq.s	loc_316B90
-		asr	$12(a0)
+		asr	y_vel(a0)
 		bra.s	loc_316BB2
 ; ---------------------------------------------------------------------------
 
 loc_316B90:					  ; ...
-		move.w	#0,$12(a0)
-		move.w	$10(a0),$14(a0)
+		move.w	#0,y_vel(a0)
+		move.w	x_vel(a0),inertia(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_316B9E:					  ; ...
-		move.w	#0,$10(a0)
-		cmp.w	#$FC0,$12(a0)
+		move.w	#0,x_vel(a0)
+		cmp.w	#$FC0,y_vel(a0)
 		ble.s	loc_316BB2
-		move.w	#$FC0,$12(a0)
+		move.w	#$FC0,y_vel(a0)
 
 loc_316BB2:					  ; ...
-		move.w	$12(a0),$14(a0)
+		move.w	y_vel(a0),inertia(a0)
 		tst.b	d3
 		bpl.s	return_316BC0
-		neg.w	$14(a0)
+		neg.w	inertia(a0)
 
 return_316BC0:					  ; ...
 		rts
@@ -2418,9 +2418,9 @@ Knuckles_HitLeftWall:				  ; ...
 		bsr.w	CheckLeftWallDist
 		tst.w	d1
 		bpl.s	Knuckles_HitCeiling
-		sub.w	d1,8(a0)
-		move.w	#0,$10(a0)
-		move.w	$12(a0),$14(a0)
+		sub.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
+		move.w	y_vel(a0),inertia(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -2428,26 +2428,26 @@ Knuckles_HitCeiling:				  ; ...
 		bsr.w	Sonic_CheckCeiling
 		tst.w	d1
 		bpl.s	Knuckles_HitFloor_0
-		sub.w	d1,$C(a0)
-		tst.w	$12(a0)
+		sub.w	d1,y_pos(a0)
+		tst.w	y_vel(a0)
 		bpl.s	return_316BF4
-		move.w	#0,$12(a0)
+		move.w	#0,y_vel(a0)
 
 return_316BF4:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 Knuckles_HitFloor_0:				  ; ...
-		tst.w	$12(a0)
+		tst.w	y_vel(a0)
 		bmi.s	return_316C1C
 		bsr.w	Sonic_CheckFloor
 		tst.w	d1
 		bpl.s	return_316C1C
-		add.w	d1,$C(a0)
-		move.b	d3,$26(a0)
+		add.w	d1,y_pos(a0)
+		move.b	d3,angle(a0)
 		bsr.w	Knuckles_ResetOnFloor
-		move.w	#0,$12(a0)
-		move.w	$10(a0),$14(a0)
+		move.w	#0,y_vel(a0)
+		move.w	x_vel(a0),inertia(a0)
 
 return_316C1C:					  ; ...
 		rts
@@ -2457,36 +2457,36 @@ Knuckles_HitCeilingAndWalls:			  ; ...
 		bsr.w	CheckLeftWallDist
 		tst.w	d1
 		bpl.s	loc_316C30
-		sub.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		sub.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 
 loc_316C30:					  ; ...
 		bsr.w	CheckRightWallDist
 		tst.w	d1
 		bpl.s	loc_316C42
-		add.w	d1,8(a0)
-		move.w	#0,$10(a0)
+		add.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
 
 loc_316C42:					  ; ...
 		bsr.w	Sonic_CheckCeiling
 		tst.w	d1
 		bpl.s	return_316C78
-		sub.w	d1,$C(a0)
+		sub.w	d1,y_pos(a0)
 		move.b	d3,d0
 		add.b	#$20,d0
 		and.b	#$40,d0
 		bne.s	loc_316C62
-		move.w	#0,$12(a0)
+		move.w	#0,y_vel(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_316C62:					  ; ...
-		move.b	d3,$26(a0)
+		move.b	d3,angle(a0)
 		bsr.w	Knuckles_ResetOnFloor
-		move.w	$12(a0),$14(a0)
+		move.w	y_vel(a0),inertia(a0)
 		tst.b	d3
 		bpl.s	return_316C78
-		neg.w	$14(a0)
+		neg.w	inertia(a0)
 
 return_316C78:					  ; ...
 		rts
@@ -2496,9 +2496,9 @@ Knuckles_HitRightWall:				  ; ...
 		bsr.w	CheckRightWallDist
 		tst.w	d1
 		bpl.s	Knuckles_HitCeiling2
-		add.w	d1,8(a0)
-		move.w	#0,$10(a0)
-		move.w	$12(a0),$14(a0)
+		add.w	d1,x_pos(a0)
+		move.w	#0,x_vel(a0)
+		move.w	y_vel(a0),inertia(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -2506,26 +2506,26 @@ Knuckles_HitCeiling2:				  ; ...
 		bsr.w	Sonic_CheckCeiling
 		tst.w	d1
 		bpl.s	Knuckles_HitFloor2
-		sub.w	d1,$C(a0)
-		tst.w	$12(a0)
+		sub.w	d1,y_pos(a0)
+		tst.w	y_vel(a0)
 		bpl.s	return_316CAC
-		move.w	#0,$12(a0)
+		move.w	#0,y_vel(a0)
 
 return_316CAC:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 Knuckles_HitFloor2:				  ; ...
-		tst.w	$12(a0)
+		tst.w	y_vel(a0)
 		bmi.s	return_316CD4
 		bsr.w	Sonic_CheckFloor
 		tst.w	d1
 		bpl.s	return_316CD4
-		add.w	d1,$C(a0)
-		move.b	d3,$26(a0)
+		add.w	d1,y_pos(a0)
+		move.b	d3,angle(a0)
 		bsr.w	Knuckles_ResetOnFloor
-		move.w	#0,$12(a0)
-		move.w	$10(a0),$14(a0)
+		move.w	#0,y_vel(a0)
+		move.w	x_vel(a0),inertia(a0)
 
 return_316CD4:					  ; ...
 		rts
@@ -2536,9 +2536,9 @@ return_316CD4:					  ; ...
 
 
 Knuckles_ResetOnFloor:				  ; ...
-		tst.b	$39(a0)
+		tst.b	spindash_flag(a0)
 		bne.s	Knuckles_ResetOnFloor_Part3
-		move.b	#0,$1C(a0)
+		move.b	#0,anim(a0)
 ; End of function Knuckles_ResetOnFloor
 
 
@@ -2546,35 +2546,35 @@ Knuckles_ResetOnFloor:				  ; ...
 
 
 Knuckles_ResetOnFloor_Part2:			  ; ...
-		move.b	$16(a0),d0
-		move.b	#$13,$16(a0)
-		move.b	#9,$17(a0)
-		btst	#2,$22(a0)
+		move.b	y_radius(a0),d0
+		move.b	#$13,y_radius(a0)
+		move.b	#9,x_radius(a0)
+		btst	#2,status(a0)
 		beq.s	Knuckles_ResetOnFloor_Part3
-		bclr	#2,$22(a0)
-		move.b	#0,$1C(a0)
+		bclr	#2,status(a0)
+		move.b	#0,anim(a0)
 		sub.b	#$13,d0
 		ext.w	d0
-		add.w	d0,$C(a0)
+		add.w	d0,y_pos(a0)
 
 Knuckles_ResetOnFloor_Part3:			  ; ...
-		bclr	#1,$22(a0)
-		bclr	#5,$22(a0)
-		bclr	#4,$22(a0)
-		move.b	#0,$3C(a0)
+		bclr	#1,status(a0)
+		bclr	#5,status(a0)
+		bclr	#4,status(a0)
+		move.b	#0,jumping(a0)
 		move.w	#0,($FFFFF7D0).w
-		move.b	#0,$27(a0)
-		move.b	#0,$29(a0)
-		move.b	#0,$2C(a0)
+		move.b	#0,flip_angle(a0)
+		move.b	#0,flip_turned(a0)
+		move.b	#0,flips_remaining(a0)
 		move.w	#0,($FFFFF66C).w
-		move.b	#0,$21(a0)
-		cmp.b	#$20,$1C(a0)
+		move.b	#0,glidemode(a0)
+		cmp.b	#$20,anim(a0)
 		bcc.s	loc_316D5C
-		cmp.b	#$14,$1C(a0)
+		cmp.b	#$14,anim(a0)
 		bne.s	return_316D62
 
 loc_316D5C:					  ; ...
-		move.b	#0,$1C(a0)
+		move.b	#0,anim(a0)
 
 return_316D62:					  ; ...
 		rts
@@ -2598,18 +2598,18 @@ Obj4C_Hurt:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Obj4C_Hurt_Normal:				  ; ...
-		tst.b	$25(a0)
+		tst.b	routine_secondary(a0)
 		bmi.w	Knuckles_HurtInstantRecover
 		jsr	ObjectMove		  ; AKA	SpeedToPos in Sonic 1
-		add.w	#$30,$12(a0)
-		btst	#6,$22(a0)
+		add.w	#$30,y_vel(a0)
+		btst	#6,status(a0)
 		beq.s	loc_316DA0
-		sub.w	#$20,$12(a0)
+		sub.w	#$20,y_vel(a0)
 
 loc_316DA0:					  ; ...
 		cmp.w	#$FF00,($FFFFEECC).w
 		bne.s	loc_316DAE
-		and.w	#$7FF,$C(a0)
+		and.w	#$7FF,y_pos(a0)
 
 loc_316DAE:					  ; ...
 		bsr.w	Knuckles_HurtStop
@@ -2627,20 +2627,20 @@ loc_316DAE:					  ; ...
 Knuckles_HurtStop:				  ; ...
 		move.w	($FFFFEECE).w,d0
 		add.w	#$E0,d0
-		cmp.w	$C(a0),d0
+		cmp.w	y_pos(a0),d0
 		blt.w	JmpToK_KillCharacter
 		bsr.w	Knuckles_DoLevelCollision
-		btst	#1,$22(a0)
+		btst	#1,status(a0)
 		bne.s	return_316E0C
 		moveq	#0,d0
-		move.w	d0,$12(a0)
-		move.w	d0,$10(a0)
-		move.w	d0,$14(a0)
-		move.b	d0,$2A(a0)
-		move.b	#0,$1C(a0)
-		subq.b	#2,$24(a0)
-		move.w	#$78,$30(a0)
-		move.b	#0,$39(a0)
+		move.w	d0,y_vel(a0)
+		move.w	d0,x_vel(a0)
+		move.w	d0,inertia(a0)
+		move.b	d0,obj_control(a0)
+		move.b	#0,anim(a0)
+		subq.b	#2,routine(a0)
+		move.w	#$78,invulnerable_time(a0)
+		move.b	#0,spindash_flag(a0)
 
 return_316E0C:					  ; ...
 		rts
@@ -2654,8 +2654,8 @@ JmpToK_KillCharacter:				  ; ...
 ; START	OF FUNCTION CHUNK FOR Obj4C_Hurt
 
 Knuckles_HurtInstantRecover:			  ; ...
-		subq.b	#2,$24(a0)
-		move.b	#0,$25(a0)
+		subq.b	#2,routine(a0)
+		move.b	#0,routine_secondary(a0)
 		bsr.w	Knuckles_RecordPositions
 		bsr.w	Knuckles_Animate
 		bsr.w	LoadKnucklesDynPLC
@@ -2690,17 +2690,17 @@ loc_316E4A:					  ; ...
 
 Obj4C_CheckGameOver:					  ; ...
 		move.b	#1,($FFFFEEBE).w
-		move.b	#0,$39(a0)
+		move.b	#0,spindash_flag(a0)
 		move.w	($FFFFEECE).w,d0
 		add.w	#$100,d0
-		cmp.w	$C(a0),d0
+		cmp.w	y_pos(a0),d0
 		bge.w	return_316F64
-		move.b	#8,$24(a0)
-		move.w	#$3C,$3A(a0)
+		move.b	#8,routine(a0)
+		move.w	#$3C,spindash_counter(a0)
 		addq.b	#1,($FFFFFE1C).w
 		subq.b	#1,($FFFFFE12).w
 		bne.s	Obj4C_ResetLevel
-		move.w	#0,$3A(a0)
+		move.w	#0,spindash_counter(a0)
 		move.b	#$39,($FFFFB080).w
 		move.b	#$39,($FFFFB0C0).w
 		move.b	#1,($FFFFB0DA).w
@@ -2710,7 +2710,7 @@ Obj4C_CheckGameOver:					  ; ...
 Obj4C_Finished:					  ; ...
 		clr.b	($FFFFFE1E).w
 		clr.b	($FFFFFECA).w
-		move.b	#8,$24(a0)
+		move.b	#8,routine(a0)
 		move.w	#$9B,d0
 		jsr	PlayMusic
 		moveq	#3,d0
@@ -2720,7 +2720,7 @@ Obj4C_Finished:					  ; ...
 Obj4C_ResetLevel:				  ; ...
 		tst.b	($FFFFFE1A).w
 		beq.s	Obj4C_ResetLevel_Part2
-		move.w	#0,$3A(a0)
+		move.w	#0,spindash_counter(a0)
 		move.b	#$39,($FFFFB080).w
 		move.b	#$39,($FFFFB0C0).w
 		move.b	#2,($FFFFB09A).w
@@ -2733,21 +2733,21 @@ Obj4C_ResetLevel_Part2:				  ; ...
 		tst.w	(Two_player_mode).w
 		beq.s	return_316F64
 		move.b	#0,($FFFFEEBE).w
-		move.b	#$A,$24(a0)
-		move.w	($FFFFFE32).w,8(a0)
-		move.w	($FFFFFE34).w,$C(a0)
-		move.w	($FFFFFE3C).w,2(a0)
-		move.w	($FFFFFE3E).w,$3E(a0)
+		move.b	#$A,routine(a0)
+		move.w	($FFFFFE32).w,x_pos(a0)
+		move.w	($FFFFFE34).w,y_pos(a0)
+		move.w	($FFFFFE3C).w,art_tile(a0)
+		move.w	($FFFFFE3E).w,top_solid_bit(a0)
 		clr.w	($FFFFFE20).w
 		clr.b	($FFFFFE1B).w
-		move.b	#0,$2A(a0)
-		move.b	#5,$1C(a0)
-		move.w	#0,$10(a0)
-		move.w	#0,$12(a0)
-		move.w	#0,$14(a0)
-		move.b	#2,$22(a0)
-		move.w	#0,$2E(a0)
-		move.w	#0,$3A(a0)
+		move.b	#0,obj_control(a0)
+		move.b	#5,anim(a0)
+		move.w	#0,x_vel(a0)
+		move.w	#0,y_vel(a0)
+		move.w	#0,inertia(a0)
+		move.b	#2,status(a0)
+		move.w	#0,move_lock(a0)
+		move.w	#0,spindash_counter(a0)
 
 return_316F64:					  ; ...
 		rts
@@ -2758,9 +2758,9 @@ return_316F64:					  ; ...
 
 
 Obj4C_Gone:					  ; ...
-		tst.w	$3A(a0)
+		tst.w	spindash_counter(a0)
 		beq.s	return_316F78
-		subq.w	#1,$3A(a0)
+		subq.w	#1,spindash_counter(a0)
 		bne.s	return_316F78
 		move.w	#1,($FFFFFE02).w
 
@@ -2775,7 +2775,7 @@ Obj4C_Respawning:				  ; ...
 		bne.s	loc_316F8C
 		tst.w	($FFFFEEB2).w
 		bne.s	loc_316F8C
-		move.b	#2,$24(a0)
+		move.b	#2,routine(a0)
 
 loc_316F8C:					  ; ...
 		bsr.w	Knuckles_Animate
@@ -2788,37 +2788,37 @@ loc_316F8C:					  ; ...
 Knuckles_Animate:				  ; ...
 		lea	(KnucklesAniData).l,a1
 		moveq	#0,d0
-		move.b	$1C(a0),d0
-		cmp.b	$1D(a0),d0
+		move.b	anim(a0),d0
+		cmp.b	prev_anim(a0),d0
 		beq.s	KAnim_Do
-		move.b	d0,$1D(a0)
-		move.b	#0,$1B(a0)
-		move.b	#0,$1E(a0)
-		bclr	#5,$22(a0)
+		move.b	d0,prev_anim(a0)
+		move.b	#0,anim_frame(a0)
+		move.b	#0,anim_frame_duration(a0)
+		bclr	#5,status(a0)
 
 KAnim_Do:					  ; ...
 		add.w	d0,d0
 		add.w	(a1,d0.w),a1
 		move.b	(a1),d0
 		bmi.s	KAnim_WalkRun
-		move.b	$22(a0),d1
+		move.b	status(a0),d1
 		and.b	#1,d1
-		and.b	#$FC,1(a0)
-		or.b	d1,1(a0)
-		subq.b	#1,$1E(a0)
+		and.b	#$FC,render_flags(a0)
+		or.b	d1,render_flags(a0)
+		subq.b	#1,anim_frame_duration(a0)
 		bpl.s	KAnim_Delay
-		move.b	d0,$1E(a0)
+		move.b	d0,anim_frame_duration(a0)
 
 KAnim_Do2:					  ; ...
 		moveq	#0,d1
-		move.b	$1B(a0),d1
-		move.b	1(a1,d1.w),d0
+		move.b	anim_frame(a0),d1
+		move.b	render_flags(a1,d1.w),d0
 		cmp.b	#$FC,d0
 		bcc.s	KAnim_End_FF
 
 KAnim_Next:					  ; ...
-		move.b	d0,$1A(a0)
-		addq.b	#1,$1B(a0)
+		move.b	d0,mapping_frame(a0)
+		addq.b	#1,anim_frame(a0)
 
 KAnim_Delay:					  ; ...
 		rts
@@ -2827,25 +2827,25 @@ KAnim_Delay:					  ; ...
 KAnim_End_FF:					  ; ...
 		addq.b	#1,d0
 		bne.s	KAnim_End_FE
-		move.b	#0,$1B(a0)
-		move.b	1(a1),d0
+		move.b	#0,anim_frame(a0)
+		move.b	render_flags(a1),d0
 		bra.s	KAnim_Next
 ; ---------------------------------------------------------------------------
 
 KAnim_End_FE:					  ; ...
 		addq.b	#1,d0
 		bne.s	KAnim_End_FD
-		move.b	2(a1,d1.w),d0
-		sub.b	d0,$1B(a0)
+		move.b	art_tile(a1,d1.w),d0
+		sub.b	d0,anim_frame(a0)
 		sub.b	d0,d1
-		move.b	1(a1,d1.w),d0
+		move.b	render_flags(a1,d1.w),d0
 		bra.s	KAnim_Next
 ; ---------------------------------------------------------------------------
 
 KAnim_End_FD:					  ; ...
 		addq.b	#1,d0
 		bne.s	KAnim_End
-		move.b	2(a1,d1.w),$1C(a0)
+		move.b	art_tile(a1,d1.w),anim(a0)
 
 KAnim_End:					  ; ...
 		rts
@@ -2855,16 +2855,16 @@ KAnim_WalkRun:					  ; ...
 		addq.b	#1,d0
 		bne.w	KAnim_Roll
 		moveq	#0,d0
-		move.b	$27(a0),d0
+		move.b	flip_angle(a0),d0
 		bne.w	KAnim_Tumble
 		moveq	#0,d1
-		move.b	$26(a0),d0
+		move.b	angle(a0),d0
 		bmi.s	loc_31704E
 		beq.s	loc_31704E
 		subq.b	#1,d0
 
 loc_31704E:					  ; ...
-		move.b	$22(a0),d2
+		move.b	status(a0),d2
 		and.b	#1,d2
 		bne.s	loc_31705A
 		not.b	d0
@@ -2875,19 +2875,19 @@ loc_31705A:					  ; ...
 		moveq	#3,d1
 
 loc_317062:					  ; ...
-		and.b	#$FC,1(a0)
+		and.b	#$FC,render_flags(a0)
 		eor.b	d1,d2
-		or.b	d2,1(a0)
-		btst	#5,$22(a0)
+		or.b	d2,render_flags(a0)
+		btst	#5,status(a0)
 		bne.w	KAnim_Push
 		lsr.b	#4,d0
 		and.b	#6,d0
-		move.w	$14(a0),d2
+		move.w	inertia(a0),d2
 		bpl.s	loc_317086
 		neg.w	d2
 
 loc_317086:					  ; ...
-		tst.b	$2B(a0)
+		tst.b	status_secondary(a0)
 		bpl.w	loc_317090
 		add.w	d2,d2
 
@@ -2902,17 +2902,17 @@ loc_3170A4:					  ; ...
 		add.b	d0,d0
 		move.b	d0,d3
 		moveq	#0,d1
-		move.b	$1B(a0),d1
-		move.b	1(a1,d1.w),d0
+		move.b	anim_frame(a0),d1
+		move.b	render_flags(a1,d1.w),d0
 		cmp.b	#$FF,d0
 		bne.s	loc_3170C2
-		move.b	#0,$1B(a0)
-		move.b	1(a1),d0
+		move.b	#0,anim_frame(a0)
+		move.b	render_flags(a1),d0
 
 loc_3170C2:					  ; ...
-		move.b	d0,$1A(a0)
-		add.b	d3,$1A(a0)
-		subq.b	#1,$1E(a0)
+		move.b	d0,mapping_frame(a0)
+		add.b	d3,mapping_frame(a0)
+		subq.b	#1,anim_frame_duration(a0)
 		bpl.s	return_3170E4
 		neg.w	d2
 		add.w	#$800,d2
@@ -2921,56 +2921,56 @@ loc_3170C2:					  ; ...
 
 loc_3170DA:					  ; ...
 		lsr.w	#8,d2
-		move.b	d2,$1E(a0)
-		addq.b	#1,$1B(a0)
+		move.b	d2,anim_frame_duration(a0)
+		addq.b	#1,anim_frame(a0)
 
 return_3170E4:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
 
 KAnim_Tumble:					  ; ...
-		move.b	$27(a0),d0
+		move.b	flip_angle(a0),d0
 		moveq	#0,d1
-		move.b	$22(a0),d2
+		move.b	status(a0),d2
 		and.b	#1,d2
 		bne.s	KAnim_Tumble_Left
-		and.b	#$FC,1(a0)
+		and.b	#$FC,render_flags(a0)
 		add.b	#$B,d0
 		divu.w	#$16,d0
 		add.b	#$31,d0
-		move.b	d0,$1A(a0)
-		move.b	#0,$1E(a0)
+		move.b	d0,mapping_frame(a0)
+		move.b	#0,anim_frame_duration(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 KAnim_Tumble_Left:				  ; ...
-		and.b	#$FC,1(a0)
-		tst.b	$29(a0)
+		and.b	#$FC,render_flags(a0)
+		tst.b	flip_turned(a0)
 		beq.s	loc_31712C
-		or.b	#1,1(a0)
+		or.b	#1,render_flags(a0)
 		add.b	#$B,d0
 		bra.s	loc_317138
 ; ---------------------------------------------------------------------------
 
 loc_31712C:					  ; ...
-		or.b	#3,1(a0)
+		or.b	#3,render_flags(a0)
 		neg.b	d0
 		add.b	#-$71,d0
 
 loc_317138:					  ; ...
 		divu.w	#$16,d0
 		add.b	#$31,d0
-		move.b	d0,$1A(a0)
-		move.b	#0,$1E(a0)
+		move.b	d0,mapping_frame(a0)
+		move.b	#0,anim_frame_duration(a0)
 		rts
 ; ---------------------------------------------------------------------------
 
 KAnim_Roll:					  ; ...
-		subq.b	#1,$1E(a0)
+		subq.b	#1,anim_frame_duration(a0)
 		bpl.w	KAnim_Delay
 		addq.b	#1,d0
 		bne.s	KAnim_Push
-		move.w	$14(a0),d2
+		move.w	inertia(a0),d2
 		bpl.s	loc_317160
 		neg.w	d2
 
@@ -2988,18 +2988,18 @@ loc_317172:					  ; ...
 
 loc_31717C:					  ; ...
 		lsr.w	#8,d2
-		move.b	d2,$1E(a0)
-		move.b	$22(a0),d1
+		move.b	d2,anim_frame_duration(a0)
+		move.b	status(a0),d1
 		and.b	#1,d1
-		and.b	#$FC,1(a0)
-		or.b	d1,1(a0)
+		and.b	#$FC,render_flags(a0)
+		or.b	d1,render_flags(a0)
 		bra.w	KAnim_Do2
 ; ---------------------------------------------------------------------------
 
 KAnim_Push:					  ; ...
-		subq.b	#1,$1E(a0)
+		subq.b	#1,anim_frame_duration(a0)
 		bpl.w	KAnim_Delay
-		move.w	$14(a0),d2
+		move.w	inertia(a0),d2
 		bmi.s	loc_3171A8
 		neg.w	d2
 
@@ -3010,12 +3010,12 @@ loc_3171A8:					  ; ...
 
 loc_3171B0:					  ; ...
 		lsr.w	#8,d2
-		move.b	d2,$1E(a0)
+		move.b	d2,anim_frame_duration(a0)
 		lea	(KnucklesAni_Push).l,a1
-		move.b	$22(a0),d1
+		move.b	status(a0),d1
 		and.b	#1,d1
-		and.b	#$FC,1(a0)
-		or.b	d1,1(a0)
+		and.b	#$FC,render_flags(a0)
+		or.b	d1,render_flags(a0)
 		bra.w	KAnim_Do2
 ; End of function Knuckles_Animate
 
@@ -3124,7 +3124,7 @@ KnucklesAni_Transform:dc.b   2,$EB,$EB,$EC,$ED,$EC,$ED,$EC,$ED,$EC,$ED,$EC,$ED;	
 
 LoadKnucklesDynPLC:				  ; ...
 		moveq	#0,d0
-		move.b	$1A(a0),d0
+		move.b	mapping_frame(a0),d0
 ; End of function LoadKnucklesDynPLC
 
 ; START	OF FUNCTION CHUNK FOR sub_333D66
@@ -3165,7 +3165,7 @@ return_31753E:					  ; ...
 ; Doesn't exist in S2
 
 sub_3192E6:					  ; ...
-		move.b	$17(a0),d0
+		move.b	x_radius(a0),d0
 		ext.w	d0
 		sub.w	d0,d2
 		eor.w	#$F,d2
@@ -3195,7 +3195,7 @@ return_318FF4:					  ; ...
 
 
 sub_318FF6:					  ; ...
-		move.b	$17(a0),d0
+		move.b	x_radius(a0),d0
 		ext.w	d0
 		add.w	d0,d2
 		lea	($FFFFF768).w,a4
@@ -3211,7 +3211,7 @@ sub_318FF6:					  ; ...
 ; START	OF FUNCTION CHUNK FOR sub_315C22
 
 loc_319208:					  ; ...
-		move.b	$17(a0),d0
+		move.b	x_radius(a0),d0
 		ext.w	d0
 		add.w	d0,d3
 		lea	($FFFFF768).w,a4
@@ -3226,7 +3226,7 @@ loc_319208:					  ; ...
 ; START	OF FUNCTION CHUNK FOR sub_315C22
 
 loc_3193D2:					  ; ...
-		move.b	$17(a0),d0
+		move.b	x_radius(a0),d0
 		ext.w	d0
 		sub.w	d0,d3
 		eor.w	#$F,d3
