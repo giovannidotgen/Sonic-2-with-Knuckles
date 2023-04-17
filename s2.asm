@@ -84995,7 +84995,7 @@ PlrList_Std2Knuckles: plrlistheader
 	plreq ArtTile_ArtNem_Checkpoint, ArtNem_Checkpoint
 	plreq ArtTile_ArtNem_Powerups, ArtNem_Powerups
 	plreq ArtTile_ArtNem_Powerups+$2C, ArtNem_MonitorIconsMod
-	plreq ArtTile_ArtNem_Shield, ArtNem_Invincible_stars_K
+	plreq ArtTile_ArtNem_Invincible_stars, ArtNem_Invincible_stars_K
 PlrList_Std2Knuckles_End
 ;---------------------------------------------------------------------------------------
 ; Pattern load queue
