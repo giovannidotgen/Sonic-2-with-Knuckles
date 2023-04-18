@@ -5352,7 +5352,7 @@ WindTunnel:
 	clr.b	jumping(a1)
 	cmpi.b	#ObjID_Knuckles,id(a1)
 	bne.s	+
-	clr.b	glidemode(a1)
+	clr.b	$21(a1)
 
 +	
 	btst	#button_up,(Ctrl_1_Held).w	; is Up being pressed?
@@ -25511,9 +25511,9 @@ SolidObject_Monitor_Sonic:
 ; End of function SolidObject_Monitor_Sonic
 
 SolidObject_Monitor_Knuckles:
-	cmp.b	#1,glidemode(a1)
+	cmp.b	#1,$21(a1)
 	beq.s	+
-	cmp.b	#3,glidemode(a1)
+	cmp.b	#3,$21(a1)
 	beq.s	+
 	cmpi.b	#AniIDSonAni_Roll,anim(a1)
 	bne.w	SolidObject_cont
@@ -36641,8 +36641,6 @@ return_1D976:
 ; ===========================================================================
 
 Obj38_Delete:
-	tst.b	(Two_player_mode).w
-	beq.s	JmpTo7_DeleteObject
 	cmpi.w	#MainCharacter,parent(a0)		; check if it's the main character losing the shield
 	bne.s	JmpTo7_DeleteObject				; if not, perform standard behavior
 	cmpi.b	#ObjID_Sonic,(MainCharacter).w	; check if Sonic has lost the shield
@@ -37012,7 +37010,7 @@ Obj08_CheckSkid:
 	moveq	#6,d1	; move different y offset to d1
 	cmpi.b	#ObjID_Knuckles,id(a2)	; playing as Knuckles?
 	bne.s	+
-	cmpi.b	#3,glidemode(a2)	; check for sliding
+	cmpi.b	#3,$21(a2)	; check for sliding
 	beq.s	Obj08_SkidDust
 +	move.b	#2,routine(a0)
 	move.b	#0,objoff_32(a0)
@@ -48147,7 +48145,7 @@ loc_270DC:
 	bclr	#4,status(a1)
     endif
 	bclr	#5,status(a1)
-	clr.b	glidemode(a1)			; KiS2: Makes Knuckles un-glide	
+	clr.b	$21(a1)			; KiS2: Makes Knuckles un-glide	
 	move.w	#SndID_Spring,d0
 	jmp	(PlaySound).l
 ; ===========================================================================
@@ -52891,7 +52889,7 @@ loc_2A990:
 +
 	cmpi.b	#ObjID_Knuckles,id(a1)
 	bne.s	+
-	clr.b	glidemode(a1)
+	clr.b	$21(a1)
 +
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
@@ -52948,7 +52946,6 @@ Obj85:
 	move.b	routine(a0),d0
 	move.w	Obj85_Index(pc,d0.w),d1
 	jsr	Obj85_Index(pc,d1.w)
-	move.b	#$18,width_pixels(a0)	; Now moved here instead of being at loc_2ABFA	
 	move.w	#$200,d0
 	tst.w	(Two_player_mode).w
 	beq.s	+
@@ -52996,6 +52993,7 @@ Obj85_Init:
 	beq.s	Obj85_Init_Up
 	addq.b	#2,routine(a0)
 	move.b	#$20,mainspr_width(a0)
+	move.b	#$18,width_pixels(a0)
 	move.w	x_pos(a0),objoff_2E(a0)
 	move.w	y_pos(a0),objoff_34(a0)
 	move.w	x_pos(a0),d2
@@ -69241,10 +69239,16 @@ byte_3744E:
 
 ; loc_37454:
 Obj97_InitialWait:
+    if gameRevision<2
+	bsr.w	Obj97_CheckHeadIsAlive
+	subq.b	#1,objoff_2A(a0)
+	bmi.s	Obj97_StartRaise
+    else
 	; fixes an occational crash when defeated
 	subq.b	#1,objoff_2A(a0)
 	bmi.s	Obj97_StartRaise
 	bsr.w	Obj97_CheckHeadIsAlive
+    endif
 	jmpto	MarkObjGone, JmpTo39_MarkObjGone
 ; ===========================================================================
 
@@ -69263,11 +69267,20 @@ Obj97_StartRaise:
 
 ; loc_37488:
 Obj97_RaiseHead:
+    if gameRevision<2
+	bsr.w	Obj97_CheckHeadIsAlive
+	moveq	#$10,d0
+	add.w	d0,x_vel(a0)
+	subq.b	#1,objoff_2A(a0)
+	bmi.s	Obj97_StartNormalState
+    else
+	; fixes an occational crash when defeated
 	moveq	#$10,d0
 	add.w	d0,x_vel(a0)
 	subq.b	#1,objoff_2A(a0)
 	bmi.s	Obj97_StartNormalState
 	bsr.w	Obj97_CheckHeadIsAlive
+    endif
 	jsrto	ObjectMove, JmpTo26_ObjectMove
 	jmpto	MarkObjGone, JmpTo39_MarkObjGone
 ; ===========================================================================
@@ -74672,7 +74685,7 @@ ObjB5_CheckPlayer:
 +
 	cmpi.b	#ObjID_Knuckles,id(a1)
 	bne.s	ObjB5_NotKnuckles
-	clr.b	glidemode(a1)
+	clr.b	$21(a1)
 
 ObjB5_NotKnuckles:
 	clr.b	double_jump_flag(a1)
@@ -80339,9 +80352,9 @@ Touch_Monitor:
 	beq.s	Break_Monitor
 	cmpi.b	#ObjID_Knuckles,id(a0)
 	bne.s	return_3F78A
-	cmp.b	#1,glidemode(a0)
+	cmp.b	#1,$21(a0)
 	beq.s	Break_Monitor
-	cmp.b	#3,glidemode(a0)
+	cmp.b	#3,$21(a0)
 	bne.s	return_3F78A
 
 Break_Monitor:
@@ -80406,9 +80419,9 @@ Touch_Enemy_Part2:
 	beq.s	Touch_KillEnemy
 	cmpi.b	#ObjID_Knuckles,id(a0)
 	bne.s	+
-	cmp.b	#1,glidemode(a0)
+	cmp.b	#1,$21(a0)
 	bne.s	+
-	move.b	#2,glidemode(a0)
+	move.b	#2,$21(a0)
 	move.b	#$21,anim(a0)
 +	
 	neg.w	x_vel(a0)

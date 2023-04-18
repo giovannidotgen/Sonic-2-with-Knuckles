@@ -406,7 +406,7 @@ Sonic_InstaShieldCont:
 	move.b	#1,(Shield+anim).w
 	move.b	#1,double_jump_flag(a0)	
 	move.b	#SndID_InstaShield,d0	; play Insta-Shield sound
-	jsr		PlaySound
+	jsr		PlaySound2
 
 +
 	bclr	#4,status(a0)

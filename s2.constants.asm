@@ -21,7 +21,7 @@ x_sub =			 $A ; and $B
 y_pos =			 $C ; and $D ... some objects use $E and $F as well when extra precision is required ... screen-space objects use y_pixel instead
 y_sub =			 $E ; and $F
 priority =		$18 ; 0 = front
-width_pixels =		$14
+width_pixels =		$19
 mapping_frame =		$1A
 ; ---------------------------------------------------------------------------
 ; conventions followed by most objects:
@@ -46,10 +46,10 @@ subtype =		$28
 ; ---------------------------------------------------------------------------
 ; conventions specific to Sonic/Tails (Obj01, Obj02, and ObjDB):
 ground_vel =	inertia
-inertia =		$20 ; and $21 ; directionless representation of speed... not updated in the air
+inertia =		$14 ; and $15 ; directionless representation of speed... not updated in the air
 double_jump_flag =	$1F	; self explanatory
-double_jump_property = $15 ; for Tails, it's flight related
-glidemode = $23			; for Knuckles, for use with S2CX code
+double_jump_property = $20 ; for Tails, it's flight related
+glidemode = $21			; for Knuckles, for use with S2CX code
 flip_angle =		$27 ; angle about the x axis (360 degrees = 256) (twist/tumble)
 air_left =		$28
 flip_turned =		$29 ; 0 for normal, 1 to invert flipping (it's a 180 degree rotation about the axis of Sonic's spine, so he stays in the same position but looks turned around)
