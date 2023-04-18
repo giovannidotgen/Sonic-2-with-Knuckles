@@ -69239,16 +69239,9 @@ byte_3744E:
 
 ; loc_37454:
 Obj97_InitialWait:
-    if gameRevision<2
-	bsr.w	Obj97_CheckHeadIsAlive
-	subq.b	#1,objoff_2A(a0)
-	bmi.s	Obj97_StartRaise
-    else
-	; fixes an occational crash when defeated
 	subq.b	#1,objoff_2A(a0)
 	bmi.s	Obj97_StartRaise
 	bsr.w	Obj97_CheckHeadIsAlive
-    endif
 	jmpto	MarkObjGone, JmpTo39_MarkObjGone
 ; ===========================================================================
 
@@ -69267,20 +69260,11 @@ Obj97_StartRaise:
 
 ; loc_37488:
 Obj97_RaiseHead:
-    if gameRevision<2
-	bsr.w	Obj97_CheckHeadIsAlive
-	moveq	#$10,d0
-	add.w	d0,x_vel(a0)
-	subq.b	#1,objoff_2A(a0)
-	bmi.s	Obj97_StartNormalState
-    else
-	; fixes an occational crash when defeated
 	moveq	#$10,d0
 	add.w	d0,x_vel(a0)
 	subq.b	#1,objoff_2A(a0)
 	bmi.s	Obj97_StartNormalState
 	bsr.w	Obj97_CheckHeadIsAlive
-    endif
 	jsrto	ObjectMove, JmpTo26_ObjectMove
 	jmpto	MarkObjGone, JmpTo39_MarkObjGone
 ; ===========================================================================
