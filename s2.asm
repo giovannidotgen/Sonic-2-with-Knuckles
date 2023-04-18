@@ -79983,16 +79983,149 @@ JmpTo20_SingleObjLoad ; JmpTo
 	align 4
     endif
 
-
-
-
-; ---------------------------------------------------------------------------
-; Object touch response subroutine - $20(a0) in the object RAM
-; collides Sonic with most objects (enemies, rings, monitors...) in the level
-; ---------------------------------------------------------------------------
-
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
+ShieldTouchResponse:
+		bsr.w	IsInstaShielding
+		tst.b	d0
+		bne.s	+
+		cmpi.b	#ObjID_Knuckles,id(a0)
+		bne.s	locret_1045C
+		cmpi.b	#1,glidemode(a0)
+		beq.s	+
+		bra.s	locret_1045C
+
+;		move.b	status_secondary(a0),d0
+;		andi.b	#Status_FireShield_mask|Status_LtngShield_mask|Status_BublShield_mask,d0 ; got a shield?
+;		beq.w	locret_1045C ; nope? begone
++
+		move.w	x_pos(a0),d2			; Get player's x_pos
+		move.w	y_pos(a0),d3			; Get player's y_pos
+		cmpi.b	#ObjID_Sonic,id(a0)	
+		subi.w	#$18,d2				; Subtract width of shield
+		subi.w	#$18,d3				; Subtract height of shield	
+		move.w	#$30,d4				; Player's width
+		move.w	#$30,d5				; Player's height
+		lea	(Dynamic_Object_RAM).w,a1
+		move.w	#(Dynamic_Object_RAM_End-Dynamic_Object_RAM)/object_size-1,d6
+		;lea	(Collision_response_list).w,a4
+		;move.w	(a4)+,d6			; Get number of objects queued
+		;beq.s	locret_1045C			; If there are none, return
+
+ShieldTouch_Loop:
+		;movea.w	(a4)+,a1			; Get address of first object's RAM
+		move.b	collision_flags(a1),d0		; Get its collision_flags
+		andi.b	#$C0,d0				; Get only collision type bits
+		cmpi.b	#$80,d0				; Is only the high bit set ("harmful")?
+		beq.s	ShieldTouch_Width		; If so, branch
+
+ShieldTouch_NextObj:
+		lea	next_object(a1),a1 ; load obj address ; goto next object
+		dbf	d6,ShieldTouch_Loop ; repeat 6F more times
+		;subq.w	#2,d6				; Count the object as done
+		;bne.s	ShieldTouch_Loop		; If there are still objects left, loop
+
+locret_1045C:
+		rts
+; ---------------------------------------------------------------------------
+
+ShieldTouch_Width:
+		move.b	collision_flags(a1),d0		; Get collision_flags
+		andi.w	#$3F,d0				; Get only collision size
+		beq.s	ShieldTouch_NextObj		; If it doesn't have a size, branch
+		add.w	d0,d0				; Turn into index
+		lea	(Touch_Sizes).l,a2
+		lea	(a2,d0.w),a2			; Go to correct entry
+		moveq	#0,d1
+		move.b	(a2)+,d1			; Get width value from Touch_Sizes
+		move.w	x_pos(a1),d0			; Get object's x_pos
+		sub.w	d1,d0				; Subtract object's width
+		sub.w	d2,d0				; Subtract player's left collision boundary
+		bhs.s	.checkrightside			; If player's left side is to the left of the object, branch
+		add.w	d1,d1				; Double object's width value
+		add.w	d1,d0				; Add object's width*2 (now at right of object)
+		blo.s	ShieldTouch_Height		; If carry, branch (player is within the object's boundaries)
+		bra.s	ShieldTouch_NextObj		; If not, loop and check next object
+; ---------------------------------------------------------------------------
+
+	.checkrightside:
+		cmp.w	d4,d0				; Is player's right side to the left of the object?
+		bhi.s	ShieldTouch_NextObj		; If so, loop and check next object
+
+ShieldTouch_Height:
+		moveq	#0,d1
+		move.b	(a2)+,d1			; Get height value from Touch_Sizes
+		move.w	y_pos(a1),d0			; Get object's y_pos
+		sub.w	d1,d0				; Subtract object's height
+		sub.w	d3,d0				; Subtract player's bottom collision boundary
+		bcc.s	.checktop			; If bottom of player is under the object, branch
+		add.w	d1,d1				; Double object's height value
+		add.w	d1,d0				; Add object's height*2 (now at top of object)
+		bcs.w	.checkdeflect			; If carry, branch (player is within the object's boundaries)
+		bra.s	ShieldTouch_NextObj		; If not, loop and check next object
+; ---------------------------------------------------------------------------
+
+	.checktop:
+		cmp.w	d5,d0				; Is top of player under the object?
+		bhi.s	ShieldTouch_NextObj		; If so, loop and check next object
+
+	.checkdeflect:
+;		move.b	shield_reaction(a1),d0
+		bsr.w	CheckObjectDeflection
+		tst.b	d0						; Should the object be bounced away by a shield?
+		bne.s	ShieldTouch_NextObj		; If not, branch
+		move.w	x_pos(a0),d1
+		move.w	y_pos(a0),d2
+		sub.w	x_pos(a1),d1
+		sub.w	y_pos(a1),d2
+		jsr	(CalcAngle).l
+		jsr	(CalcSine).l
+		muls.w	#-$800,d1
+		asr.l	#8,d1
+		move.w	d1,x_vel(a1)
+		muls.w	#-$800,d0
+		asr.l	#8,d0
+		move.w	d0,y_vel(a1)
+		clr.b	collision_flags(a1)
+		rts
+
+; End of function ShieldTouchResponse
+
+; ============================================================================
+; Subroutine that goes through a list, and checks if the object should be
+; deflectable.
+; Input:
+; a1 - pointer to object
+; Output:
+; d0 - whether or not the object can be deflected (0 - yes, 1 - no)
+; ============================================================================
+
+
+CheckObjectDeflection:
+		moveq	#0,d0
+		moveq	#0,d1
+		lea		ObjectDeflectTable,a2
+		move.b	id(a1),d1
+		lsl.w	#8,d1
+		move.b	subtype(a1),d1
+		
+	.loop:
+		cmpi.w	#$FFFF,(a2)				; Check if list is over
+		beq.s	.fail					; If yes, fail
+		cmp.w	(a2)+,d1				; Check if object is in the list
+		bne.s	.loop					; If not in the list, repeat
+		rts								; If in the list, return 0
+		
+	.fail:
+		move.b	#1,d0					; return 1
+		rts
+		
+ObjectDeflectTable:
+		dc.w	$9820
+		dc.w	$FFFF
+; ============================================================================
+; 
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 ; loc_3F554:
 IsInstaShielding:
 	cmpi.b	#ObjID_Sonic,id(a0)			; Is the player Sonic?
@@ -80010,10 +80143,18 @@ IsInstaShielding:
 	moveq	#0,d0
 	rts
 
+; ---------------------------------------------------------------------------
+; Object touch response subroutine - $20(a0) in the object RAM
+; collides Sonic with most objects (enemies, rings, monitors...) in the level
+; ---------------------------------------------------------------------------
+;
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+;
 ; loc_3F554:
 TouchResponse:
 	nop
 	jsrto	(Touch_Rings).l, JmpTo_Touch_Rings
+	bsr.w	ShieldTouchResponse
 
 	bsr.s	IsInstaShielding
 	tst.b	d0
