@@ -25,6 +25,7 @@ Obj4C_Index:	dc.w Obj4C_Init-Obj4C_Index	  ; 0 ;	...
 		dc.w Obj4C_Dead-Obj4C_Index	  ; 3
 		dc.w Obj4C_Gone-Obj4C_Index	  ; 4
 		dc.w Obj4C_Respawning-Obj4C_Index ; 5
+		dc.w Obj4C_Drowned-Obj4C_Index ; 5		
 ; ---------------------------------------------------------------------------
 
 Obj4C_Init:					  ; ...
@@ -1930,6 +1931,15 @@ loc_316780:					  ; ...
 		move.b	#0,($FFFFD11C).w
 		move.w	#SndID_SpindashRelease,d0
 		jsr	PlaySound
+		move.b	angle(a0),d0
+		jsr	(CalcSine).l
+		muls.w	inertia(a0),d1
+		asr.l	#8,d1
+		move.w	d1,x_vel(a0)
+		muls.w	inertia(a0),d0
+		asr.l	#8,d0
+		move.w	d0,y_vel(a0)
+
 		bra.s	Obj4C_Spindash_ResetScreen
 ; ---------------------------------------------------------------------------
 Spindash_Speeds:				  ; ...
@@ -2755,6 +2765,17 @@ loc_316F8C:					  ; ...
 		bsr.w	Knuckles_Animate
 		bsr.w	LoadKnucklesDynPLC
 		jmp	DisplaySprite
+
+; ---------------------------------------------------------------------------
+; Knuckles when he's drowning
+; ---------------------------------------------------------------------------
+Obj4C_Drowned:
+	jsr	ObjectMove	; Make Knuckles able to move
+	addi.w	#$10,y_vel(a0)	; Apply gravity
+	bsr.w	Knuckles_RecordPositions	; Record position
+	bsr.s	Knuckles_Animate	; Animate Knuckles
+	bsr.w	LoadKnucklesDynPLC	; Load Knuckle's DPLCs
+	jmp	DisplaySprite	; And finally, display Knuckles
 
 ; =============== S U B	R O U T	I N E =======================================
 

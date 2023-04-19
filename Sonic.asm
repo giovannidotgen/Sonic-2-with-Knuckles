@@ -24,6 +24,7 @@ Obj01_Index:	offsetTable
 		offsetTableEntry.w Obj01_Dead		;  6
 		offsetTableEntry.w Obj01_Gone		;  8
 		offsetTableEntry.w Obj01_Respawning	; $A
+		offsetTableEntry.w Obj01_Drowned	; $C		
 ; ===========================================================================
 ; loc_19F76: Obj_01_Sub_0: Obj01_Main:
 Obj01_Init:
@@ -878,9 +879,7 @@ return_1A7C4:
 Sonic_RollSpeed:
 	move.w	(Sonic_top_speed).w,d6
 	asl.w	#1,d6
-	move.w	(Sonic_acceleration).w,d5
-	asr.w	#1,d5	; natural roll deceleration = 1/2 normal acceleration
-	move.w	#$20,d4	; controlled roll deceleration... interestingly,
+	moveq	#6,d5	; natural roll deceleration = 1/2 normal acceleration	move.w	#$20,d4	; controlled roll deceleration... interestingly,
 			; this should be Sonic_deceleration/4 according to Tails_RollSpeed,
 			; which means Sonic is much better than Tails at slowing down his rolling when he's underwater
     if status_sec_isSliding = 7
@@ -1491,6 +1490,15 @@ Sonic_UpdateSpindash:
 	move.b	#0,(Sonic_Dust+anim).w
 	move.w	#SndID_SpindashRelease,d0	; spindash zoom sound
 	jsr	(PlaySound).l
+	move.b	angle(a0),d0
+	jsr	(CalcSine).l
+	muls.w	inertia(a0),d1
+	asr.l	#8,d1
+	move.w	d1,x_vel(a0)
+	muls.w	inertia(a0),d0
+	asr.l	#8,d0
+	move.w	d0,y_vel(a0)
+
 	bra.s	Obj01_Spindash_ResetScr
 ; ===========================================================================
 ; word_1AD0C:
@@ -2178,6 +2186,17 @@ Obj01_Respawning:
 	bsr.w	LoadSonicDynPLC
 	jmp	(DisplaySprite).l
 ; ===========================================================================
+
+; ---------------------------------------------------------------------------
+; Sonic when he's drowning
+; ---------------------------------------------------------------------------
+Obj01_Drowned:
+	bsr.w	ObjectMove	; Make Sonic able to move
+	addi.w	#$10,y_vel(a0)	; Apply gravity
+	bsr.w	Sonic_RecordPos	; Record position
+	bsr.w	Sonic_Animate	; Animate Sonic
+	bsr.w	LoadSonicDynPLC	; Load Sonic's DPLCs
+	bra.w	DisplaySprite	; And finally, display Sonic
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to animate Sonic's sprites

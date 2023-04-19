@@ -29648,6 +29648,8 @@ RunObjects_End:
 ; this skips certain objects to make enemies and things pause when Sonic dies
 ; loc_15FE6:
 RunObjectsWhenPlayerIsDead:
+    cmpi.b	#$C,(MainCharacter+routine).w	; Has Sonic drowned?
+	beq.s	RunObject			; If so, run objects a little longer
 	moveq	#(Reserved_Object_RAM_End-Reserved_Object_RAM)/object_size-1,d7
 	bsr.s	RunObject	; run the first $10 objects normally
 	moveq	#(Dynamic_Object_RAM_End-Dynamic_Object_RAM)/object_size-1,d7
@@ -36394,28 +36396,21 @@ Obj0A_ReduceAir:
 	move.w	#0,y_vel(a0)
 	move.w	#0,x_vel(a0)
 	move.w	#0,inertia(a0)
+	move.b	#$C,routine(a0)	; Force the character to drown	
 	movea.l	(sp)+,a0 ; load 0bj address ; restore a0 = obj0A
 	cmpa.w	#MainCharacter,a2
 	bne.s	+	; if it isn't player 1, branch
 	move.b	#1,(Deform_lock).w
+	clr.b  (Update_HUD_timer).w	; Stop the timer immediately	
 +
 	rts
 ; ===========================================================================
 ; loc_1D708:
 Obj0A_PlayerHasDrowned:
-	subq.w	#1,obj0a_time_until_freeze(a0)
-	bne.s	+
-	; Signal that the player is dead.
+	subq.w	#1,objoff_2C(a0)
+	bne.s	Obj0A_MakeBubbleMaybe		; Make it jump straight to this location
 	move.b	#6,routine(a2)
 	rts
-; ---------------------------------------------------------------------------
-+	; Move the player downwards as they drown.
-	move.l	a0,-(sp)
-	movea.l	a2,a0
-	jsr	(ObjectMove).l
-	addi.w	#$10,y_vel(a0)
-	movea.l	(sp)+,a0 ; load 0bj address
-	bra.s	Obj0A_MakeBubbleMaybe
 ; ===========================================================================
 ; BranchTo_Obj0A_MakeItem
 BranchTo_Obj0A_MakeBubbleNow ; BranchTo

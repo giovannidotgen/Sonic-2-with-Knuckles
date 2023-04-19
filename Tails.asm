@@ -24,6 +24,7 @@ Obj02_Index:	offsetTable
 		offsetTableEntry.w Obj02_Dead		;  6
 		offsetTableEntry.w Obj02_Gone		;  8
 		offsetTableEntry.w Obj02_Respawning	; $A
+		offsetTableEntry.w Obj02_Drowned	; $C		
 ; ===========================================================================
 ; loc_1B8D8: Obj02_Main:
 Obj02_Init:
@@ -2084,7 +2085,7 @@ return_1C75C:
 Tails_UpdateSpindash:
 	move.b	(Ctrl_2_Held_Logical).w,d0
 	btst	#button_down,d0
-	bne.s	Tails_ChargingSpindash
+	bne.w	Tails_ChargingSpindash
 
 	; unleash the charged spindash and start rolling quickly:
 	move.b	#$E,y_radius(a0)
@@ -2130,6 +2131,16 @@ Tails_UpdateSpindash:
 	move.b	#0,(Tails_Dust+anim).w
 	move.w	#SndID_SpindashRelease,d0	; spindash zoom sound
 	jsr	(PlaySound).l
+	
+	move.b	angle(a0),d0
+	jsr	(CalcSine).l
+	muls.w	inertia(a0),d1
+	asr.l	#8,d1
+	move.w	d1,x_vel(a0)
+	muls.w	inertia(a0),d0
+	asr.l	#8,d0
+	move.w	d0,y_vel(a0)
+
 	bra.s	loc_1C828
 ; ===========================================================================
 ; word_1C7CE:
@@ -2802,6 +2813,17 @@ Obj02_Respawning:
 	bsr.w	LoadTailsDynPLC
 	jmp	(DisplaySprite).l
 ; ===========================================================================
+
+; ---------------------------------------------------------------------------
+; Tails when he's drowning
+; ---------------------------------------------------------------------------
+Obj02_Drowned:
+	bsr.w	ObjectMove	; Make Tails able to move
+	addi.w	#$10,y_vel(a0)	; Apply gravity
+	bsr.w	Tails_RecordPos	; Record position
+	bsr.s	Tails_Animate	; Animate Tails
+	bsr.w	LoadTailsDynPLC	; Load Tails's DPLCs
+	bra.w	DisplaySprite	; And finally, display Tails
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to animate Tails' sprites
