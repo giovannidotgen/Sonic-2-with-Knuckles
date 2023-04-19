@@ -36662,6 +36662,8 @@ return_1D976:
 ; ===========================================================================
 
 Obj38_Delete:
+	tst.w	(Two_player_mode).w
+	bne.s	JmpTo7_DeleteObject
 	cmpi.w	#MainCharacter,parent(a0)		; check if it's the main character losing the shield
 	bne.s	JmpTo7_DeleteObject				; if not, perform standard behavior
 	cmpi.b	#ObjID_Sonic,(MainCharacter).w	; check if Sonic has lost the shield
