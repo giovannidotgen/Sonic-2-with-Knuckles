@@ -35896,7 +35896,8 @@ ApplySpeedSettings:
 	bne.s	+
 	addi.b	#48,d0
 +	
-	lea	Speedsettings(pc,d0.w),a1	; Load correct speed settings into a1
+	lea		(Speedsettings).l,a1	; Load correct speed settings into a1
+	adda.l	d0,a1
 	move.l	(a1)+,(a2)+			; Set character's new top speed and acceleration
 	move.w	(a1),(a2)			; Set character's deceleration
 	rts					; Finish subroutine
