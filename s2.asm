@@ -79988,24 +79988,44 @@ JmpTo20_SingleObjLoad ; JmpTo
 ShieldTouchResponse:
 		bsr.w	IsInstaShielding
 		tst.b	d0
-		bne.s	+
+		bne.s	.isSonic
 		cmpi.b	#ObjID_Knuckles,id(a0)
-		bne.s	locret_1045C
+		bne.s	.isnotknuckles
 		cmpi.b	#1,glidemode(a0)
-		beq.s	+
+		beq.s	.TailsorKnuckles
 		bra.s	locret_1045C
+
+.isnotknuckles:
+		cmpi.b	#ObjID_Tails,id(a0)			; Is player Tails
+		bne.w	locret_1045C				; If not, branch
+		tst.b	double_jump_flag(a0)		; Is Tails flying ("gravity-affected")
+		beq.w	locret_1045C				; If not, branch
+		btst	#6,status(a0)				; Is Tails underwater
+		bne.w	locret_1045C				; If not, branch
+		bra.s	.TailsorKnuckles
 
 ;		move.b	status_secondary(a0),d0
 ;		andi.b	#Status_FireShield_mask|Status_LtngShield_mask|Status_BublShield_mask,d0 ; got a shield?
 ;		beq.w	locret_1045C ; nope? begone
-+
+.isSonic
 		move.w	x_pos(a0),d2			; Get player's x_pos
 		move.w	y_pos(a0),d3			; Get player's y_pos
-		cmpi.b	#ObjID_Sonic,id(a0)	
 		subi.w	#$18,d2				; Subtract width of shield
 		subi.w	#$18,d3				; Subtract height of shield	
 		move.w	#$30,d4				; Player's width
 		move.w	#$30,d5				; Player's height
+		bra.s	.common
+		
+.TailsorKnuckles:
+		move.w	x_pos(a0),d2			; Get player's x_pos
+		move.w	y_pos(a0),d3			; Get player's y_pos
+		subi.w	#$10,d2				; Subtract width of player
+		subi.w	#$10,d3				; Subtract height of player	
+		move.w	#$20,d4				; Player's width
+		move.w	#$20,d5				; Player's height	
+	
+.common:	
+		
 		lea	(Dynamic_Object_RAM).w,a1
 		move.w	#(Dynamic_Object_RAM_End-Dynamic_Object_RAM)/object_size-1,d6
 		;lea	(Collision_response_list).w,a4
