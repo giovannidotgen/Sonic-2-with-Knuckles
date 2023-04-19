@@ -24,7 +24,7 @@ gameRevision = 1
 padToPowerOfTwo = 1
 ;	| If 1, pads the end of the ROM to the next power of two bytes (for real hardware)
 ;
-fixBugs = 0
+fixBugs = 1
 ;	| If 1, enables all bug-fixes
 ;	| See also the 'FixDriverBugs' flag in 's2.sounddriver.asm'
 allOptimizations = 0
@@ -48017,10 +48017,6 @@ Obj66_Main:
 	bne.s	loc_26FF6
 	btst	#1,status(a1)
 	beq.s	loc_26FF6
-	bclr	#4,status(a1)	; GIO: clear roll jump lock flag
-	clr.b	double_jump_flag(a1)
-	clr.b	double_jump_property(a1)
-	clr.b	jumping(a1)		; GIO: while this deviates from the faithful behavior, this is the only way to fix tails' flight error
 	move.b	status(a0),d1
 	move.w	x_pos(a0),d0
 	sub.w	x_pos(a1),d0
@@ -48040,17 +48036,6 @@ loc_26FF6:
 	bne.s	loc_2702C
 	btst	#1,status(a1)
 	beq.s	loc_2702C
-	tst.b	(Flying_carrying_Sonic_flag).w
-	beq.s	+
-	lea		(MainCharacter).w,a3
-	clr.b	obj_control(a3)
-	bset	#1,status(a3)
-	clr.b	(Flying_carrying_Sonic_flag).w		
-+		
-	move.b	status(a0),d1
-	bclr	#4,status(a1)	; GIO: clear roll jump lock flag+
-	clr.b	double_jump_flag(a1)
-	clr.b	double_jump_property(a1)	
 	move.w	x_pos(a0),d0
 	sub.w	x_pos(a1),d0
 	bcs.s	+
@@ -48093,6 +48078,16 @@ loc_2704C:
 	move.w	objoff_30(a0),x_vel(a1)
 	move.w	#-$800,x_vel(a1)
 	move.w	#-$800,y_vel(a1)
+	clr.b	jumping(a1)
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)	
+	clr.b	(Flying_carrying_Sonic_flag).w
++			
 	bset	#0,status(a1)
 	btst	#0,status(a0)
 	bne.s	+
@@ -48145,7 +48140,7 @@ loc_270DC:
 	bclr	#4,status(a1)
     endif
 	bclr	#5,status(a1)
-	clr.b	$21(a1)			; KiS2: Makes Knuckles un-glide	
+	clr.b	$21(a1)			; KiS2: Makes Knuckles un-glide
 	move.w	#SndID_Spring,d0
 	jmp	(PlaySound).l
 ; ===========================================================================
@@ -52894,6 +52889,13 @@ loc_2A990:
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
 	clr.b	jumping(a1)
+	tst.b	(Flying_carrying_Sonic_flag).w
+	beq.s	+
+	lea		(MainCharacter).w,a3
+	clr.b	obj_control(a3)
+	bset	#1,status(a3)
+	clr.b	(Flying_carrying_Sonic_flag).w		
++			
 	addi.w	#$60,d1
 	neg.w	d1
 	asr.w	#4,d1
@@ -80126,13 +80128,35 @@ CheckObjectDeflection:
 		moveq	#0,d1
 		lea		ObjectDeflectTable,a2
 		move.b	id(a1),d1
-		lsl.w	#8,d1
+		lsl.l	#8,d1
 		move.b	subtype(a1),d1
+		lsl.l	#8,d1
+		move.b	routine(a1),d1
 		
 	.loop:
-		cmpi.w	#$FFFF,(a2)				; Check if list is over
-		beq.s	.fail					; If yes, fail
-		cmp.w	(a2)+,d1				; Check if object is in the list
+		tst.l	(a2)					; Check if list is over
+		bmi.s	.fail					; If yes, fail
+		
+		move.l	d1,d2					; copy input object properties in d2
+		move.l	(a2)+,d3				; copy listed object properties in d3
+		
+		cmpi.b	#$FF,d3					; is any routine accepted?
+		beq.s	.checksubtype			; if yes, branch
+		cmp.b	d2,d3					; check if routine matches
+		bne.s	.loop					; if not, go to next object in list
+		
+	.checksubtype:
+		lsr.l	#8,d2					; remove routine
+		lsr.l	#8,d3					; remove routine
+		cmpi.b	#$FF,d3					; is any subtype accepted?
+		beq.s	.checkobject			; if yes, branch
+		cmp.b	d2,d3					; check if routine matches
+		bne.s	.loop					; if not, go to next object in list
+
+	.checkobject:
+		lsr.l	#8,d2					; remove subtype
+		lsr.l	#8,d3					; remove subtype	
+		cmp.b	d2,d3					; check if object matches
 		bne.s	.loop					; If not in the list, repeat
 		rts								; If in the list, return 0
 		
@@ -80141,8 +80165,11 @@ CheckObjectDeflection:
 		rts
 		
 ObjectDeflectTable:
-		dc.w	$9820
-		dc.w	$FFFF
+		dc.l	$98FFFF					; all instances of Obj98
+		dc.l	$4BFF06					; buzzer bullets
+		dc.l	$4AFF06					; that one squid looking badnik in OOZ
+		dc.l	$50FF06
+		dc.l	$FFFFFFFF
 ; ============================================================================
 ; 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
