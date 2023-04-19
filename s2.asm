@@ -35856,6 +35856,14 @@ Speedsettings:
 	dc.w	$C00,		$30,		$100		; $40	; Super Speedshoes
 	dc.w	$500,		$18,		$80		; $48	; Super Underwater
 	dc.w	$A00,		$30,		$80		; $56	; Super Underwater Speedshoes
+	dc.w	$600,		$C,		$80		; $00	; Normal (Knux)
+	dc.w	$C00,		$18,		$80		; $08	; Normal Speedshoes (Knux)
+	dc.w	$300,		$6,		$40		; $16	; Normal Underwater (Knux)
+	dc.w	$600,		$C,		$40		; $24	; Normal Underwater Speedshoes (Knux)
+	dc.w	$800,		$18,		$C0		; $32	; Super (Knux)
+	dc.w	$C00,		$30,		$100		; $40	; Super Speedshoes (Knux)
+	dc.w	$400,		$C,			$60		; $48	; Super Underwater (Knux)
+	dc.w	$800,		$18,		$C0		; $56	; Super Underwater Speedshoes (Knux)
 ; ===========================================================================
 
 ; ===========================================================================
@@ -35884,6 +35892,10 @@ ApplySpeedSettings:
 	beq.s	+				; If not, branch
 	addi.b	#24,d0				; Add 24 to d0
 +
+	cmpi.b	#ObjID_Knuckles,(a0)	; Is player Knuckles?
+	bne.s	+
+	addi.b	#48,d0
++	
 	lea	Speedsettings(pc,d0.w),a1	; Load correct speed settings into a1
 	move.l	(a1)+,(a2)+			; Set character's new top speed and acceleration
 	move.w	(a1),(a2)			; Set character's deceleration

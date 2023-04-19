@@ -35,9 +35,8 @@ Obj4C_Init:					  ; ...
 		move.b	#2,priority(a0)
 		move.b	#$18,width_pixels(a0)
 		move.b	#4,render_flags(a0)
-		move.w	#$600,($FFFFF760).w
-		move.w	#$C,($FFFFF762).w
-		move.w	#$80,($FFFFF764).w
+		lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
+		bsr.w	ApplySpeedSettings	; Fetch Speed settings
 		tst.b	($FFFFFE30).w
 		bne.s	Obj4C_Init_Continued
 		move.w	#$780,art_tile(a0)
@@ -165,14 +164,8 @@ Obj4C_CheckSpeedShoes:				  ; ...
 		beq.s	Obj4C_ExitCheck
 		subq.w	#1,speedshoes_time(a0)
 		bne.s	Obj4C_ExitCheck
-		move.w	#$600,($FFFFF760).w
-		move.w	#$C,($FFFFF762).w
-		move.w	#$80,($FFFFF764).w
-		tst.b	($FFFFFE19).w
-		beq.s	Obj4C_RemoveSpeedShoes
-		move.w	#$800,($FFFFF760).w
-		move.w	#$18,($FFFFF762).w
-		move.w	#$C0,($FFFFF764).w
+		lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
+		bsr.w	ApplySpeedSettings	; Fetch Speed settings
 
 Obj4C_RemoveSpeedShoes:				  ; ...
 		bclr	#2,status_secondary(a0)
@@ -225,14 +218,8 @@ Obj4C_InWater:					  ; ...
 		move.b	#$A,($FFFFD080).w
 		move.b	#$81,($FFFFD0A8).w
 		move.l	a0,($FFFFD0BC).w
-		move.w	#$300,($FFFFF760).w
-		move.w	#6,($FFFFF762).w
-		move.w	#$40,($FFFFF764).w
-		tst.b	($FFFFFE19).w
-		beq.s	loc_3155C0
-		move.w	#$400,($FFFFF760).w
-		move.w	#$C,($FFFFF762).w
-		move.w	#$60,($FFFFF764).w
+		lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
+		bsr.w	ApplySpeedSettings	; Fetch Speed settings
 
 loc_3155C0:					  ; ...
 		asr	x_vel(a0)
@@ -249,14 +236,8 @@ Obj4C_OutWater:					  ; ...
 		beq.s	return_31556C
 		move.l	a0,a1
 		bsr.w	ResumeMusic
-		move.w	#$600,($FFFFF760).w
-		move.w	#$C,($FFFFF762).w
-		move.w	#$80,($FFFFF764).w
-		tst.b	($FFFFFE19).w
-		beq.s	loc_315616
-		move.w	#$800,($FFFFF760).w
-		move.w	#$18,($FFFFF762).w
-		move.w	#$C0,($FFFFF764).w
+		lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
+		bsr.w	ApplySpeedSettings	; Fetch Speed settings
 
 loc_315616:					  ; ...
 		cmp.b	#4,routine(a0)
@@ -1831,9 +1812,8 @@ Knuckles_TurnSuper:				  ; ...
 		move.b	#$81,obj_control(a0)
 		move.b	#$1F,anim(a0)
 		move.b	#$7E,($FFFFD040).w
-		move.w	#$800,($FFFFF760).w
-		move.w	#$18,($FFFFF762).w
-		move.w	#$C0,($FFFFF764).w
+		lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
+		bsr.w	ApplySpeedSettings	; Fetch Speed settings
 		move.w	#0,invincibility_time(a0)
 		bset	#1,status_secondary(a0)
 		move.w	#SndID_SuperTransform,d0
@@ -1879,14 +1859,8 @@ loc_31667E:					  ; ...
 		move.b	#0,($FFFFFE19).w
 		move.b	#1,prev_anim(a0)
 		move.w	#1,invincibility_time(a0)
-		move.w	#$600,($FFFFF760).w
-		move.w	#$C,($FFFFF762).w
-		move.w	#$80,($FFFFF764).w
-		btst	#6,status(a0)
-		beq.s	return_3166C8
-		move.w	#$300,($FFFFF760).w
-		move.w	#6,($FFFFF762).w
-		move.w	#$40,($FFFFF764).w
+		lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
+		bsr.w	ApplySpeedSettings	; Fetch Speed settings
 
 return_3166C8:					  ; ...
 		rts
