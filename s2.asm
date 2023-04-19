@@ -25070,7 +25070,7 @@ Obj37_Init:
 	move.b	#3,priority(a1)
 	move.b	#$47,collision_flags(a1)
 	move.b	#8,width_pixels(a1)
-	move.b	#-1,(Ring_spill_anim_counter).w
+
 	tst.w	d4
 	bmi.s	+
 	move.w	d4,d0
@@ -25093,6 +25093,9 @@ Obj37_Init:
 	neg.w	d4
 	dbf	d5,-
 +
+	moveq   #-1,d0                          ; Move #-1 to d0
+	move.b  d0,objoff_1F(a0)                ; Move d0 to new timer
+	move.b  d0,(Ring_spill_anim_counter).w  ; Move d0 to old timer (for animated purposes)
 	move.w	#SndID_RingSpill,d0
 	jsr	(PlaySound2).l
 	tst.b	parent+1(a0)
@@ -25129,8 +25132,10 @@ Obj37_Main:
 
 loc_121B8:
 
-	tst.b	(Ring_spill_anim_counter).w
-	beq.s	Obj37_Delete
+	subq.b  #1,objoff_1F(a0)                ; Subtract 1
+	beq.w   DeleteObject                    ; If 0, delete
+	cmpi.w	#$FF00,($FFFFEECC).w		; is vertical wrapping enabled?
+	beq.w	DisplaySprite			; if so, branch	
 	move.w	(Camera_Max_Y_pos_now).w,d0
 	addi.w	#$E0,d0
 	cmp.w	y_pos(a0),d0
@@ -25733,10 +25738,14 @@ robotnik_monitor:
 ; ---------------------------------------------------------------------------
 sonic_1up:
 	addq.w	#1,(Monitors_Broken).w
+	cmpi.b	#99,(Life_count).w
+	bhs.s	+	
 	addq.b	#1,(Life_count).w
 	addq.b	#1,(Update_HUD_lives).w
 	move.w	#MusID_ExtraLife,d0
-	jmp	(PlayMusic).l	; Play extra life music
+	jsr	(PlayMusic).l	; Play extra life music
++
+	rts
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Tails 1up Monitor
@@ -25744,10 +25753,14 @@ sonic_1up:
 ; ---------------------------------------------------------------------------
 tails_1up:
 	addq.w	#1,(Monitors_Broken_2P).w
+	cmpi.b	#99,(Life_count_2P).w
+	bhs.s	+
 	addq.b	#1,(Life_count_2P).w
 	addq.b	#1,(Update_HUD_lives_2P).w
 	move.w	#MusID_ExtraLife,d0
-	jmp	(PlayMusic).l	; Play extra life music
+	jsr	(PlayMusic).l	; Play extra life music
++
+	rts
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Super Ring Monitor
@@ -45728,10 +45741,16 @@ loc_24F84:
 loc_24FAA:
 	cmpi.w	#$10,d1
 	bhs.w	return_25034
+	tst.w	(Debug_placement_mode).w
+	bne.w	return_25034
+
 	cmpa.w	#Sidekick,a1
-	bne.s	loc_24FC2
+	bne.s	+
 	cmpi.w	#4,(Tails_CPU_routine).w ; TailsCPU_Flying
 	beq.w	return_25034
++
+	cmpi.b	#4,routine(a1)	; is Sonic hurt or dead?
+	bhs.w	return_25034	; if yes, branch
 	tst.b	(Flying_carrying_Sonic_flag).w
 	beq.s	+
 	lea		(MainCharacter).w,a3
@@ -45957,6 +45976,14 @@ Obj48_Modes:	offsetTable
 loc_252F0:
 	tst.w	(Debug_placement_mode).w
 	bne.w	return_253C4
+	
+	cmpa.w	#Sidekick,a1
+	bne.s	+
+	cmpi.w	#4,(Tails_CPU_routine).w	; TailsCPU_Flying
+	beq.w	return_253C4
++	
+	cmpi.b	#4,routine(a1)	; is Sonic hurt or dead?
+	bhs.w	return_253C4	
 	move.w	x_pos(a1),d0
 	sub.w	x_pos(a0),d0
 	addi.w	#$10,d0
@@ -45967,15 +45994,6 @@ loc_252F0:
 	addi.w	#$10,d1
 	cmpi.w	#$20,d1
 	bhs.w	return_253C4
-	cmpa.w	#Sidekick,a1
-	bne.s	+
-	cmpi.w	#4,(Tails_CPU_routine).w	; TailsCPU_Flying
-	beq.w	return_253C4
-+
-	cmpi.b	#6,routine(a1)
-	bhs.w	return_253C4
-	tst.w	(Debug_placement_mode).w
-	bne.w	return_253C4
 	tst.b	(Flying_carrying_Sonic_flag).w
 	beq.s	+
 	lea		(MainCharacter).w,a3
@@ -58075,7 +58093,7 @@ Obj5D_Gunk_States:	offsetTable
 
 Obj5D_Gunk_Init:
 	addq.b	#2,routine_secondary(a0)	; => Obj5D_Gunk_Main
-	move.b	#$20,y_radius(a0)
+	move.b	#$16,y_radius(a0)
 	move.b	#$19,anim(a0)
 	move.w	#0,y_vel(a0)
 	movea.l	Obj5D_parent(a0),a1 ; a1=object
@@ -60189,7 +60207,7 @@ Obj89_Init_RaisePillars:
 	move.l	#Obj89_MapUnc_30D68,mappings(a1)
 	ori.b	#4,render_flags(a1)
 	move.w	#make_art_tile(ArtTile_ArtNem_ARZBoss,0,0),art_tile(a1)
-	move.b	#$10,width_pixels(a1)
+	move.b	#$1E,width_pixels(a1)
 	move.b	#4,priority(a1)
 	move.w	#$2A50,x_pos(a1)
 	move.w	#$510,y_pos(a1)
@@ -60389,6 +60407,8 @@ Obj89_Main_Sub6_Standard:
 ; loc_3075C:
 Obj89_Main_HandleFace:
 	bsr.w	Obj89_Main_HandleHoveringAndHits
+	tst.b	objoff_36(a0)		; Is checker 0?
+	bne.s	Obj89_Main_ChkHurt		; If not, branch and do not check for Sonic/Tails hurt state	
 	cmpi.b	#4,(MainCharacter+routine).w	; is Sonic hurt?
 	beq.s	Obj89_Main_Laugh		; if yes, branch
 	cmpi.b	#4,(Sidekick+routine).w		; is Tails hurt?
@@ -60398,6 +60418,7 @@ Obj89_Main_HandleFace:
 Obj89_Main_Laugh:
 	lea	(Boss_AnimationArray).w,a1
 	move.b	#$31,1*2+1(a1)			; use laughing animation
+	move.b	#1,objoff_36(a0)	; move 1 to checker	
 
 ; loc_3077A:
 Obj89_Main_ChkHurt:
@@ -60407,6 +60428,10 @@ Obj89_Main_ChkHurt:
 	move.b	#-$40,1*2+1(a1)			; use hurt animation
 
 return_3078C:
+	cmpi.b  #$17,($FFFFF743).w	; Has Eggman stopped laughing?
+	bne.s   .laughing		; If not, branch
+	clr.b   objoff_36(a0)		; If so, clear checker, so Eggman can check to see if Sonic/Tails are hurt again
+.laughing:
 	rts
 ; ===========================================================================
 ; loc_3078E:
@@ -60479,8 +60504,11 @@ Obj89_Main_AlignParts:
 Obj89_Main_DropHammer:
 	cmpi.w	#$78,(Boss_Countdown).w
 	bgt.s	return_3088A			; wait until timer is below $78
-	subi_.w	#1,sub3_x_pos(a0)		; make hammer move left
-	move.l	obj89_hammer_y_pos(a0),d0
+	subi.w	#1,y_radius(a0)		; Make hammer fall to the left
+	btst	#0,render_flags(a0)	; Is Eggman facing left?
+	beq.s	+			; Yes?  Branch and continue
+	addi.w	#2,y_radius(a0)		; So he's facing right?  Make hammer fall to the right instead
++	move.l	obj89_hammer_y_pos(a0),d0
 	move.w	obj89_hammer_y_vel(a0),d1
 	addi.w	#$38,obj89_hammer_y_vel(a0)	; add gravity
 	ext.l	d1
@@ -60804,12 +60832,40 @@ Obj89_Arrow_Offsets:
 ; ===========================================================================
 ; loc_30B4A:
 Obj89_Pillar_Sub4:
-	move.b	#1,(Screen_Shaking_Flag).w	; make screen shake
-	addi_.w	#1,y_pos(a0)			; lower pillar
-	cmpi.w	#$510,y_pos(a0)			; has pillar lowered into the ground?
-	blt.s	BranchTo2_JmpTo37_DisplaySprite	; if not, branch
-	move.b	#0,(Screen_Shaking_Flag).w	; else, stop shaking the screen
-	jmpto	DeleteObject, JmpTo55_DeleteObject
+        move.w  #$23,d1
+        move.w  #$44,d2
+        move.w  #$45,d3
+        move.w  x_pos(a0),d4
+        move.w  y_pos(a0),-(sp)
+        addi.w  #4,y_pos(a0)
+        bsr.w   JmpTo26_SolidObject
+        move.w  (sp)+,y_pos(a0)
+
+        move.b  #1,(Screen_Shaking_Flag).w
+        addi.w  #1,y_pos(a0)
+        cmpi.w  #$510,y_pos(a0)
+        blt.s   BranchTo2_JmpTo37_DisplaySprite
+
+        move.b  status(a0),d0
+        andi.b  #standing_mask|pushing_mask,d0  ; is someone touching the pillar?
+        beq.s   Pillar_Lower                    ; if not, branch
+        move.b  d0,d1
+        andi.b  #p1_standing|p1_pushing,d1      ; is it the main character?
+        beq.s   +                               ; if not, branch
+	andi.b	#~(p1_standing|p1_pushing),status(a0)
+        andi.b  #$D7,(MainCharacter+status).w
+        ori.b   #2,(MainCharacter+status).w     ; prevent Sonic from walking in the air
++
+        andi.b  #p2_standing|p2_pushing,d0      ; is it the sidekick?
+        beq.s   Pillar_Lower                    ; if not, branch
+	andi.b	#~(p2_standing|p2_pushing),status(a0)
+        andi.b  #$D7,(Sidekick+status).w
+        ori.b   #2,(Sidekick+status).w          ; prevent Tails from walking in the air
+
+Pillar_Lower:
+        move.b  #0,(Screen_Shaking_Flag).w
+        bra.w   JmpTo55_DeleteObject
+		
 ; ===========================================================================
 
 BranchTo2_JmpTo37_DisplaySprite
@@ -60861,6 +60917,7 @@ Obj89_Arrow_Init:
 	move.w	#make_art_tile(ArtTile_ArtNem_ARZBoss,0,0),art_tile(a0)
 	ori.b	#4,render_flags(a0)
 	move.b	#-$70,mainspr_width(a0)
+	move.b	#$10,width_pixels(a0)	
 	move.b	#4,priority(a0)
 	addq.b	#2,obj89_arrow_routine(a0)	; => Obj89_Arrow_Sub2
 	movea.l	obj89_arrow_parent2(a0),a1 ; a1=object
@@ -60950,13 +61007,13 @@ BranchTo_JmpTo55_DeleteObject ; BranchTo
 ; ===========================================================================
 ; loc_30CCC:
 Obj89_Arrow_Platform:
-	tst.w	obj89_arrow_timer(a0)		; is timer set?
-	bne.s	Obj89_Arrow_Platform_Decay	; if yes, branch
 	move.w	#$1B,d1
 	move.w	#1,d2
 	move.w	#2,d3
 	move.w	x_pos(a0),d4
 	jsrto	PlatformObject, JmpTo8_PlatformObject
+	tst.w	obj89_arrow_timer(a0)		; is timer set?
+	bne.s	Obj89_Arrow_Platform_Decay	; if yes, branch
 	btst	#3,status(a0)			; is Sonic standing on the arrow?
 	beq.s	return_30D02			; if not, branch
 	move.w	#$1F,obj89_arrow_timer(a0)	; else, set timer
@@ -61387,8 +61444,12 @@ Obj57_TransferPositions:
 ;loc_31358:
 Obj57_FallApart:	; make the digger thingies fall down
 	cmpi.w	#$78,(Boss_Countdown).w
-	bgt.s	return_313C4
-	subi_.w	#1,sub5_x_pos(a0)
+	bgt.w	return_313C4
+	subi.w	#1,status(a0)		; Make drill face to the left
+	btst	#0,render_flags(a0)	; Is Eggman facing left?
+	beq.s	+			; Yes?  Branch and continue
+	addi.w	#2,status(a0)		; So he's facing right?  Make drill face to the right instead
++
 	move.l	obj57_sub5_y_pos2(a0),d0
 	move.w	obj57_sub5_y_vel(a0),d1
 	addi.w	#$38,obj57_sub5_y_vel(a0)
@@ -61401,7 +61462,11 @@ Obj57_FallApart:	; make the digger thingies fall down
 	blt.s	+
 	move.w	#0,obj57_sub5_y_vel(a0)
 +			; second one
-	addi_.w	#1,sub2_x_pos(a0)
+	addi.w	#1,x_vel(a0)		; Make drill fall to the left
+	btst	#0,render_flags(a0)	; Is Eggman facing left?
+	beq.s	+			; Yes?  Branch and continue
+	subi.w	#2,x_vel(a0)		; So he's facing right?  Make drill fall to the right instead
++
 	move.l	obj57_sub2_y_pos2(a0),d0
 	move.w	obj57_sub2_y_vel(a0),d1
 	addi.w	#$38,obj57_sub2_y_vel(a0)
@@ -62261,8 +62326,12 @@ loc_31E76:
 
 loc_31EAE:
 	cmpi.w	#$78,(Boss_Countdown).w
-	bgt.s	return_31F22
-	subi_.w	#1,sub5_x_pos(a0)
+	bgt.W	return_31F22
+	subi.w	#1,status(a0)		; Make catcher face to the left
+	btst	#0,render_flags(a0)	; Is Eggman facing left?
+	beq.s	+			; Yes?  Branch and continue
+	addi.w	#2,status(a0)		; So he's facing right?  Make catcher face to the right instead
++
 	move.l	objoff_3A(a0),d0
 	move.w	objoff_2E(a0),d1
 	addi.w	#$38,objoff_2E(a0)
@@ -62278,7 +62347,11 @@ loc_31EAE:
 loc_31EE8:
 	cmpi.w	#$3C,(Boss_Countdown).w
 	bgt.s	return_31F22
-	addi_.w	#1,sub2_x_pos(a0)
+	addi.w	#1,x_vel(a0)		; Make catcher fall to the left
+	btst	#0,render_flags(a0)	; Is Eggman facing left?
+	beq.s	+			; Yes?  Branch and continue
+	subi.w	#2,x_vel(a0)		; So he's facing right?  Make catcher fall to the right instead
++
 	move.l	objoff_34(a0),d0
 	move.w	objoff_30(a0),d1
 	addi.w	#$38,objoff_30(a0)
@@ -78637,9 +78710,11 @@ ObjC7_CheckHit:
 	subq.b	#1,collision_property(a0)
 	beq.s	ObjC7_Beaten
 +
-	move.b	#$3C,objoff_2A(a0)
-	move.w	#SndID_BossHit,d0
-	jsr	(PlaySound).l
+ 	movea.w    objoff_36(a0),a1 ; a1=Eggrobo's head
+ 	clr.b    collision_flags(a1)	; Remove collision from head
+ 	move.b	#$3C,objoff_2A(a0)
+ 	move.w	#SndID_BossHit,d0
+ 	jsr	(PlaySound).l
 ;loc_3E02E
 ObjC7_Flashing:
 	lea	(Normal_palette_line2+2).w,a1
@@ -80510,7 +80585,7 @@ Touch_Monitor:
 	cmp.w	y_pos(a1),d0
 	; Return. This means that if Sonic jumps upwards into the side of a
 	; monitor, then he'll just phase through it.
-	blo.s	return_3F78A
+	blo.s	.breakMonitor
 
 	; If we've gotten this far, then Sonic has just jumped into the
 	; bottom of this monitor: knock it down.
@@ -81323,8 +81398,13 @@ Dynamic_HTZ:
 	neg.w	d1
 	asr.w	#3,d1
 	move.w	(Camera_X_pos).w,d0
+	move.w	d0,d2	; Copy to d2
+	andi.w	#$F,d2	; Is the lower nibble zero?
+	seq.b	d2	; If yes, set low byte of d2 to $FF
+	ext.w	d2	; Low word of d2 = -1
 	lsr.w	#4,d0
-	add.w	d1,d0
+	add.w	d1,d0	; (*) See notes
+	add.w	d2,d0	; Shift the parallax to the correct value
 	subi.w	#$10,d0
 	divu.w	#$30,d0
 	swap	d0
