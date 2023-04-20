@@ -1476,6 +1476,8 @@ PauseGame:
 Pause_Loop:
 	move.b	#VintID_Pause,(Vint_routine).w
 	bsr.w	WaitForVint
+	tst.w	(Two_player_mode).w		; is this 2PVS mode?
+	bne.s	Pause_ChkStart			; if so, ignore cheats	
 	tst.b	(Slow_motion_flag).w	; is slow-motion cheat on?
 	beq.s	Pause_ChkStart		; if not, branch
 	btst	#button_A,(Ctrl_1_Press).w	; is button A pressed?
@@ -1493,17 +1495,17 @@ Pause_ChkBC:
 ; loc_13E4:
 Pause_ChkStart:
 	btst	#button_start,(Ctrl_1_Press).w	; is Start button pressed?
-	beq.s	.checkplayer2
-	cmpi.w	#2,(Game_paused).w
-	beq.s	.checkplayer2
-	bra.s	Pause_Resume
+	beq.s	.checkplayer2					; if not, branch
+	cmpi.w	#2,(Game_paused).w				; was it player 2 who paused?
+	beq.s	.checkplayer2					; if yes, branch
+	bra.s	Pause_Resume					; resume game
 	
 .checkplayer2:	
 	btst	#button_start,(Ctrl_2_Press).w	; is Start button pressed?
-	beq.s	.checkplayerswap
-	cmpi.w	#2,(Game_paused).w
-	bne.s	.checkplayerswap
-	bra.s	Pause_Resume
+	beq.s	.checkplayerswap				; if not, branch
+	cmpi.w	#2,(Game_paused).w				; was it player 2 who paused?
+	bne.s	.checkplayerswap				; if not, branch
+	bra.s	Pause_Resume					; resume game
 	
 .checkplayerswap:
 	tst.w	(Two_player_mode).w
