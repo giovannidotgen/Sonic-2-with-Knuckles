@@ -1469,7 +1469,7 @@ PauseGame:
 	move.w	#1,(Game_paused).w	; freeze time
 	btst	#button_start,(Ctrl_2_Press).w		; was it player 2 who paused?
 	beq.s	+
-	move.b	#1,(Pause_Player2).w
+	move.w	#2,(Game_paused).w
 +	
 	move.b	#MusID_Pause,(Sound_Queue.Music0).w	; pause music
 ; loc_13B2:
@@ -1494,15 +1494,15 @@ Pause_ChkBC:
 Pause_ChkStart:
 	btst	#button_start,(Ctrl_1_Press).w	; is Start button pressed?
 	beq.s	.checkplayer2
-	tst.b	(Pause_Player2).w
-	bne.s	.checkplayer2
+	cmpi.w	#2,(Game_paused).w
+	beq.s	.checkplayer2
 	bra.s	Pause_Resume
 	
 .checkplayer2:	
 	btst	#button_start,(Ctrl_2_Press).w	; is Start button pressed?
 	beq.s	.checkplayerswap
-	tst.b	(Pause_Player2).w
-	beq.s	.checkplayerswap
+	cmpi.w	#2,(Game_paused).w
+	bne.s	.checkplayerswap
 	bra.s	Pause_Resume
 	
 .checkplayerswap:
@@ -1516,7 +1516,6 @@ Pause_ChkStart:
 	
 ; loc_13F2:
 Pause_Resume:
-	clr.b	(Pause_Player2).w
 	move.b	#MusID_Unpause,(Sound_Queue.Music0).w	; unpause the music
 ; loc_13F8:
 Unpause:
