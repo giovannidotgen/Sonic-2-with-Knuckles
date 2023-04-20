@@ -1537,7 +1537,8 @@ Chain_Bonus_counter:		ds.w	1	; counts up when you destroy things that give point
 Bonus_Countdown_1:		ds.w	1	; level results time bonus or special stage Sonic ring bonus
 Bonus_Countdown_2:		ds.w	1	; level results ring bonus or special stage Tails ring bonus
 Update_Bonus_score:		ds.b	1
-				ds.b	3	; $FFFFF7D7-$FFFFF7D9 ; seems unused
+				ds.b	1	; $FFFFF7D7 seems unused
+Chain_Bonus_counter_2P:	ds.w	1				
 
 Camera_X_pos_coarse:		ds.w	1	; (Camera_X_pos - 128) / 256
 Camera_X_pos_coarse_End:

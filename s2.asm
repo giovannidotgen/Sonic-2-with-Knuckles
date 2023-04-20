@@ -80727,8 +80727,15 @@ return_3F7E8:
 Touch_KillEnemy:
 	bset	#7,status(a1)
 	moveq	#0,d0
+	cmpi.w	#MainCharacter,a0				; is caller the main character?
+	beq.s	+								; if not, branch
+	move.w	(Chain_Bonus_counter_2P).w,d0
+	addq.w	#2,(Chain_Bonus_counter_2P).w	; add 2 to chain bonus counter
+	bra.s	++
++	
 	move.w	(Chain_Bonus_counter).w,d0
 	addq.w	#2,(Chain_Bonus_counter).w	; add 2 to chain bonus counter
++
 	cmpi.w	#6,d0
 	blo.s	loc_3F802
 	moveq	#6,d0
@@ -80736,8 +80743,15 @@ Touch_KillEnemy:
 loc_3F802:
 	move.w	d0,objoff_3E(a1)
 	move.w	Enemy_Points(pc,d0.w),d0
+	cmpi.w	#MainCharacter,a0				; is caller the main character?
+	beq.s	+								; if not, branch
+	cmpi.w	#$20,(Chain_Bonus_counter_2P).w	; have 16 enemies been destroyed?
+	blo.s	loc_3F81C			; if not, branch
+	bra.s	++	
++
 	cmpi.w	#$20,(Chain_Bonus_counter).w	; have 16 enemies been destroyed?
 	blo.s	loc_3F81C			; if not, branch
++	
 	move.w	#1000,d0			; fix bonus to 10000 points
 	move.w	#$A,objoff_3E(a1)
 
