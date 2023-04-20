@@ -1343,8 +1343,7 @@ return_3161AC:					  ; ...
 Knuckles_RollSpeed:				  ; ...
 		move.w	($FFFFF760).w,d6
 		asl.w	#1,d6
-		move.w	($FFFFF762).w,d5
-		asr.w	#1,d5
+		moveq	#6,d5	; natural roll deceleration = 1/2 normal acceleration	move.w	#$20,d4	; controlled roll deceleration... interestingly,
 		move.w	#$20,d4
 		tst.b	status_secondary(a0)
 		bmi.w	Obj4C_Roll_ResetScreen
@@ -1667,6 +1666,7 @@ Knuckles_Jump:					  ; ...
 		move.b	($FFFFF603).w,d0
 		and.b	#$70,d0
 		beq.w	return_3164EC
+		bsr.w	SetJumpButtonUsed
 		moveq	#0,d0
 		move.b	angle(a0),d0
 		add.b	#$80,d0
@@ -1771,6 +1771,10 @@ Knuckles_CheckGlide:				  ; ...
 		bcs.s	Knuckles_BeginGlide
 		cmp.w	#50,($FFFFFE20).w
 		bcs.s	Knuckles_BeginGlide
+		move.b	(Ctrl_1_Press_Logical).w,d0
+		and.b	#$70,d0		
+		cmp.b	(JumpButton_Used).w,d0
+		bne.s	Knuckles_BeginGlide
 		tst.b	($FFFFFE1E).w
 		bne.s	Knuckles_TurnSuper
 

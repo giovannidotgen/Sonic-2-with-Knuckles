@@ -1234,6 +1234,8 @@ JoypadInit:
 ; sub_111C:
 ReadJoypads:
 	lea	(Ctrl_1).w,a0	; address where joypad states are written
+	tst.b	(Invert_Joypads_Flag).w
+	bne.s	JR_Alternateread
 	lea	(HW_Port_1_Data).l,a1	; first joypad port
 	bsr.s	Joypad_Read		; do the first joypad
 	addq.w	#2,a1			; do the second joypad
@@ -1259,6 +1261,12 @@ Joypad_Read:
 	and.b	d0,d1
 	move.b	d1,(a0)+
 	rts
+	
+JR_Alternateread:
+	lea	(HW_Port_2_Data).l,a1	; first joypad port
+	bsr.s	Joypad_Read		; do the second joypad
+	subq.w	#2,a1			
+	bra.s	Joypad_Read		; do the first joypad	
 ; End of function Joypad_Read
 
 
@@ -1456,9 +1464,13 @@ PauseGame:
 	move.b	(Ctrl_1_Press).w,d0 ; is Start button pressed?
 	or.b	(Ctrl_2_Press).w,d0 ; (either player)
 	andi.b	#button_start_mask,d0
-	beq.s	Pause_DoNothing	; if not, branch
+	beq.w	Pause_DoNothing	; if not, branch
 +
 	move.w	#1,(Game_paused).w	; freeze time
+	btst	#button_start,(Ctrl_2_Press).w		; was it player 2 who paused?
+	beq.s	+
+	move.b	#1,(Pause_Player2).w
++	
 	move.b	#MusID_Pause,(Sound_Queue.Music0).w	; pause music
 ; loc_13B2:
 Pause_Loop:
@@ -1480,12 +1492,31 @@ Pause_ChkBC:
 	bne.s	Pause_SlowMo		; if yes, branch
 ; loc_13E4:
 Pause_ChkStart:
-	move.b	(Ctrl_1_Press).w,d0	; is Start button pressed?
-	or.b	(Ctrl_2_Press).w,d0	; (either player)
-	andi.b	#button_start_mask,d0
-	beq.s	Pause_Loop	; if not, branch
+	btst	#button_start,(Ctrl_1_Press).w	; is Start button pressed?
+	beq.s	.checkplayer2
+	tst.b	(Pause_Player2).w
+	bne.s	.checkplayer2
+	bra.s	Pause_Resume
+	
+.checkplayer2:	
+	btst	#button_start,(Ctrl_2_Press).w	; is Start button pressed?
+	beq.s	.checkplayerswap
+	tst.b	(Pause_Player2).w
+	beq.s	.checkplayerswap
+	bra.s	Pause_Resume
+	
+.checkplayerswap:
+	tst.w	(Two_player_mode).w
+	bne.s	Pause_Loop
+	move.b	(Ctrl_1_Held).w,d0
+	and.b	(Ctrl_2_Held).w,d0
+	cmpi.b	#button_A_mask,d0
+	bne.s	Pause_Loop
+	not.b	(Invert_Joypads_Flag).w
+	
 ; loc_13F2:
 Pause_Resume:
+	clr.b	(Pause_Player2).w
 	move.b	#MusID_Unpause,(Sound_Queue.Music0).w	; unpause the music
 ; loc_13F8:
 Unpause:
@@ -37022,7 +37053,7 @@ Obj08_ResetDisplayMode:
 ; ===========================================================================
 
 BranchTo16_DeleteObject
-	bra.w	DeleteObject
+	jmp		DeleteObject
 ; ===========================================================================
 ; loc_1DE4A:
 Obj08_CheckSkid:
@@ -37033,7 +37064,7 @@ Obj08_CheckSkid:
 	moveq	#6,d1	; move different y offset to d1
 	cmpi.b	#ObjID_Knuckles,id(a2)	; playing as Knuckles?
 	bne.s	+
-	cmpi.b	#3,$21(a2)	; check for sliding
+	cmpi.b	#3,glidemode(a2)	; check for sliding
 	beq.s	Obj08_SkidDust
 +	move.b	#2,routine(a0)
 	move.b	#0,objoff_32(a0)

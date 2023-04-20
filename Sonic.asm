@@ -386,7 +386,10 @@ Sonic_AirMoves:
 	move.b	(Ctrl_1_Press_Logical).w,d0
 	andi.b	#$70,d0				; are buttons A, B, or C being pressed?
 	beq.w	locret_11A14			; if not, branch
-	
+	cmp.b	(JumpButton_Used).w,d0	; check if you're using the same jump button as the one you've already used before
+	bne.s	+
+	bsr.w	Sonic_CheckGoSuper
++
 	bsr.w	Sonic_InstaShield
 	bra.w	Sonic_Dropdash	
 	
@@ -882,6 +885,7 @@ Sonic_RollSpeed:
 	moveq	#6,d5	; natural roll deceleration = 1/2 normal acceleration	move.w	#$20,d4	; controlled roll deceleration... interestingly,
 			; this should be Sonic_deceleration/4 according to Tails_RollSpeed,
 			; which means Sonic is much better than Tails at slowing down his rolling when he's underwater
+	move.w	#$20,d4		
     if status_sec_isSliding = 7
 	tst.b	status_secondary(a0)
 	bmi.w	Obj01_Roll_ResetScr
@@ -1209,11 +1213,46 @@ return_1AA36:
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
+SetJumpButtonUsed:
+	cmpi.w	#MainCharacter,a0
+	bne.s	.Player2
+	
+	btst	#button_A,(Ctrl_1_Press_Logical).w	  ; is A pressed?
+	bne.s	+
+	move.b	#button_A_mask,(JumpButton_Used).w
+	rts
+	
++
+	btst	#button_B,(Ctrl_1_Press_Logical).w		  ; is B pressed?
+	bne.s	+
+	move.b	#button_B_mask,(JumpButton_Used).w
+	rts	
+
++
+	move.b	#button_C_mask,(JumpButton_Used).w
+
+.Player2:
+	btst	#button_A,(Ctrl_2_Press_Logical).w	  ; is A pressed?
+	bne.s	+
+	move.b	#button_A_mask,(JumpButton_Used_P2).w
+	rts
+	
++
+	btst	#button_B,(Ctrl_2_Press_Logical).w		  ; is B pressed?
+	bne.s	+
+	move.b	#button_B_mask,(JumpButton_Used_P2).w
+	rts	
+
++
+	move.b	#button_C_mask,(JumpButton_Used_P2).w
+	rts	
+
 ; loc_1AA38:
 Sonic_Jump:
 	move.b	(Ctrl_1_Press_Logical).w,d0
 	andi.b	#button_B_mask|button_C_mask|button_A_mask,d0 ; is A, B or C pressed?
 	beq.w	return_1AAE6	; if not, return
+	bsr.s	SetJumpButtonUsed
 	moveq	#0,d0
 	move.b	angle(a0),d0
 	addi.b	#$80,d0
@@ -1289,8 +1328,6 @@ Sonic_JumpHeight:
 	bne.s	+		; if yes, branch
 	move.w	d1,y_vel(a0)	; immediately reduce Sonic's upward speed to d1
 +
-	tst.b	y_vel(a0)		; is Sonic exactly at the height of his jump?
-	beq.s	Sonic_CheckGoSuper	; if yes, test for turning into Super Sonic
 	rts
 ; ---------------------------------------------------------------------------
 ; loc_1AB22:
@@ -1320,11 +1357,9 @@ Sonic_CheckGoSuper:
 	bne.s	return_1ABA4		; if not, branch
 	cmpi.w	#50,(Ring_count).w	; does Sonic have at least 50 rings?
 	blo.s	return_1ABA4		; if not, branch
-    if gameRevision=2
 	; fixes a bug where the player can get stuck if transforming at the end of a level
 	tst.b	(Update_HUD_timer).w	; has Sonic reached the end of the act?
 	beq.s	return_1ABA4		; if yes, branch
-    endif
 
     if fixBugs
 	; If Sonic was executing a roll-jump when he turned Super, then this

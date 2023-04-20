@@ -1552,8 +1552,7 @@ return_1C3A8:
 Tails_RollSpeed:
 	move.w	(Tails_top_speed).w,d6
 	asl.w	#1,d6
-	move.w	(Tails_acceleration).w,d5
-	asr.w	#1,d5	; natural roll deceleration = 1/2 normal acceleration
+	moveq	#6,d5	; natural roll deceleration = 1/2 normal acceleration	move.w	#$20,d4	; controlled roll deceleration... interestingly,
     if fixBugs
 	; Matches 'Sonic_RollSpeed'.
 	move.w	#$20,d4
@@ -1897,6 +1896,7 @@ Tails_Jump:
 	move.b	(Ctrl_2_Press_Logical).w,d0
 	andi.b	#button_B_mask|button_C_mask|button_A_mask,d0 ; is A, B or C pressed?
 	beq.w	return_1C6C2	; if not, return
+	bsr.w	SetJumpButtonUsed	
 	moveq	#0,d0
 	move.b	angle(a0),d0
 	addi.b	#$80,d0

@@ -1308,7 +1308,9 @@ Ctrl_1_Press:			ds.b	1	; 1 byte
 Ctrl_2:						; 2 bytes
 Ctrl_2_Held:			ds.b	1	; 1 byte
 Ctrl_2_Press:			ds.b	1	; 1 byte
-				ds.b	4	; $FFFFF608-$FFFFF60B ; seems unused
+Invert_Joypads_Flag:	ds.b	1
+Pause_Player2:			ds.b	1
+				ds.b	2	; $FFFFF608-$FFFFF60B ; seems unused
 VDP_Reg1_val:			ds.w	1	; normal value of VDP register #1 when display is disabled
 				ds.b	6	; $FFFFF60E-$FFFFF613 ; seems unused
 Demo_Time_left:			ds.w	1	; 2 bytes
@@ -1329,11 +1331,11 @@ Palette_fade_length:		ds.b	1	; Number of entries to change in the palette fading
 
 MiscLevelVariables:
 VIntSubE_RunCount:		ds.b	1
-				ds.b	1	; $FFFFF629 ; seems unused
+JumpButton_Used			ds.b	1	
 Vint_routine:			ds.b	1	; was "Delay_Time" ; routine counter for V-int
-				ds.b	1	; $FFFFF62B ; seems unused
+JumpButton_Used_P2		ds.b	1
 Sprite_count:			ds.b	1	; the number of sprites drawn in the current frame
-				ds.b	5	; $FFFFF62D-$FFFFF631 ; seems unused
+				ds.b	5	; $FFFFF62E-$FFFFF631 ; seems unused
 PalCycle_Frame:			ds.w	1	; ColorID loaded in PalCycle
 PalCycle_Timer:			ds.w	1	; number of frames until next PalCycle call
 RNG_seed:			ds.l	1	; used for random number generation
