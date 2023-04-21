@@ -242,12 +242,12 @@ TailsCPU_Spawning:
 	bne.s	TailsCPU_Respawn
 	move.w	(Timer_frames).w,d0
 	andi.w	#$3F,d0
-	bne.s	return_1BB88
+	bne.w	return_1BB88
 	tst.b	obj_control(a1)
-	bne.s	return_1BB88
+	bne.w	return_1BB88
 	move.b	status(a1),d0
 	andi.b	#$92,d0
-	bne.s	return_1BB88
+	bne.w	return_1BB88
 ; loc_1BB54:
 TailsCPU_Respawn:
 	move.w	#4,(Tails_CPU_routine).w	; => TailsCPU_Flying
