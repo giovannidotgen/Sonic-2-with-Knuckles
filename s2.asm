@@ -41338,8 +41338,6 @@ Obj84_MainY:
 	lea	(MainCharacter).w,a1 ; a1=character
 	bsr.s	+
 	lea	(Sidekick).w,a1 ; a1=character
-    cmpi.w  #4,(Tails_CPU_routine).w    ; TailsCPU_Flying
-    beq.s   return_21350	
 +
 	tst.b	(a2)+
 	bne.s	Obj84_MainY_Alt

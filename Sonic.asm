@@ -387,7 +387,7 @@ Sonic_AirMoves:
 	andi.b	#$70,d0				; are buttons A, B, or C being pressed?
 	beq.w	locret_11A14			; if not, branch
 	cmp.b	(JumpButton_Used).w,d0	; check if you're using the same jump button as the one you've already used before
-	bne.s	+
+	beq.s	+
 	bsr.w	Sonic_CheckGoSuper
 +
 	bsr.w	Sonic_InstaShield
@@ -1218,13 +1218,13 @@ SetJumpButtonUsed:
 	bne.s	.Player2
 	
 	btst	#button_A,(Ctrl_1_Press_Logical).w	  ; is A pressed?
-	bne.s	+
+	bEQ.s	+
 	move.b	#button_A_mask,(JumpButton_Used).w
 	rts
 	
 +
 	btst	#button_B,(Ctrl_1_Press_Logical).w		  ; is B pressed?
-	bne.s	+
+	bEQ.s	+
 	move.b	#button_B_mask,(JumpButton_Used).w
 	rts	
 
@@ -1233,13 +1233,13 @@ SetJumpButtonUsed:
 
 .Player2:
 	btst	#button_A,(Ctrl_2_Press_Logical).w	  ; is A pressed?
-	bne.s	+
+	beq.s	+
 	move.b	#button_A_mask,(JumpButton_Used_P2).w
 	rts
 	
 +
 	btst	#button_B,(Ctrl_2_Press_Logical).w		  ; is B pressed?
-	bne.s	+
+	beq.s	+
 	move.b	#button_B_mask,(JumpButton_Used_P2).w
 	rts	
 

@@ -1774,7 +1774,7 @@ Knuckles_CheckGlide:				  ; ...
 		move.b	(Ctrl_1_Press_Logical).w,d0
 		and.b	#$70,d0		
 		cmp.b	(JumpButton_Used).w,d0
-		bne.s	Knuckles_BeginGlide
+		beq.s	Knuckles_BeginGlide
 		tst.b	($FFFFFE1E).w
 		bne.s	Knuckles_TurnSuper
 
