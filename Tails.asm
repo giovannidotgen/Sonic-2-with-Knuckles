@@ -259,8 +259,28 @@ TailsCPU_Respawn:
 	subi.w	#$C0,d0
 	move.w	d0,y_pos(a0)
 	ori.w	#high_priority,art_tile(a0)
-	move.b	#0,spindash_flag(a0)
-	move.w	#0,spindash_counter(a0)
+	moveq	#0,d0
+	move.w	d0,x_vel(a0)
+	move.w	d0,y_vel(a0)
+	move.w	d0,inertia(a0)
+	move.b	d0,double_jump_flag(a0)
+	move.b	d0,double_jump_property(a0)
+	move.b	d0,spindash_flag(a0)
+	move.w	d0,spindash_counter(a0)
+	move.b	#$81,obj_control(a0)	
+	move.b	#2,status(a0)
+	move.b	#30,air_left(a0)
+	move.b	d0,flips_remaining(a0)
+	move.b	d0,flip_speed(a0)
+	move.w	d0,move_lock(a0)
+	move.w	d0,invincibility_time(a0)
+	move.w	d0,invulnerable_time(a0)
+	move.w	d0,speedshoes_time(a0)
+	move.b	d0,next_tilt(a0)
+	move.b	d0,tilt(a0)
+	move.b	d0,stick_to_convex(a0)
+	move.b	d0,jumping(a0)
+		
 
 return_1BB88:
 	rts
