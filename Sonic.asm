@@ -231,7 +231,7 @@ Obj01_InWater:
 	move.l	a0,(Sonic_BreathingBubbles+obj0a_character).w
 	lea	(Sonic_top_speed).w,a2	; Load Sonic_top_speed into a2
 	bsr.w	ApplySpeedSettings	; Fetch Speed settings
-+
+
 	tst.b	(Flying_carrying_Sonic_flag).w
 	bne.s	+
 	asr.w	x_vel(a0)

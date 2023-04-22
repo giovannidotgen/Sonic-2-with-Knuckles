@@ -2642,11 +2642,17 @@ Tails_ResetOnFloor_Part3:
 	move.b	#0,flip_turned(a0)
 	move.b	#0,flips_remaining(a0)
 	move.w	#0,(Tails_Look_delay_counter).w
+	tst.b	double_jump_flag(a0)
+	beq.s	+
 	move.b	#0,double_jump_flag(a0)
 	move.b	#0,double_jump_property(a0)	
+	bra.s	++
++
 	cmpi.b	#AniIDSonAni_Hang2,anim(a0)
 	bne.s	return_1CBC4
++
 	move.b	#AniIDSonAni_Walk,anim(a0)
+
 
 return_1CBC4:
 	rts
