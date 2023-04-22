@@ -66282,7 +66282,10 @@ loc_35458:
 	lea_	byte_353EA,a2
 loc_3545C:
 	cmpi.b	#ObjID_SonicSS,(a3)
+	beq.s	+
+	cmpi.b	#ObjID_KnucklesSS,(a3)
 	bne.s	loc_35468
++	
 	sub.w	d1,(Ring_count).w
 	bra.s	loc_3546C
 ; ===========================================================================
