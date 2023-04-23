@@ -43132,6 +43132,7 @@ loc_22688:
 	move.w	(a2)+,d5
 	add.w	y_pos(a0),d5
 	addq.b	#2,(a4)
+	clr.b	(Flying_carrying_Sonic_flag).w				
 	move.b	#$81,obj_control(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
 	move.w	#$800,inertia(a1)
