@@ -726,10 +726,13 @@ Tails_Carry_Sonic:
 		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
 		beq.w	loc_14474
 		
+		tst.w	(Tails_control_counter).w	; if CPU has control
+		bne.w	+		; (if not, branch)		
 		move.b	(Ctrl_1_Held_Logical).w,d1
 		andi.b	#button_down_mask,d1
 		beq.w	loc_14474
-		
+
++		
 		clr.b	obj_control(a1)
 		clr.b	(a2) ; ???
 		move.b	#$12,1(a2) ; ???
