@@ -759,7 +759,8 @@ loc_14428:
 		move.b	#AniIDSonAni_Roll,anim(a1)
 		bset	#2,status(a1)
 		bclr	#4,status(a1)
-		rts
+		move.w	#SndID_Jump,d0
+		jmp 	PlaySound
 ; ---------------------------------------------------------------------------
 
 loc_1445A:

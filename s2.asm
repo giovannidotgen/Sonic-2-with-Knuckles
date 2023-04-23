@@ -51591,8 +51591,11 @@ Obj7F_Action:
 	beq.s	+
 	move.b	#$3C,2(a2)
 +
-	move.w	#-$300,y_vel(a1)
+	move.w	#-$380,y_vel(a1)
+	move.b	#1,jumping(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
+	move.w	#SndID_Jump,d0
+	jsr	(PlaySound).l		
 	move.b	subtype(a0),d0
 	andi.w	#$F,d0
 	lea	(ButtonVine_Trigger).w,a3
@@ -51637,6 +51640,7 @@ loc_29890:
 	move.b	#AniIDSonAni_Hang2,anim(a1)
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
+	bclr	#4,status(a1)
 	tst.b	(Flying_carrying_Sonic_flag).w
 	beq.s	+
 	lea		(MainCharacter).w,a3
@@ -51805,7 +51809,7 @@ Obj80_Action:
 	tst.b	(a2)
 	beq.w	loc_29B5E
 	tst.b	render_flags(a1)
-	bpl.s	loc_29B42
+	bpl.w	loc_29B42
 	cmpi.b	#4,routine(a1)
 	bhs.s	loc_29B42
 	andi.b	#button_B_mask|button_C_mask|button_A_mask,d0
@@ -51826,7 +51830,10 @@ Obj80_Action:
 	move.w	#$200,x_vel(a1)
 +
 	move.w	#-$380,y_vel(a1)
+	move.b	#1,jumping(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
+	move.w	#SndID_Jump,d0
+	jsr	(PlaySound).l		
 	bset	#1,status(a1)
 	tst.b	objoff_34(a0)
 	beq.s	+	; rts
@@ -51869,7 +51876,7 @@ loc_29B5E:
 	cmpi.w	#$18,d1
 	bhs.w	return_29BF8
 	tst.b	obj_control(a1)
-	bmi.s	return_29BF8
+	bmi.w	return_29BF8
 	cmpi.b	#4,routine(a1)
 	bhs.s	return_29BF8
 	tst.w	(Debug_placement_mode).w
@@ -51883,6 +51890,7 @@ loc_29B5E:
 	move.b	#AniIDSonAni_Hang2,anim(a1)
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
+	bclr	#4,status(a1)	
 	tst.b	(Flying_carrying_Sonic_flag).w
 	beq.s	+
 	lea		(MainCharacter).w,a3
@@ -55577,7 +55585,10 @@ ObjD9_CheckCharacter:
 	move.b	#$3C,2(a2)
 +
 	move.b	#AniIDSonAni_Roll,anim(a1)
-	move.w	#-$300,y_vel(a1)
+	move.w	#-$380,y_vel(a1)
+	move.b	#1,jumping(a1)
+	move.w	#SndID_Jump,d0
+	jsr	(PlaySound).l		
 	bra.w	ObjD9_CheckCharacter_End
 ; ===========================================================================
 
@@ -55609,6 +55620,7 @@ loc_2C9A0:
 	move.b	#AniIDSonAni_Hang2,anim(a1)
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
+	bclr	#4,status(a1)	
 	tst.b	(Flying_carrying_Sonic_flag).w
 	beq.s	+
 	lea		(MainCharacter).w,a3
@@ -55618,6 +55630,8 @@ loc_2C9A0:
 +
 	move.b	#1,obj_control(a1)
 	move.b	#1,(a2)
+	move.w	#SndID_WallGrab,d0
+	jsr	(PlaySound).l	
 ; return_2CA08:
 ObjD9_CheckCharacter_End:
 	rts

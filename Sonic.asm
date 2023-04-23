@@ -1283,6 +1283,7 @@ Sonic_Jump:
 	addq.l	#4,sp
 	move.b	#1,jumping(a0)
 	clr.b	stick_to_convex(a0)
+	clr.b	(Flying_picking_Sonic_timer).w	
 	move.w	#SndID_Jump,d0
 	jsr	(PlaySound).l	; play jumping sound
 	move.b	#$E,y_radius(a0)
@@ -2020,6 +2021,7 @@ Sonic_ResetOnFloor_Part3:
 	move.w	#0,(Chain_Bonus_counter).w
 	clr.b	double_jump_flag(a0)
 	clr.b	double_jump_property(a0)
+	move.b	#$3F,(Flying_picking_Sonic_timer).w
 	move.b	#0,flip_angle(a0)
 	move.b	#0,flip_turned(a0)
 	move.b	#0,flips_remaining(a0)
