@@ -450,6 +450,8 @@ TailsCPU_Normal_SonicOK:
 	bne.w	TailsCPU_Normal_HumanControl		; (if not, branch)
 	tst.b	obj_control(a0)			; and Tails isn't fully object controlled (&$80)
 	bmi.w	TailsCPU_Normal_HumanControl		; (if not, branch)
+	tst.b	(Flying_carrying_Sonic_flag).w	; and Tails isn't carrying Sonic
+	bne.w	TailsCPU_Normal_FlyingControl
 	tst.w	move_lock(a0)			; and Tails' movement is locked (usually because he just fell down a slope)
 	beq.s	+					; (if not, branch)
 	tst.w	inertia(a0)			; and Tails is stopped, then...
@@ -553,6 +555,10 @@ TailsCPU_Normal_FilterAction_Part2:
 ; loc_1BE22:
 TailsCPU_Normal_SendAction:
 	move.w	d1,(Ctrl_2_Logical).w
+	rts
+
+TailsCPU_Normal_FlyingControl:
+	move.w	(Ctrl_1_Logical).w,(Ctrl_2_Logical).w
 	rts
 
 ; ===========================================================================
@@ -720,9 +726,9 @@ Tails_Carry_Sonic:
 		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
 		beq.w	loc_14474
 		
-;		move.b	(Ctrl_1_Held_Logical).w,d1
-;		andi.b	#button_down_mask,d1
-;		beq.w	loc_14474
+		move.b	(Ctrl_1_Held_Logical).w,d1
+		andi.b	#button_down_mask,d1
+		beq.w	loc_14474
 		
 		clr.b	obj_control(a1)
 		clr.b	(a2) ; ???
@@ -2010,23 +2016,23 @@ Tails_Test_For_Flight:
 Tails_Test_For_Flight_2P:
 		move.b	(Ctrl_2_Press_Logical).w,d0
 		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
-		beq.w	locret_151A2
+		beq.w	Tails_Test_For_Flight_Assist
 		cmpi.w	#2,(Player_mode).w
 		beq.s	Tails_DoFly
 		tst.w	(Tails_control_counter).w
 		bne.s	Tails_DoFly
 		bra.s	locret_151A2
 
-;Tails_Test_For_Flight_Assist:
+Tails_Test_For_Flight_Assist:
 ;		cmpi.b	#1,(Option_TailsFlight).w
 ;		beq.s	locret_151A2
 
-;		move.b	(Ctrl_1_Press_Logical).w,d0
-;		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
-;		beq.w	locret_151A2
-;		move.b	(Ctrl_1_Held_Logical).w,d0
-;		andi.b	#button_up_mask,d0
-;		beq.w	locret_151A2
+		move.b	(Ctrl_1_Press_Logical).w,d0
+		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
+		beq.w	locret_151A2
+		move.b	(Ctrl_1_Held_Logical).w,d0
+		andi.b	#button_up_mask,d0
+		beq.w	locret_151A2
 
 Tails_DoFly:
 ;		cmpi.b	#2,(Option_TailsFlight).w
