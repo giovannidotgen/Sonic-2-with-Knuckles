@@ -5384,7 +5384,7 @@ WindTunnel:
 	clr.b	jumping(a1)
 	cmpi.b	#ObjID_Knuckles,id(a1)
 	bne.s	+
-	clr.b	$21(a1)
+	clr.b	glidemode(a1)
 
 +	
 	btst	#button_up,(Ctrl_1_Held).w	; is Up being pressed?
@@ -25548,9 +25548,9 @@ SolidObject_Monitor_Sonic:
 ; End of function SolidObject_Monitor_Sonic
 
 SolidObject_Monitor_Knuckles:
-	cmp.b	#1,$21(a1)
+	cmp.b	#1,glidemode(a1)
 	beq.s	+
-	cmp.b	#3,$21(a1)
+	cmp.b	#3,glidemode(a1)
 	beq.s	+
 	cmpi.b	#AniIDSonAni_Roll,anim(a1)
 	bne.w	SolidObject_cont
@@ -48200,7 +48200,7 @@ loc_270DC:
 	bclr	#4,status(a1)
     endif
 	bclr	#5,status(a1)
-	clr.b	$21(a1)			; KiS2: Makes Knuckles un-glide
+	clr.b	glidemode(a1)			; KiS2: Makes Knuckles un-glide
 	move.w	#SndID_Spring,d0
 	jmp	(PlaySound).l
 ; ===========================================================================
@@ -52944,7 +52944,7 @@ loc_2A990:
 +
 	cmpi.b	#ObjID_Knuckles,id(a1)
 	bne.s	+
-	clr.b	$21(a1)
+	clr.b	glidemode(a1)
 +
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
@@ -74789,7 +74789,7 @@ ObjB5_CheckPlayer:
 +
 	cmpi.b	#ObjID_Knuckles,id(a1)
 	bne.s	ObjB5_NotKnuckles
-	clr.b	$21(a1)
+	clr.b	glidemode(a1)
 
 ObjB5_NotKnuckles:
 	clr.b	double_jump_flag(a1)
@@ -80644,9 +80644,9 @@ Touch_Monitor:
 	beq.s	Break_Monitor
 	cmpi.b	#ObjID_Knuckles,id(a0)
 	bne.s	return_3F78A
-	cmp.b	#1,$21(a0)
+	cmp.b	#1,glidemode(a0)
 	beq.s	Break_Monitor
-	cmp.b	#3,$21(a0)
+	cmp.b	#3,glidemode(a0)
 	bne.s	return_3F78A
 
 Break_Monitor:
@@ -80711,9 +80711,9 @@ Touch_Enemy_Part2:
 	beq.s	Touch_KillEnemy
 	cmpi.b	#ObjID_Knuckles,id(a0)
 	bne.s	+
-	cmp.b	#1,$21(a0)
+	cmp.b	#1,glidemode(a0)
 	bne.s	+
-	move.b	#2,$21(a0)
+	move.b	#2,glidemode(a0)
 	move.b	#$21,anim(a0)
 +	
 	neg.w	x_vel(a0)
