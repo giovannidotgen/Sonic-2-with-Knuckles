@@ -97,14 +97,14 @@ Giovanni_Delay1:
 	; moveq	#29,d2		; number of characters to be rendered in a line -1
 	; bsr.w	SingleLineRender
 
-    ; move.b  #sfx_Ring,d0			; set sound ID
+    ; move.b  #SndID_Ring,d0			; set sound ID
     ; jsr     PlaySound_Special		; play ID	
 	; move.b	#1,(v_paltime).w
 	; move.b	#1,(v_paltimecur).w
 	; move.b	#1,(v_palflags).w
 	; move.b	#$F,(v_awcount).w
 	; move.l	#Pal_SplashText,(p_awtarget).w
-	; move.l	#$FFFFFB20,(p_awreplace).w
+	; move.l	#Normal_palette+#$20,(p_awreplace).w
 	
 ; Giovanni_TextFadeIn:
     ; move.b  #VintID_Unused6,(Vint_routine).w			; set V-blank routine to run
@@ -178,3 +178,5 @@ Pal_Giovanni: binclude "art\palettes\Giovanni Splash.bin"
 	; even
 Text_Giovanni: dc.b "IT'S JOE-VANNI, NOT GEO-VANNI."
 	even	
+	
+	include "_additional\DynPaletteTransition.asm"

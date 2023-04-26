@@ -1105,7 +1105,19 @@ Tails_InvincibilityStars:
 				ds.b	object_size
 LevelOnly_Object_RAM_End:
 
-				ds.b	$200	; unused
+v_palflags: 	ds.b 	1			; byte. bit 0 represents the above water palette being in need of change. bit 1 represents the below palette being in need of change. bit 2 represents the palette cycle being in need of change. all other bits are to stay 0. initialization is manual. clears itself once the palette is done transitioning.
+v_awcount: 		ds.b 	1			; byte. number of colors of the above water palette that are in need of change.
+v_bwcount: 		ds.b 	1			; byte. number of colors of the below water palette that are in need of change.
+v_paltime:  	ds.b 	1			; byte. set by the event that initializes the palette transition. it determines how many frames need to pass between each individual step of the transition.
+v_paltimecur: 	ds.b 	1		; byte. the actual timer that controls how many frames are left between a new step of the transition.
+v_pcyccount: 	ds.b 	1		; byte. number of colors of the palette cycle buffer that are in need of change.
+p_awtarget: 	ds.l	1			; longword. points to the target above water palette in ROM.
+p_bwtarget: 	ds.l	1			; longword. points to the target below water palette in ROM.
+p_awreplace: 	ds.l	1		; longword. points to the RAM area where the palette lies and needs replacement.
+p_bwreplace: 	ds.l	1		; longword. points to the RAM area where the palette lies and needs replacement.
+p_pcyctarget: 	ds.l	1		; longword. points to the target palette cycle data in ROM.
+
+v_palcycleram:	ds.b	$1E6	; buffer. you can store the palette cycle data in here.
 
 Primary_Collision:		ds.b	$300
 Secondary_Collision:		ds.b	$300
@@ -1549,7 +1561,7 @@ Camera_X_pos_coarse_End:
 Camera_X_pos_coarse_P2:		ds.w	1
 Camera_X_pos_coarse_P2_End:
 
-Tails_LastLoadedDPLC:		ds.b	1	; mapping frame number when Tails last had his tiles requested to be transferred from ROM to VRAM. can be set to a dummy value like -1 to force a refresh DMA.
+Tails_LastLoadedDPLC:		ds.b	1	; mapping frame number when Tails last had his tiles requested to be transferred from ROM to. can be set to a dummy value like -1 to force a refresh DMA.
 TailsTails_LastLoadedDPLC:	ds.b	1	; mapping frame number when Tails' tails last had their tiles requested to be transferred from ROM to VRAM. can be set to a dummy value like -1 to force a refresh DMA.
 ButtonVine_Trigger:		ds.b	$10	; 16 bytes flag array, #subtype byte set when button/vine of respective subtype activated
 Anim_Counters:			ds.b	$10	; $FFFFF7F0-$FFFFF7FF
