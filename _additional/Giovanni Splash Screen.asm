@@ -5,7 +5,7 @@
 ; ================================================================
 
 GiovanniSplash:
-    move.b  #MusID_FadeOut,d0		; set music ID to "stop music"
+    move.b  #MusID_Stop,d0			; set music ID to "stop music"
     jsr     PlaySound2				; play ID
     jsr     Pal_FadeToBlack			; fade palettes out
     jsr     ClearScreen				; clear the plane mappings
@@ -56,8 +56,8 @@ Giovanni_SetDistance:
 	neg.w	d0
 	dbf		d1,Giovanni_SetDistance
 	
-    move.b  #SndID_Teleport,d0			; set sound ID
-    jsr     PlaySound2					; play ID	
+    move.b  #SndID_SpindashRelease,d0			; set sound ID
+    jsr     PlaySound					; play ID	
 	move	#28,d4
 	
 Giovanni_DeformLoop:
@@ -70,14 +70,14 @@ Giovanni_DeformLoop:
 	tst.w	(Horiz_Scroll_Buf+$184).w	; test the first line
 	bne.s	Giovanni_DeformLoop			; if not 0, perform deformation again
 
-	; lea		(VDP_data_port).l,a6
-	; move.l	#$50000003,4(a6)			; set VRAM write address
-	; lea		(Art_S2Text).l,a5			; fetch the text graphics
-	; move.w	#$39F,d1					; amount of data to be loaded
+	lea		(VDP_data_port).l,a6
+	move.l	#$50000003,4(a6)			; set VRAM write address
+	lea		(Art_Font).l,a5			; fetch the text graphics
+	move.w	#$39F,d1					; amount of data to be loaded
 ; load text
-; Giovanni_LoadText:
-	; move.w	(a5)+,(a6)					; load the text
-	; dbf	d1,Giovanni_LoadText 			; repeat until done
+Giovanni_LoadText:
+	move.w	(a5)+,(a6)					; load the text
+	dbf	d1,Giovanni_LoadText 			; repeat until done
 
     move.w  #1*60,(Demo_Time_left).w     	; set delay time (1 second on a 60hz system)
 
@@ -89,31 +89,31 @@ Giovanni_Delay1:
     tst.w   (Demo_Time_left).w           	; has the delay time finished?
     bne.s   Giovanni_Delay1				; if not, branch
 
-; Credits_Render:
-	; lea	(VDP_data_port).l,a6
-	; lea	(Text_Giovanni).l,a1 ; where to fetch the lines from
-	; move.l	#$488A0003,4(a6)	; starting screen position 
-	; move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
-	; moveq	#29,d2		; number of characters to be rendered in a line -1
-	; bsr.w	SingleLineRender
+Credits_Render:
+	lea	(VDP_data_port).l,a6
+	lea	(Text_Giovanni).l,a1 ; where to fetch the lines from
+	move.l	#$488A0003,4(a6)	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#29,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
 
-    ; move.b  #SndID_Ring,d0			; set sound ID
-    ; jsr     PlaySound_Special		; play ID	
-	; move.b	#1,(v_paltime).w
-	; move.b	#1,(v_paltimecur).w
-	; move.b	#1,(v_palflags).w
-	; move.b	#$F,(v_awcount).w
-	; move.l	#Pal_SplashText,(p_awtarget).w
-	; move.l	#Normal_palette+#$20,(p_awreplace).w
+    move.b  #SndID_Ring,d0			; set sound ID
+    jsr     PlaySound			; play ID	
+	move.b	#1,(v_paltime).w
+	move.b	#1,(v_paltimecur).w
+	move.b	#1,(v_palflags).w
+	move.b	#$F,(v_awcount).w
+	move.l	#Pal_SplashText,(p_awtarget).w
+	move.l	#Normal_palette+$20,(p_awreplace).w
 	
-; Giovanni_TextFadeIn:
-    ; move.b  #VintID_Unused6,(Vint_routine).w			; set V-blank routine to run
-    ; jsr 	WaitForVint					; wait for V-blank (decreases "Demo_Time_left")
-    ; tst.b   (Ctrl_1_Press).w           	; has player 1 pressed start button?
-    ; bmi.w   Giovanni_GotoTitle         	; if so, branch	
-	; bsr.w	DynPaletteTransition
-	; tst.b	(v_palflags).w				; check if the palette is fully loaded
-	; bne.s	Giovanni_TextFadeIn
+Giovanni_TextFadeIn:
+    move.b  #VintID_Unused6,(Vint_routine).w			; set V-blank routine to run
+    jsr 	WaitForVint					; wait for V-blank (decreases "Demo_Time_left")
+    tst.b   (Ctrl_1_Press).w           	; has player 1 pressed start button?
+    bmi.w   Giovanni_GotoTitle         	; if so, branch	
+	bsr.w	DynPaletteTransition
+	tst.b	(v_palflags).w				; check if the palette is fully loaded
+	bne.s	Giovanni_TextFadeIn
 	
     move.w  #3*60,(Demo_Time_left).w     	; set delay time (3 seconds on a 60hz system)
 
@@ -174,9 +174,7 @@ Map_Giovanni: binclude "mappings\misc\Giovanni Splash.bin"
 	even
 Pal_Giovanni: binclude "art\palettes\Giovanni Splash.bin"
 	even
-; Pal_SplashText:	binclude "palette\Sonic 2 Text used in Splash Screen.bin"
-	; even
+Pal_SplashText:	binclude "art\palettes\Sonic 2 Text used in Splash Screen.bin"
+	even
 Text_Giovanni: dc.b "IT'S JOE-VANNI, NOT GEO-VANNI."
 	even	
-	
-	include "_additional\DynPaletteTransition.asm"

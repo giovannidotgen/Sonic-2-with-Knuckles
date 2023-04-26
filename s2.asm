@@ -417,7 +417,7 @@ GameMode_TitleScreen:	bra.w	TitleScreen		; Title screen mode
 GameMode_Demo:		bra.w	Level			; Demo mode
 GameMode_Level:		bra.w	Level			; Zone play mode
 GameMode_SpecialStage:	bra.w	SpecialStage		; Special stage play mode
-GameMode_ContinueScreen:bra.w	ContinueScreen		; Continue mode
+GameMode_ContinueScreen:bra.w	JmpTo_ContinueScreen		; Continue mode
 GameMode_2PResults:	bra.w	JmpTo_TwoPlayerResults	; 2P results mode
 GameMode_2PLevelSelect:	bra.w	LevelSelectMenu2P	; 2P level select mode
 GameMode_EndingSequence:bra.w	JmpTo_EndingSequence	; End sequence mode
@@ -460,7 +460,9 @@ LevelSelectMenu: ;;
 ; ===========================================================================
 JmpTo_TwoPlayerResults:
 	jmp	(TwoPlayerResults).l
-	
+; ===========================================================================
+JmpTo_ContinueScreen:
+	jmp (ContinueScreen).l	
 ; ===========================================================================
 
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -4130,6 +4132,8 @@ JmpTo_RunObjects ; JmpTo
     endif
 
 	include "_additional/Giovanni Splash Screen.asm"
+	include "_additional/DynPaletteTransition.asm"	
+	include "_additional/Text rendering routines.asm"
 
 ; ===========================================================================
 ; loc_3998:
@@ -11769,7 +11773,7 @@ MenuScreen:
 	lea	(Chunk_Table).l,a1
 	lea	(MapEng_MenuBack).l,a0
 	move.w	#make_art_tile(ArtTile_VRAM_Start,3,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(VRAM_Plane_B_Name_Table,VRAM,WRITE),d0
 	moveq	#$27,d1
@@ -11786,15 +11790,15 @@ MenuScreen:
 	lea	(Chunk_Table).l,a1
 	lea	(MapEng_LevSel2P).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,0,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	lea	(Chunk_Table+$198).l,a1
 	lea	(MapEng_LevSel2P).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,1,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	lea	(Chunk_Table+$330).l,a1
 	lea	(MapEng_LevSelIcon).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_LevelSelectPics,0,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	lea	(Chunk_Table+$498).l,a2
 
 	moveq	#$F,d1
@@ -12467,7 +12471,7 @@ MenuScreen_LevelSelect:
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
 
-	bsr.w	Pal_FadeFromBlack
+	jsr		Pal_FadeFromBlack
 
 ;loc_93AC:
 LevelSelect_Main:	; routine running during level select
