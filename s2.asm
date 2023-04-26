@@ -418,11 +418,12 @@ GameMode_Demo:		bra.w	Level			; Demo mode
 GameMode_Level:		bra.w	Level			; Zone play mode
 GameMode_SpecialStage:	bra.w	SpecialStage		; Special stage play mode
 GameMode_ContinueScreen:bra.w	ContinueScreen		; Continue mode
-GameMode_2PResults:	bra.w	TwoPlayerResults	; 2P results mode
+GameMode_2PResults:	bra.w	JmpTo_TwoPlayerResults	; 2P results mode
 GameMode_2PLevelSelect:	bra.w	LevelSelectMenu2P	; 2P level select mode
 GameMode_EndingSequence:bra.w	JmpTo_EndingSequence	; End sequence mode
 GameMode_OptionsMenu:	bra.w	OptionsMenu		; Options mode
 GameMode_LevelSelect:	bra.w	LevelSelectMenu		; Level select mode
+GameMode_GiovanniSplash bra.w	GiovanniSplash	; Giovanni Splash Screen
 ; ===========================================================================
     if skipChecksumCheck=0	; checksum error code
 ; loc_3CE:
@@ -456,6 +457,10 @@ OptionsMenu: ;;
 ; loc_402:
 LevelSelectMenu: ;;
 	jmp	(MenuScreen).l
+; ===========================================================================
+JmpTo_TwoPlayerResults:
+	jmp	(TwoPlayerResults).l
+	
 ; ===========================================================================
 
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -4087,7 +4092,7 @@ Sega_WaitEnd:
 Sega_GotoTitle:
 	clr.w	(SegaScr_PalDone_Flag).w
 	clr.w	(SegaScr_VInt_Subrout).w
-	move.b	#GameModeID_TitleScreen,(Game_Mode).w	; => TitleScreen
+	move.b	#GameModeID_Giovanni,(Game_Mode).w	; => TitleScreen
 	rts
 
 ; ---------------------------------------------------------------------------
@@ -4124,8 +4129,7 @@ JmpTo_RunObjects ; JmpTo
 	align 4
     endif
 
-
-
+	include "_additional/Giovanni Splash Screen.asm"
 
 ; ===========================================================================
 ; loc_3998:
@@ -11737,7 +11741,7 @@ MenuScreen:
 	move.w	(VDP_Reg1_val).w,d0
 	andi.b	#$BF,d0
 	move.w	d0,(VDP_control_port).l
-	bsr.w	ClearScreen
+	jsr		ClearScreen
 	lea	(VDP_control_port).l,a6
 	move.w	#$8004,(a6)		; H-INT disabled
 	move.w	#$8200|(VRAM_Menu_Plane_A_Name_Table/$400),(a6)		; PNT A base: $C000
@@ -11755,13 +11759,13 @@ MenuScreen:
 	move.l	#VDP_Command_Buffer,(VDP_Command_Buffer_Slot).w
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_FontStuff),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_FontStuff).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_MenuBox),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_MenuBox).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_LevelSelectPics),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_LevelSelectPics).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	lea	(Chunk_Table).l,a1
 	lea	(MapEng_MenuBack).l,a0
 	move.w	#make_art_tile(ArtTile_VRAM_Start,3,0),d0
@@ -12074,11 +12078,11 @@ MenuScreen_Options:
 	lea	(Chunk_Table).l,a1
 	lea	(MapEng_Options).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,0,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	lea	(Chunk_Table+$160).l,a1
 	lea	(MapEng_Options).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,1,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	clr.b	(Options_menu_box).w
 	bsr.w	OptionScreen_DrawSelected
 	addq.b	#1,(Options_menu_box).w
@@ -12406,7 +12410,7 @@ MenuScreen_LevelSelect:
 	lea	(Chunk_Table).l,a1
 	lea	(MapEng_LevSel).l,a0	; 2 bytes per 8x8 tile, compressed
 	move.w	#make_art_tile(ArtTile_VRAM_Start,0,0),d0
-	bsr.w	EniDec
+	jsr	EniDec
 
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(VRAM_Plane_A_Name_Table,VRAM,WRITE),d0
@@ -12422,7 +12426,7 @@ MenuScreen_LevelSelect:
 	lea	(Chunk_Table+$8C0).l,a1
 	lea	(MapEng_LevSelIcon).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_LevelSelectPics,0,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 
 	bsr.w	LevelSelect_DrawIcon
 
@@ -13167,7 +13171,7 @@ EndingSequence:
 EndgameCredits:
 	tst.b	(Credits_Trigger).w
 	beq.w	.return
-	bsr.w	Pal_FadeToBlack
+	jsr		Pal_FadeToBlack
 	lea	(VDP_control_port).l,a6
 	move.w	#$8004,(a6)		; H-INT disabled
 	move.w	#$8200|(VRAM_EndSeq_Plane_A_Name_Table/$400),(a6)	; PNT A base: $C000
@@ -13220,7 +13224,7 @@ EndgameCredits:
 -
 	jsrto	ClearScreen, JmpTo_ClearScreen
 	bsr.w	ShowCreditsScreen
-	bsr.w	Pal_FadeFromBlack
+	jsr		Pal_FadeFromBlack
 
 	; Here's how to calculate new duration values for the below instructions.
 	; Each slide of the credits is displayed for $18E frames at 60 FPS, or $144 frames at 50 FPS.
@@ -13242,14 +13246,14 @@ EndgameCredits:
 	bsr.w	WaitForVint
 	dbf	d0,-
 
-	bsr.w	Pal_FadeToBlack
+	jsr		Pal_FadeToBlack
 	lea	(off_B2CA).l,a1
 	addq.w	#1,(CreditsScreenIndex).w
 	move.w	(CreditsScreenIndex).w,d0
 	lsl.w	#2,d0
 	move.l	(a1,d0.w),d0
 	bpl.s	--
-	bsr.w	Pal_FadeToBlack
+	jsr		Pal_FadeToBlack
 	jsrto	ClearScreen, JmpTo_ClearScreen
 	move.l	#vdpComm($0000,VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_EndingTitle).l,a0

@@ -400,8 +400,10 @@ GameModeID_2PLevelSelect =	id(GameMode_2PLevelSelect) ; 1C
 GameModeID_EndingSequence =	id(GameMode_EndingSequence) ; 20
 GameModeID_OptionsMenu =	id(GameMode_OptionsMenu) ; 24
 GameModeID_LevelSelect =	id(GameMode_LevelSelect) ; 28
+GameModeID_Giovanni =		id(GameMode_GiovanniSplash) ; 2C
 GameModeFlag_TitleCard =	7 ; flag bit
 GameModeID_TitleCard =		1<<GameModeFlag_TitleCard ; flag mask
+
 
 ; palette IDs
 offset :=	PalPointers
@@ -1557,7 +1559,7 @@ Sprite_Table:			ds.b	$280	; Sprite attribute table buffer
 Sprite_Table_End:
 				ds.b	$80	; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
 
-Normal_palette:			ds.b	palette_line_size	; main palette for non-underwater parts of the screen
+Normal_palette:				ds.b	palette_line_size	; main palette for non-underwater parts of the screen
 Normal_palette_line2:		ds.b	palette_line_size
 Normal_palette_line3:		ds.b	palette_line_size
 Normal_palette_line4:		ds.b	palette_line_size
