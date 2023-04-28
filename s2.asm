@@ -25547,11 +25547,21 @@ BranchTo2_MarkObjGone
 ; sub_12756:
 SolidObject_Monitor_Sonic:
 	btst	d6,status(a0)			; is Sonic standing on the monitor?
-	bne.s	Obj26_ChkOverEdge		; if yes, branch
+	bne.w	Obj26_ChkOverEdge		; if yes, branch
 	cmpi.b	#ObjID_Knuckles,id(a1)
-	beq.s	SolidObject_Monitor_Knuckles	
+	beq.s	SolidObject_Monitor_Knuckles
 	cmpi.b	#AniIDSonAni_Roll,anim(a1)		; is Sonic spinning?
-	bne.w	SolidObject_cont		; if not, branch
+	beq.w	+		; if so, branch
+	cmpi.b	#AniIDSonAni_DropDash,anim(a1)		; is Sonic spinning?
+	beq.w	+		; if so, branch
+	jmp		SolidObject_cont
++
+    addq.b    #pushing_bit_delta,d6
+    btst    d6,status(a0)    ; check if we're pushing
+    beq.s    +
+    bclr    #5,status(a1)    ; clear 'pushing' bit
+    bclr    d6,status(a0)    ; clear object's 'pushing' bit
++
 	rts
 ; End of function SolidObject_Monitor_Sonic
 
@@ -35782,16 +35792,35 @@ loc_19E30:
 	move.b	#0,angle(a1)
 	move.w	#0,y_vel(a1)
 	move.w	x_vel(a1),inertia(a1)
-	btst	#1,status(a1)
-	beq.s	loc_19E7E
+
+	bset	#3,status(a1)
+	bset	d6,status(a0)
+	bclr	#1,status(a1)
+	beq.s	return_19E8E
+
+	; Hardcoded exception for springs to prevent dropdashing on them
+	cmpi.b	#ObjID_Spring,id(a0)
+	beq.s	+
+	cmpi.b	#ObjID_PipeExitSpring,id(a0)
+	beq.s	+
+	bra.s	++
++
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)
++
+
 	move.l	a0,-(sp)
 	movea.l	a1,a0
 	move.w	a0,d1
 	subi.w	#Object_RAM,d1
 	bne.s	loc_19E76
-	cmpi.w	#2,(Player_mode).w
+	cmpi.b	#2,(Player_mode).w
 	beq.s	loc_19E76
+
 	jsr	(Sonic_ResetOnFloor_Part2).l
+	jsr	(Sonic_ResetOnFloor_Ability).l
+	clr.b	double_jump_flag(a1)
+	clr.b	double_jump_property(a1)	
 	bra.s	loc_19E7C
 ; ===========================================================================
 
@@ -35812,9 +35841,6 @@ loc_19E7C:
 +	
 	
 loc_19E7E:
-	bset	#3,status(a1)
-	bclr	#1,status(a1)
-	bset	d6,status(a0)
 
 return_19E8E:
 	rts
@@ -36790,7 +36816,7 @@ loc_1DA0C:
     endif
 	movea.w	parent(a0),a1 ; a1=character
 	btst	#status_sec_isInvincible,status_secondary(a1)
-	beq.w	DeleteObject
+	jeq		DeleteObject
 	move.w	x_pos(a1),d0
 	move.w	d0,x_pos(a0)
 	move.w	y_pos(a1),d1
@@ -36828,7 +36854,7 @@ loc_1DA44:
 loc_1DA74:
 	add.b	d0,objoff_34(a0)
 	move.w	#$80,d0
-	bra.w	DisplaySprite3
+	jmp		DisplaySprite3
 ; ===========================================================================
 
 loc_1DA80:
@@ -36836,11 +36862,11 @@ loc_1DA80:
 	; If Sonic is invincible and he turns Super, then the invincibility
 	; stars will not go away. S3K fixes this by doing this:
 	tst.b	(Super_Sonic_flag).w
-	bne.w	DeleteObject
+	jne		DeleteObject
     endif
 	movea.w	parent(a0),a1 ; a1=character
 	btst	#status_sec_isInvincible,status_secondary(a1)
-	beq.w	DeleteObject
+	jeq		DeleteObject
 	cmpi.w	#2,(Player_mode).w
 	beq.s	loc_1DAA4
 	lea	(Sonic_Pos_Record_Index).w,a5
@@ -36901,7 +36927,7 @@ loc_1DAE4:
 loc_1DB20:
 	add.b	d0,objoff_34(a0)
 	move.w	#$80,d0
-	bra.w	DisplaySprite3
+	jmp		DisplaySprite3
 ; ===========================================================================
 
 loc_1DB2C:
@@ -36962,138 +36988,140 @@ obj08_vram_address = objoff_3C
 Obj08:
 	moveq	#0,d0
 	move.b	routine(a0),d0
-	move.w	Obj08_Index(pc,d0.w),d1
-	jmp	Obj08_Index(pc,d1.w)
+	move.w	Obj_Splash_Index(pc,d0.w),d1
+	jmp	Obj_Splash_Index(pc,d1.w)
 ; ===========================================================================
 ; off_1DD2E:
-Obj08_Index:	offsetTable
-		offsetTableEntry.w Obj08_Init			; 0
-		offsetTableEntry.w Obj08_Main			; 2
+Obj_Splash_Index:	offsetTable
+		offsetTableEntry.w Obj_Splash_Init			; 0
+		offsetTableEntry.w Obj_Splash_Main			; 2
 		offsetTableEntry.w BranchTo16_DeleteObject	; 4
-		offsetTableEntry.w Obj08_CheckSkid		; 6
+		offsetTableEntry.w Obj_Splash_CheckSkid		; 6
 ; ===========================================================================
 ; loc_1DD36:
-Obj08_Init:
+Obj_Splash_Init:
 	addq.b	#2,routine(a0)
-	move.l	#Obj08_MapUnc_1DF5E,mappings(a0)
+	move.l	#Obj_Splash_MapUnc_1DF5E,mappings(a0)
 	ori.b	#4,render_flags(a0)
-	move.b	#1,priority(a0)
+	move.w	#1,priority(a0)
 	move.b	#$10,width_pixels(a0)
 	move.w	#make_art_tile(ArtTile_ArtNem_SonicDust,0,0),art_tile(a0)
 	move.w	#MainCharacter,parent(a0)
-	move.w	#tiles_to_bytes(ArtTile_ArtNem_SonicDust),obj08_vram_address(a0)
+	move.w	#tiles_to_bytes(ArtTile_ArtNem_SonicDust),objoff_3C(a0)
 	cmpa.w	#Sonic_Dust,a0
 	beq.s	+
-	move.b	#1,obj08_belongs_to_tails(a0)
-	cmpi.w	#2,(Player_mode).w
+	move.b	#1,objoff_34(a0)
+	cmpi.b	#2,(Player_mode).w
 	beq.s	+
 	move.w	#make_art_tile(ArtTile_ArtNem_TailsDust,0,0),art_tile(a0)
 	move.w	#Sidekick,parent(a0)
-	move.w	#tiles_to_bytes(ArtTile_ArtNem_TailsDust),obj08_vram_address(a0)
+	move.w	#tiles_to_bytes(ArtTile_ArtNem_TailsDust),objoff_3C(a0)
 +
-	bsr.w	Adjust2PArtPointer
+	jsr		Adjust2PArtPointer
 
 ; loc_1DD90:
-Obj08_Main:
+Obj_Splash_Main:
 	movea.w	parent(a0),a2 ; a2=character
 	moveq	#0,d0
 	move.b	anim(a0),d0	; use current animation as a secondary routine counter
 	add.w	d0,d0
-	move.w	Obj08_DisplayModes(pc,d0.w),d1
-	jmp	Obj08_DisplayModes(pc,d1.w)
+	move.w	Obj_Splash_DisplayModes(pc,d0.w),d1
+	jmp	Obj_Splash_DisplayModes(pc,d1.w)
 ; ===========================================================================
 ; off_1DDA4:
-Obj08_DisplayModes: offsetTable
-	offsetTableEntry.w Obj08_Display	; 0
-	offsetTableEntry.w Obj08_MdSplash	; 2
-	offsetTableEntry.w Obj08_MdSpindashDust	; 4
-	offsetTableEntry.w Obj08_MdSkidDust	; 6
+Obj_Splash_DisplayModes: offsetTable
+	offsetTableEntry.w Obj_Splash_Display	; 0
+	offsetTableEntry.w Obj_Splash_MdSplash	; 2
+	offsetTableEntry.w Obj_Splash_MdSpindashDust	; 4
+	offsetTableEntry.w Obj_Splash_MdSkidDust	; 6
+	offsetTableEntry.w Obj_Splash_MdDropdashDust	; 8
 ; ===========================================================================
 ; loc_1DDAC:
-Obj08_MdSplash:
+Obj_Splash_MdSplash:
 	move.w	(Water_Level_1).w,y_pos(a0)
 	tst.b	prev_anim(a0)
-	bne.s	Obj08_Display
+	bne.s	Obj_Splash_Display
 	move.w	x_pos(a2),x_pos(a0)
 	move.b	#0,status(a0)
 	andi.w	#drawing_mask,art_tile(a0)
-	bra.s	Obj08_Display
+	bra.s	Obj_Splash_Display
 ; ===========================================================================
 ; loc_1DDCC:
-Obj08_MdSpindashDust:
-	cmpi.b	#12,air_left(a2)
-	blo.s	Obj08_ResetDisplayMode
+Obj_Splash_MdSpindashDust:
+	cmpi.b	#$C,air_left(a2)
+	blo.s	Obj_Splash_ResetDisplayMode
 	cmpi.b	#4,routine(a2)
-	bhs.s	Obj08_ResetDisplayMode
+	bhs.s	Obj_Splash_ResetDisplayMode
 	tst.b	spindash_flag(a2)
-	beq.s	Obj08_ResetDisplayMode
+	beq.s	Obj_Splash_ResetDisplayMode
+	btst	#1,status(a2)
+	bne.s	Obj_Splash_ResetDisplayMode
 	move.w	x_pos(a2),x_pos(a0)
 	move.w	y_pos(a2),y_pos(a0)
 	move.b	status(a2),status(a0)
 	andi.b	#1,status(a0)
-	tst.b	obj08_belongs_to_tails(a0)
+	tst.b	objoff_34(a0)
 	beq.s	+
-	subi_.w	#4,y_pos(a0);	; Tails is shorter than Sonic
+	subi_.w	#4,y_pos(a0)
 +
 	tst.b	prev_anim(a0)
-	bne.s	Obj08_Display
+	bne.s	Obj_Splash_Display
 	andi.w	#drawing_mask,art_tile(a0)
 	tst.w	art_tile(a2)
-	bpl.s	Obj08_Display
+	bpl.s	Obj_Splash_Display
 	ori.w	#high_priority,art_tile(a0)
-	bra.s	Obj08_Display
+	bra.s	Obj_Splash_Display
 ; ===========================================================================
 ; loc_1DE20:
-Obj08_MdSkidDust:
-	cmpi.b	#12,air_left(a2)
-	blo.s	Obj08_ResetDisplayMode
+Obj_Splash_MdSkidDust:
+	cmpi.b	#$C,air_left(a2)
+	blo.s	Obj_Splash_ResetDisplayMode
 
 ; loc_1DE28:
-Obj08_Display:
-	lea	(Ani_obj08).l,a1
+Obj_Splash_Display:
+	lea	(Ani_Obj_Splash).l,a1
 	jsr	(AnimateSprite).l
-	bsr.w	Obj08_LoadDustOrSplashArt
+	bsr.w	Obj_Splash_LoadDustOrSplashArt
 	jmp	(DisplaySprite).l
 ; ===========================================================================
 ; loc_1DE3E:
-Obj08_ResetDisplayMode:
+Obj_Splash_ResetDisplayMode:
 	move.b	#0,anim(a0)
 	rts
 ; ===========================================================================
 
 BranchTo16_DeleteObject
-	jmp		DeleteObject
+	jmp	DeleteObject
 ; ===========================================================================
 ; loc_1DE4A:
-Obj08_CheckSkid:
+Obj_Splash_CheckSkid:
 	movea.w	parent(a0),a2 ; a2=character
 	moveq	#$10,d1	; move y offset to d1
 	cmpi.b	#AniIDSonAni_Stop,anim(a2)	; SonAni_Stop
-	beq.s	Obj08_SkidDust
+	beq.s	Obj_Splash_SkidDust
 	moveq	#6,d1	; move different y offset to d1
 	cmpi.b	#ObjID_Knuckles,id(a2)	; playing as Knuckles?
 	bne.s	+
 	cmpi.b	#3,glidemode(a2)	; check for sliding
-	beq.s	Obj08_SkidDust
+	beq.s	Obj_Splash_SkidDust
 +	move.b	#2,routine(a0)
 	move.b	#0,objoff_32(a0)
 	rts
-
 ; ===========================================================================
 ; loc_1DE64:
-Obj08_SkidDust:
-	subq.b	#1,obj08_dust_timer(a0)
+Obj_Splash_SkidDust:
+	subq.b	#1,objoff_32(a0)
 	bpl.s	loc_1DEE0
-	move.b	#3,obj08_dust_timer(a0)
+	move.b	#3,objoff_32(a0)
 	bsr.w	SingleObjLoad
 	bne.s	loc_1DEE0
-	_move.b	id(a0),id(a1) ; load obj08
+	_move.l	id(a0),id(a1) ; load Obj_Splash
 	move.w	x_pos(a2),x_pos(a1)
 	move.w	y_pos(a2),y_pos(a1)
-	add.w	d1,y_pos(a1)
-	tst.b	obj08_belongs_to_tails(a0)
+	addi.w	d1,y_pos(a1)
+	tst.b	objoff_34(a0)
 	beq.s	+
-	subi_.w	#4,y_pos(a1)	; Tails is shorter than Sonic
+	subi_.w	#4,y_pos(a1)
 +
 	move.b	#0,status(a1)
 	move.b	#3,anim(a1)
@@ -37110,23 +37138,29 @@ Obj08_SkidDust:
 	ori.w	#high_priority,art_tile(a1)
 
 loc_1DEE0:
-	bsr.s	Obj08_LoadDustOrSplashArt
+	bsr.s	Obj_Splash_LoadDustOrSplashArt
 	rts
 ; ===========================================================================
+Obj_Splash_MdDropdashDust:
+	tst.b	prev_anim(a0)
+	jne		Obj_Splash_Display
+	andi.w	#drawing_mask,art_tile(a0)
+	jmp		Obj_Splash_Display
+; ===========================================================================
 ; loc_1DEE4:
-Obj08_LoadDustOrSplashArt:
+Obj_Splash_LoadDustOrSplashArt:
 	moveq	#0,d0
 	move.b	mapping_frame(a0),d0
-	cmp.b	obj08_previous_frame(a0),d0
+	cmp.b	objoff_30(a0),d0
 	beq.s	return_1DF36
-	move.b	d0,obj08_previous_frame(a0)
-	lea	(Obj08_MapRUnc_1E074).l,a2
+	move.b	d0,objoff_30(a0)
+	lea	(Obj_Splash_MapRUnc_1E074).l,a2
 	add.w	d0,d0
 	adda.w	(a2,d0.w),a2
 	move.w	(a2)+,d5
 	subq.w	#1,d5
 	bmi.s	return_1DF36
-	move.w	obj08_vram_address(a0),d4
+	move.w	objoff_3C(a0),d4
 
 -	moveq	#0,d1
 	move.w	(a2)+,d1
@@ -37148,27 +37182,31 @@ return_1DF36:
 ; ===========================================================================
 ; animation script
 ; off_1DF38:
-Ani_obj08:	offsetTable
-		offsetTableEntry.w Obj08Ani_Null	; 0
-		offsetTableEntry.w Obj08Ani_Splash	; 1
-		offsetTableEntry.w Obj08Ani_Dash	; 2
-		offsetTableEntry.w Obj08Ani_Skid	; 3
-Obj08Ani_Null:	dc.b $1F,  0,$FF
+Ani_Obj_Splash:	offsetTable
+		offsetTableEntry.w Obj_SplashAni_Null	; 0
+		offsetTableEntry.w Obj_SplashAni_Splash	; 1
+		offsetTableEntry.w Obj_SplashAni_Dash	; 2
+		offsetTableEntry.w Obj_SplashAni_Skid	; 3
+		offsetTableEntry.w Obj_SplashAni_Dropdash	; 4
+Obj_SplashAni_Null:	dc.b $1F,  0,$FF
 	rev02even
-Obj08Ani_Splash:dc.b   3,  1,  2,  3,  4,  5,  6,  7,  8,  9,$FD,  0
+Obj_SplashAni_Splash:dc.b   3,  1,  2,  3,  4,  5,  6,  7,  8,  9,$FD,  0
 	rev02even
-Obj08Ani_Dash:	dc.b   1, $A, $B, $C, $D, $E, $F,$10,$FF
+Obj_SplashAni_Dash:	dc.b   1, $A, $B, $C, $D, $E, $F,$10,$FF
 	rev02even
-Obj08Ani_Skid:	dc.b   3,$11,$12,$13,$14,$FC
+Obj_SplashAni_Skid:	dc.b   3,$11,$12,$13,$14,$FC
+	even
+Obj_SplashAni_Dropdash:	dc.b   2, $16, $17, $18, $19
+	dc.b $1A,$1A, $1B,$1B, $1C,$1C,$1C, $1D,$1D,$1D, $FD,0
 	even
 ; -------------------------------------------------------------------------------
 ; sprite mappings
 ; -------------------------------------------------------------------------------
-Obj08_MapUnc_1DF5E:	BINCLUDE "mappings/sprite/obj08.bin"
+Obj_Splash_MapUnc_1DF5E:	BINCLUDE "mappings/sprite/obj_Splash.bin"
 ; -------------------------------------------------------------------------------
 ; dynamic pattern loading cues
 ; -------------------------------------------------------------------------------
-Obj08_MapRUnc_1E074:	BINCLUDE "mappings/spriteDPLC/obj08.bin"
+Obj_Splash_MapRUnc_1E074:	BINCLUDE "mappings/spriteDPLC/obj_Splash.bin"
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
 ; Object 7E - Super Sonic's stars
@@ -37301,13 +37339,13 @@ ObjD1:
 		ori.w	#high_priority,art_tile(a0)
 
 	.nothighpriority:
-		lea	(Ani_InstaShield).l,a1
-		jsr	(AnimateSprite).l
+		lea		(Ani_InstaShield).l,a1
+		jsr		(AnimateSprite).l
 		cmpi.b	#7,mapping_frame(a0)		; Has it reached then end of its animation?
 		bne.s	.notover			; If not, branch
-		tst.b	double_jump_flag(a2)		; Is it in its attacking state?
+		btst	#0,double_jump_flag(a2)		; Is it in its attacking state?
 		beq.s	.notover			; If not, branch
-		move.b	#2,double_jump_flag(a2)		; Mark attack as over
+		bset	#4,double_jump_flag(a2)		; Mark attack as over
 
 	.notover:
 		;tst.b	mapping_frame(a0)		; Is this the first frame?
@@ -80663,14 +80701,19 @@ Touch_Monitor:
 	tst.w	(Two_player_mode).w
 	beq.s	return_3F78A
 +
-	cmpi.b	#2,anim(a0)
+	cmpi.b	#AniIDSonAni_Roll,anim(a0)
 	beq.s	Break_Monitor
 	cmpi.b	#ObjID_Knuckles,id(a0)
-	bne.s	return_3F78A
+	beq.s	+
+	cmpi.b	#AniIDSonAni_DropDash,anim(a0)
+	beq.s	Break_Monitor
+	rts
++
 	cmp.b	#1,glidemode(a0)
 	beq.s	Break_Monitor
 	cmp.b	#3,glidemode(a0)
 	bne.s	return_3F78A
+
 
 Break_Monitor:
 	neg.w	y_vel(a0)	; reverse Sonic's y-motion
@@ -80685,8 +80728,8 @@ return_3F78A:
 Touch_Enemy:
 	btst	#status_sec_isInvincible,status_secondary(a0)	; is Sonic invincible?
 	bne.s	.checkhurtenemy			; if yes, branch
-;	cmpi.b	#AniIDSonAni_Dropdash,anim(a0)
-;	beq.s	.checkhurtenemy
+	cmpi.b	#AniIDSonAni_DropDash,anim(a0)
+	beq.s	.checkhurtenemy
 	cmpi.b	#AniIDSonAni_Spindash,anim(a0)
 	beq.s	.checkhurtenemy
 	cmpi.b	#AniIDSonAni_Roll,anim(a0)		; is Sonic rolling?
