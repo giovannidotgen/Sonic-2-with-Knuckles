@@ -422,7 +422,7 @@ loc_1BC68:
 	move.b	spindash_flag(a0),d0
 	beq.s	return_1BCDE
 	move.b	d0,spindash_flag(a1)
-	bsr.w	loc_212C4
+	jsr		loc_212C4
 
 return_1BCDE:
 	rts

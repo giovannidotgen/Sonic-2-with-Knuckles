@@ -199,6 +199,40 @@ Sonic_RecordPos:
 	rts
 ; End of subroutine Sonic_RecordPos
 
+; =============== S U B R O U T I N E =======================================
+
+
+Reset_Player_Position_Array:
+		cmpa.w	#MainCharacter,a0			; is object player 1?
+		bne.s	Reset_Player_Position_ArrayP2	; if not, branc
+		lea	(Sonic_Pos_Record_Buf).w,a5
+		lea	(Sonic_Stat_Record_Buf).w,a6
+		move.w	#$3F,d0
+
+loc_10DEC:
+		move.w	x_pos(a0),(a5)+			; write location to pos_table
+		move.w	y_pos(a0),(a5)+
+		move.l	#0,(a6)+
+		dbf	d0,loc_10DEC
+		move.w	#0,(Sonic_Pos_Record_Index).w
+		rts
+
+Reset_Player_Position_ArrayP2:
+		;tst.w	(Competition_mode).w	; are we in Competition mode?
+		;beq.s	locret_10E24		; if not, branch
+		lea	(Sonic_Stat_Record_Buf).w,a1
+		move.w	#$3F,d0
+
+loc_10E12:
+		move.w	x_pos(a0),(a1)+
+		move.w	y_pos(a0),(a1)+
+		dbf	d0,loc_10E12
+		move.w	#0,(Tails_Pos_Record_Buf).w
+
+locret_10E24:
+		rts
+; End of function Reset_Player_Position_Array
+
 ; ---------------------------------------------------------------------------
 ; Subroutine for Sonic when he's underwater
 ; ---------------------------------------------------------------------------
@@ -305,6 +339,7 @@ Obj01_MdNormal_Checks:
 ; ---------------------------------------------------------------------------
 ; loc_1A2B8:
 Obj01_MdNormal:
+	bsr.w	Sonic_CheckPeelout
 	bsr.w	Sonic_CheckSpindash
 	bsr.w	Sonic_Jump
 	bsr.w	Sonic_SlopeResist
@@ -381,16 +416,17 @@ Obj01_MdJump:
 Sonic_AirMoves:
 	tst.w	(Two_player_mode).w
 	bne.w	locret_11A14
-	tst.b	double_jump_flag(a0)		; is Sonic currently performing a double jump?
-	bne.w	locret_11A14			; if yes, branch
+	btst	#4,double_jump_flag(a0)		; did Sonic already perform an insta-shield?
+	bne.s	++							; if yes, branch
 	move.b	(Ctrl_1_Press_Logical).w,d0
 	andi.b	#$70,d0				; are buttons A, B, or C being pressed?
-	beq.w	locret_11A14			; if not, branch
+	beq.w	++					; if not, branch
 	cmp.b	(JumpButton_Used).w,d0	; check if you're using the same jump button as the one you've already used before
 	beq.s	+
 	bsr.w	Sonic_CheckGoSuper
 +
 	bsr.w	Sonic_InstaShield
++	
 	bra.w	Sonic_Dropdash	
 	
 Sonic_InstaShield:
@@ -408,7 +444,7 @@ Sonic_InstaShieldCont:
 	tst.b	jumping(a0)
 	beq.s	+						; if not, branch
 	move.b	#1,(Shield+anim).w
-	move.b	#1,double_jump_flag(a0)	
+	bset	#0,double_jump_flag(a0)	
 	move.b	#SndID_InstaShield,d0	; play Insta-Shield sound
 	jsr		PlaySound
 
@@ -419,6 +455,56 @@ locret_11A14:
 	rts
 
 Sonic_Dropdash:
+	tst.b 	(WindTunnel_flag).w
+	bne.w	Sonic_DropCancel3
+	tst.b	jumping(a0)
+	beq.w	Sonic_DropCancel3
+	btst 	#1,double_jump_flag(a0) 	; is the drop dash charging flag set?
+	bne.s  	Sonic_DropCharge 			; if yes, branch
+	move.b 	(Ctrl_1_Press_Logical).w,d0 ; grab current controller inputs
+	andi.b 	#$70,d0						; is A, B or C being pressed?
+	beq.w  	Sonic_DropReturn 			; if not, return	
+	btst 	#3,double_jump_flag(a0) 	; is the drop dash performable?
+	bne.s  	Sonic_DropReturn 			; if yes, return
+	bset 	#1,double_jump_flag(a0) 	; mark the drop dash as in charge
+	bra.s  	Sonic_DropReturn
+	
+Sonic_DropCharge:
+	btst 	#2,double_jump_flag(a0)   	; check if the drop dash is already fully charged
+	bne.s  	Sonic_DropSustain
+	move.b 	(Ctrl_1_Held_Logical).w,d0 			; grab current controller inputs
+	andi.b 	#$70,d0						; is A, B or C being held?	
+	beq.s  	Sonic_DropCancel1
+	cmpi.b 	#2,$1C(a0)   				; is Sonic not in his rolling animation?
+	bne.s  	Sonic_DropCancel1
+	addi.b 	#1,double_jump_property(a0)   	; add 1 to the Drop Dash frame counter
+	cmpi.b 	#20,double_jump_property(a0) 	; has it become greater than 20?
+	bne.s  	Sonic_DropReturn 				; if not, return
+    move.b 	#AniIDSonAni_DropDash,anim(a0) 				; set Sonic's animation
+	bclr   	#4,status(a0) 				; clear roll jump lock, like in Triple Trouble 16-bit
+	move.b	#SndID_Roll,d0
+	jsr		PlaySound					; play rolling sound
+	bset	#2,double_jump_flag(a0)		; set drop dash fully charged flag
+	bra.s  	Sonic_DropReturn
+
+Sonic_DropSustain:
+ 	move.b 	(Ctrl_1_Held_Logical).w,d0 			; grab current controller inputs
+	andi.b 	#$70,d0						; is A, B or C being held?	
+    beq.s  	Sonic_DropCancel2			; if yes, cancel the Drop Dash
+	bra.s  	Sonic_DropReturn     		; otherwise, let him do his thing
+	
+Sonic_DropCancel1:
+	bclr	#1,double_jump_flag(a0)
+	clr.b	double_jump_property(a0)
+    bra.s  	Sonic_DropReturn	
+	
+Sonic_DropCancel2:
+	move.b 	#AniIDSonAni_Roll,anim(a0) 					; set Sonic's animation back to rolling	
+Sonic_DropCancel3:	
+	bclr	#1,double_jump_flag(a0)
+	bclr	#2,double_jump_flag(a0)
+    bset 	#3,double_jump_flag(a0)		; set drop dash kill flag
+Sonic_DropReturn:
 	rts
 
 ; ---------------------------------------------------------------------------
@@ -1288,8 +1374,8 @@ Sonic_Jump:
 	jsr	(PlaySound).l	; play jumping sound
 	move.b	#$E,y_radius(a0)
 	move.b	#7,x_radius(a0)
-	btst	#2,status(a0)
-	bne.s	Sonic_RollJump
+;	btst	#2,status(a0)
+;	bne.s	Sonic_RollJump
 	move.b	#AniIDSonAni_Roll,anim(a0)	; use "jumping" animation
 	bset	#2,status(a0)
 	addq.w	#5,y_pos(a0)	
@@ -1433,6 +1519,110 @@ Sonic_RevertToNormal:
 return_1AC3C:
 	rts
 ; End of subroutine Sonic_Super
+
+Sonic_CheckPeelout:
+	; Disable all moves in 2P
+	tst.w	(Two_player_mode).w
+	bne.w	return_Peelout1
+	; cmpi.b	#1,(Option_PeelOut).w
+	; beq.s	+
+	; cmpi.b	#3,(Option_PeelOut).w
+	; beq.s	+
+	; rts
++
+	cmpi.b	#2,spindash_flag(a0)
+	beq.s	Sonic_UpdatePeelout
+	
+	; Don't start peelout if not looking up or not pressing ABC
+	cmpi.b	#AniIDSonAni_LookUp,anim(a0)
+	bne.s	return_Peelout1
+	
+	move.b	(Ctrl_1_Press_Logical).w,d0
+	andi.b	#button_B_mask|button_C_mask|button_A_mask,d0
+	beq.w	return_Peelout1
+	
+	; Play rev sound
+	move.b	#SndID_SpindashRev,d0	; Placeholder
+	jsr		PlaySound
+	
+	; Start peelout state
+	move.b	#2,spindash_flag(a0)
+	move.w	#0,spindash_counter(a0)
+	
+	; Push stack pointer back so we don't return to the movement function
+	addq.l	#4,sp
+
+return_Peelout1:
+	rts
+
+Sonic_UpdatePeelout:
+	; Increment counter up to 30 (charge cap)
+	cmpi.w	#30,spindash_counter(a0)
+	bcc.s	Sonic_Charged
+	addi.w	#1,spindash_counter(a0)
+	
+	; Do a failed release if up is released
+	btst	#button_up,(Ctrl_1_Held_Logical).w
+	bne.s	Sonic_NoRelease
+	
+	move.b	#0,spindash_flag(a0)
+	move.w	#0,inertia(a0)
+	; TODO: Stop charging sound
+	rts
+
+Sonic_Charged:
+	; Do a proper release if up is released
+	btst	#button_up,(Ctrl_1_Held_Logical).w
+	bne.s	Sonic_NoRelease
+	
+	move.b	#0,spindash_flag(a0)
+	move.w	#SndID_SpindashRelease,d0	; spindash zoom sound
+	jsr		(PlaySound).l
+	rts
+
+Sonic_NoRelease:
+	; Push stack pointer back so we don't return to the movement function
+	addq.l	#4,sp
+	
+	; Make sure we're playing the running animation
+	move.b	#AniIDSonAni_Walk,anim(a0)
+	bclr	#5,status(a0)
+	
+	; Get peelout speed cap
+	move.w	(Sonic_top_speed).w,d1
+	asl.w	d1
+	
+	; Reduce cap if using speed shoes
+	btst	#status_sec_hasSpeedShoes,status_secondary(a0)
+	beq.s	Sonic_NoSpeedShoes
+	move.w	(Sonic_top_speed).w,d0
+	asr.w	d0
+	sub.w	d0,d1
+
+Sonic_NoSpeedShoes:
+	; Accelerate left or right depending on our facing direction
+	move.w	#$64,d0
+	move.w	inertia(a0),d2
+	
+	btst	#0,status(a0)
+	beq.s	Sonic_PeeloutRight
+	
+	sub.w	d0,d2
+	neg.w	d1
+	cmp.w	d1,d2
+	bge.s	Sonic_CopySpeed
+	move.w	d1,d2
+	bra.s	Sonic_CopySpeed
+
+Sonic_PeeloutRight:
+	add.w	d0,d2
+	cmp.w	d1,d2
+	ble.s	Sonic_CopySpeed
+	move.w	d1,d2
+
+Sonic_CopySpeed:
+	move.w	d2,inertia(a0)
+	rts
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to check for starting to charge a spindash
@@ -1816,7 +2006,7 @@ Sonic_DoLevelCollision:
 +
 	bsr.w	Sonic_CheckFloor
 	tst.w	d1
-	bpl.s	return_1AF8A
+	bpl.w	return_1AF8A
 	move.b	y_vel(a0),d2
 	addq.b	#8,d2
 	neg.b	d2
@@ -1827,7 +2017,6 @@ Sonic_DoLevelCollision:
 +
 	add.w	d1,y_pos(a0)
 	move.b	d3,angle(a0)
-	bsr.w	Sonic_ResetOnFloor
 	move.b	d3,d0
 	addi.b	#$20,d0
 	andi.b	#$40,d0
@@ -1843,6 +2032,10 @@ Sonic_DoLevelCollision:
 loc_1AF5A:
 	move.w	#0,y_vel(a0)
 	move.w	x_vel(a0),inertia(a0)
+	bsr.w	Sonic_ResetOnFloor
+	bsr.w	Sonic_ResetOnFloor_Ability
+	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)	
 	rts
 ; ===========================================================================
 
@@ -1853,10 +2046,15 @@ loc_1AF68:
 	move.w	#$FC0,y_vel(a0)
 
 loc_1AF7C:
+	bsr.w	Sonic_ResetOnFloor
 	move.w	y_vel(a0),inertia(a0)
 	tst.b	d3
-	bpl.s	return_1AF8A
+	bpl.s	+
 	neg.w	inertia(a0)
++
+	bsr.w	Sonic_ResetOnFloor_Ability
+	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)	
 
 return_1AF8A:
 	rts
@@ -1893,9 +2091,12 @@ Sonic_HitFloor:
 	bpl.s	return_1AFE6
 	add.w	d1,y_pos(a0)
 	move.b	d3,angle(a0)
-	bsr.w	Sonic_ResetOnFloor
 	move.w	#0,y_vel(a0)
 	move.w	x_vel(a0),inertia(a0)
+	bsr.w	Sonic_ResetOnFloor
+	bsr.w	Sonic_ResetOnFloor_Ability
+	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)	
 
 return_1AFE6:
 	rts
@@ -1928,11 +2129,15 @@ Sonic_HitCeilingAndWalls:
 
 loc_1B02C:
 	move.b	d3,angle(a0)
-	bsr.w	Sonic_ResetOnFloor
 	move.w	y_vel(a0),inertia(a0)
+	bsr.w	Sonic_ResetOnFloor
 	tst.b	d3
-	bpl.s	return_1B042
+	bpl.s	+
 	neg.w	inertia(a0)
++
+	bsr.w	Sonic_ResetOnFloor_Ability
+	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)	
 
 return_1B042:
 	rts
@@ -1971,9 +2176,12 @@ Sonic_HitFloor2:
 	bpl.s	return_1B09E
 	add.w	d1,y_pos(a0)
 	move.b	d3,angle(a0)
-	bsr.w	Sonic_ResetOnFloor
 	move.w	#0,y_vel(a0)
 	move.w	x_vel(a0),inertia(a0)
+	bsr.w	Sonic_ResetOnFloor
+	bsr.w	Sonic_ResetOnFloor_Ability
+	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)	
 
 return_1B09E:
 	rts
@@ -2019,8 +2227,6 @@ Sonic_ResetOnFloor_Part3:
 	bclr	#4,status(a0)
 	move.b	#0,jumping(a0)
 	move.w	#0,(Chain_Bonus_counter).w
-	clr.b	double_jump_flag(a0)
-	clr.b	double_jump_property(a0)
 	move.b	#$3F,(Flying_picking_Sonic_timer).w
 	move.b	#0,flip_angle(a0)
 	move.b	#0,flip_turned(a0)
@@ -2032,6 +2238,142 @@ Sonic_ResetOnFloor_Part3:
 
 return_1B11E:
 	rts
+
+Sonic_ResetOnFloor_Ability:
+Sonic_DropDashRelease:
+	cmpi.b	#ObjID_Sonic,id(a0)
+	bne.w	Sonic_DropDashRelease_Ret
+
+	btst	#2,double_jump_flag(a0)
+	beq.w	Sonic_DropDashRelease_Ret
+
+	; tst.b	glidemode(a0)
+	; bne.w	Sonic_DropDashRelease_Ret
+
+	; move.b	status_secondary(a0),d0
+	; andi.b	#Status_FireShield_mask|Status_LtngShield_mask|Status_BublShield_mask,d0 ; got a shield?
+	; bne.w	Sonic_DropDashRelease_Ret ; yep? begone
+
+	move.w	#$800,d0	; [ dashspeed = 0x80000 ]
+	move.w	#$C00,d1	; [ maxspeed = 0xC0000 ]
+
+	; [ if ( v0->RightHeld == 1 ) ]
+	btst	#button_right,(Ctrl_1_Held_Logical).w	; is right being pressed?
+	beq.s	+			; if not, branch
+	; [ v0->Direction = 0 ]
+	bclr	#0,status(a0)
++
+	; [ if ( v0->LeftHeld == 1 ) ]
+	btst	#button_left,(Ctrl_1_Held_Logical).w	; is left being pressed?
+	beq.s	+			; if not, branch
+	; [ v0->Direction = 1 ]
+	bset	#0,status(a0)
++
+
+	; [ if ( v0->SuperMode == 2 ) ]
+	tst.b	(Super_Sonic_flag).w	; Ignore this code if not Super Sonic
+	beq.w	+
+	move.w	#$C00,d0	; [ dashspeed = 0xC0000 ]
+	move.w	#$D00,d1	; [ maxspeed = 0xD0000 ]
++
+	; [ if ( v0->Direction ) ]
+	btst	#0,status(a0)		; is Sonic facing left?
+	beq.s	Sonic_DropDashRelease_Right				; if not, branch
+
+Sonic_DropDashRelease_Left:
+	; [ if ( v0->XSpeed <= 0 ) ]
+	tst.w	x_vel(a0)	; is Sonic moving left?
+	bpl.s	++		; if not, branch
+      
+	; [ v6 = -maxspeed ]
+	move.w	d1,d6
+	neg.w	d6
+
+	; [ v7 = (v0->GSpeed >> 2) - dashspeed ]
+	moveq	#0,d5
+	move.w	ground_vel(a0),d5
+	asr.w	#2,d5
+	sub.w	d0,d5
+
+	; [ v0->GSpeed = v7 ]
+	move.w	d5,ground_vel(a0)
+
+	; [ if ( v7 < v6 ) ]
+	cmp.w	d5,d6
+	bge.s	+
+	; [ v0->GSpeed = v6; ]
+	move.w	d6,ground_vel(a0)
++
+	bra.s Sonic_DropDashRelease_Release
++
+    ; [ if ( v0->GroundAngle ) ]
+	tst.b	angle(a0)
+	beq.s	+
+	; [ v0->GSpeed = (v0->GSpeed >> 1) - dashspeed ]
+	asr.w	#1,ground_vel(a0)
+	sub.w	d0,ground_vel(a0)
+	bra.s Sonic_DropDashRelease_Release
++
+	; [ dashspeed = -dashspeed ]
+	neg.w	d0
+	bra.s Sonic_DropDashRelease_ApplyVel
+
+Sonic_DropDashRelease_Right:
+    ; [ if ( v0->XSpeed >= 0 ) ]
+	tst.w	x_vel(a0)	; is Sonic moving right? [ if ( v0->XSpeed <= 0 ) ]
+	bmi.s	++		; if not, branch
+
+	; [ v7 = (v0->GSpeed >> 2) - dashspeed ]
+	; [ v5 = dashspeed + (v0->GSpeed >> 2) ]
+	moveq	#0,d5
+	move.w	ground_vel(a0),d5
+	asr.w	#2,d5
+	add.w	d0,d5
+
+	; [ v0->GSpeed = v7 ]
+	; [ v0->GSpeed = v5 ]
+	move.w	d5,ground_vel(a0)
+
+	; [ if ( v5 > maxspeed ) ]
+	cmp.w	d5,d1
+	bge.s	+
+	; [ v0->GSpeed = maxspeed; ]
+	move.w	d1,ground_vel(a0)
++
+	bra.s Sonic_DropDashRelease_Release
++
+    ; [ if ( v0->GroundAngle ) ]
+	tst.b	angle(a0)
+	beq.s	Sonic_DropDashRelease_ApplyVel
+	; [ v0->GSpeed = dashspeed + (v0->GSpeed >> 1) ]
+	asr.w	#1,ground_vel(a0)
+	add.w	d0,ground_vel(a0)
+	bra.s Sonic_DropDashRelease_Release
+
+Sonic_DropDashRelease_ApplyVel:
+    ; [ v0->GSpeed = dashspeed ]
+	move.w	d0,ground_vel(a0)
+
+Sonic_DropDashRelease_Release:
+	move.w	#$1000,(Horiz_scroll_delay_val).w
+	bsr.w	Reset_Player_Position_Array
+	move.b	#$E,y_radius(a0)
+	move.b	#7,x_radius(a0)
+	move.b	#AniIDSonAni_Roll,anim(a0)
+	addq.w	#5,y_pos(a0)	; add the difference between Sonic's rolling and standing heights
+	bset	#2,status(a0)
+	
+	move.b	#4,(Sonic_Dust+anim).w
+	move.w	x_pos(a0),(Sonic_Dust+x_pos).w
+	move.w	y_pos(a0),(Sonic_Dust+y_pos).w
+	move.b	status(a0),(Sonic_Dust+status).w
+	andi.b	#1,(Sonic_Dust+status).w	
+	
+	move.b	#SndID_SpindashRelease,d0
+	jsr		PlaySound
+	
+Sonic_DropDashRelease_Ret:
+	rts	
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -2353,6 +2695,11 @@ SAnim_WalkRun:
 +
 	tst.b	(Super_Sonic_flag).w
 	bne.s	SAnim_Super
+	
+	lea	(SonAni_PeelOut).l,a1	; use running animation
+	cmpi.w	#$A00,d2		; is Sonic at running speed?
+	bhs.s	++			; use running animation
++	
 	lea	(SonAni_Run).l,a1	; use running animation
 	cmpi.w	#$600,d2		; is Sonic at running speed?
 	bhs.s	+			; use running animation
@@ -2560,6 +2907,9 @@ SonAni_Balance4_ptr:		offsetTableEntry.w SonAni_Balance4	; 30 ; $1E
 SupSonAni_Transform_ptr:	offsetTableEntry.w SupSonAni_Transform	; 31 ; $1F
 SonAni_Lying_ptr:		offsetTableEntry.w SonAni_Lying		; 32 ; $20
 SonAni_LieDown_ptr:		offsetTableEntry.w SonAni_LieDown	; 33 ; $21
+SonAni_PeelOut_ptr:		offsetTableEntry.w SonAni_PeelOut	; 34 ; $22
+SonAni_DropDash_ptr:		offsetTableEntry.w SonAni_DropDash ; 35 ; $23
+
 
 SonAni_Walk:	dc.b $FF, $F,$10,$11,$12,$13,$14, $D, $E,$FF
 	rev02even
@@ -2636,7 +2986,12 @@ SonAni_Balance4:dc.b   3,$CF,$C8,$C9,$CA,$CB,$FE,  4
 SonAni_Lying:	dc.b   9,  8,  9,$FF
 	rev02even
 SonAni_LieDown:	dc.b   3,  7,$FD,  0
-	even
+	rev02even
+SonAni_PeelOut:	dc.b $FF,$D6,$D7,$D8,$D9,$FF,$FF,$FF,$FF,$FF
+	rev02even
+SonAni_DropDash: dc.b $00,$E6,$E8,$E7,$E9,$E6,$EA,$E7,$EB,$E6,$EC,$E7,$ED,$E6,$EE,$E7,$EF,$FF
+	rev02even
+	even	
 
 ; ---------------------------------------------------------------------------
 ; Animation script - Super Sonic

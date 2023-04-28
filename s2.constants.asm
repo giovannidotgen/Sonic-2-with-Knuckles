@@ -400,8 +400,10 @@ GameModeID_2PLevelSelect =	id(GameMode_2PLevelSelect) ; 1C
 GameModeID_EndingSequence =	id(GameMode_EndingSequence) ; 20
 GameModeID_OptionsMenu =	id(GameMode_OptionsMenu) ; 24
 GameModeID_LevelSelect =	id(GameMode_LevelSelect) ; 28
+GameModeID_Giovanni =		id(GameMode_GiovanniSplash) ; 2C
 GameModeFlag_TitleCard =	7 ; flag bit
 GameModeID_TitleCard =		1<<GameModeFlag_TitleCard ; flag mask
+
 
 ; palette IDs
 offset :=	PalPointers
@@ -975,7 +977,8 @@ AniIDSonAni_Balance4		= id(SonAni_Balance4_ptr)	; 30 ; $1E ; Exclusive to Sonic
 AniIDSupSonAni_Transform	= id(SupSonAni_Transform_ptr)	; 31 ; $1F ; Exclusive to Sonic
 AniIDSonAni_Lying		= id(SonAni_Lying_ptr)		; 32 ; $20 ; Exclusive to Sonic
 AniIDSonAni_LieDown		= id(SonAni_LieDown_ptr)	; 33 ; $21 ; Exclusive to Sonic
-
+AniIDSonAni_PeelOut		= id(SonAni_PeelOut_ptr)	; 34 ; $22 ; Exclusive to Sonic
+AniIDSonAni_DropDash	= id(SonAni_DropDash_ptr)	; 35 ; $23 ; Exclusive to Sonic
 
 offset :=	TailsAniData
 ptrsize :=	2
@@ -1103,7 +1106,19 @@ Tails_InvincibilityStars:
 				ds.b	object_size
 LevelOnly_Object_RAM_End:
 
-				ds.b	$200	; unused
+v_palflags: 	ds.b 	1			; byte. bit 0 represents the above water palette being in need of change. bit 1 represents the below palette being in need of change. bit 2 represents the palette cycle being in need of change. all other bits are to stay 0. initialization is manual. clears itself once the palette is done transitioning.
+v_awcount: 		ds.b 	1			; byte. number of colors of the above water palette that are in need of change.
+v_bwcount: 		ds.b 	1			; byte. number of colors of the below water palette that are in need of change.
+v_paltime:  	ds.b 	1			; byte. set by the event that initializes the palette transition. it determines how many frames need to pass between each individual step of the transition.
+v_paltimecur: 	ds.b 	1		; byte. the actual timer that controls how many frames are left between a new step of the transition.
+v_pcyccount: 	ds.b 	1		; byte. number of colors of the palette cycle buffer that are in need of change.
+p_awtarget: 	ds.l	1			; longword. points to the target above water palette in ROM.
+p_bwtarget: 	ds.l	1			; longword. points to the target below water palette in ROM.
+p_awreplace: 	ds.l	1		; longword. points to the RAM area where the palette lies and needs replacement.
+p_bwreplace: 	ds.l	1		; longword. points to the RAM area where the palette lies and needs replacement.
+p_pcyctarget: 	ds.l	1		; longword. points to the target palette cycle data in ROM.
+
+v_palcycleram:	ds.b	$1E6	; buffer. you can store the palette cycle data in here.
 
 Primary_Collision:		ds.b	$300
 Secondary_Collision:		ds.b	$300
@@ -1547,7 +1562,7 @@ Camera_X_pos_coarse_End:
 Camera_X_pos_coarse_P2:		ds.w	1
 Camera_X_pos_coarse_P2_End:
 
-Tails_LastLoadedDPLC:		ds.b	1	; mapping frame number when Tails last had his tiles requested to be transferred from ROM to VRAM. can be set to a dummy value like -1 to force a refresh DMA.
+Tails_LastLoadedDPLC:		ds.b	1	; mapping frame number when Tails last had his tiles requested to be transferred from ROM to. can be set to a dummy value like -1 to force a refresh DMA.
 TailsTails_LastLoadedDPLC:	ds.b	1	; mapping frame number when Tails' tails last had their tiles requested to be transferred from ROM to VRAM. can be set to a dummy value like -1 to force a refresh DMA.
 ButtonVine_Trigger:		ds.b	$10	; 16 bytes flag array, #subtype byte set when button/vine of respective subtype activated
 Anim_Counters:			ds.b	$10	; $FFFFF7F0-$FFFFF7FF
@@ -1557,7 +1572,7 @@ Sprite_Table:			ds.b	$280	; Sprite attribute table buffer
 Sprite_Table_End:
 				ds.b	$80	; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
 
-Normal_palette:			ds.b	palette_line_size	; main palette for non-underwater parts of the screen
+Normal_palette:				ds.b	palette_line_size	; main palette for non-underwater parts of the screen
 Normal_palette_line2:		ds.b	palette_line_size
 Normal_palette_line3:		ds.b	palette_line_size
 Normal_palette_line4:		ds.b	palette_line_size
