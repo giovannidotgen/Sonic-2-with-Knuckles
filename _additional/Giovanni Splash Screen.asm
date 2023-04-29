@@ -5,8 +5,8 @@
 ; ================================================================
 
 GiovanniSplash:
-    move.b  #MusID_Stop,d0			; set music ID to "stop music"
-    jsr     PlaySound2				; play ID
+	move.b	#MusID_Stop,d0
+	bsr.w	PlayMusic
     jsr     Pal_FadeToBlack			; fade palettes out
     jsr     ClearScreen				; clear the plane mappings
 
