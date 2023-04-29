@@ -35798,11 +35798,13 @@ loc_19E30:
 	bclr	#1,status(a1)
 	beq.s	return_19E8E
 
-	; Hardcoded exception for springs to prevent dropdashing on them
+	; Hardcoded exception for some objects to prevent dropdashing on them
 	cmpi.b	#ObjID_Spring,id(a0)
 	beq.s	+
 	cmpi.b	#ObjID_PipeExitSpring,id(a0)
 	beq.s	+
+	cmpi.b	#ObjID_Flipper,id(a0)
+	beq.s	+		
 	bra.s	++
 +
 	clr.b	double_jump_flag(a1)

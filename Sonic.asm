@@ -457,10 +457,10 @@ locret_11A14:
 Sonic_Dropdash:
 	tst.b 	(WindTunnel_flag).w
 	bne.w	Sonic_DropCancel3
-	tst.b	jumping(a0)
-	beq.w	Sonic_DropCancel3
 	btst 	#1,double_jump_flag(a0) 	; is the drop dash charging flag set?
 	bne.s  	Sonic_DropCharge 			; if yes, branch
+	tst.b	jumping(a0)
+	beq.w	Sonic_DropCancel3	
 	move.b 	(Ctrl_1_Press_Logical).w,d0 ; grab current controller inputs
 	andi.b 	#$70,d0						; is A, B or C being pressed?
 	beq.w  	Sonic_DropReturn 			; if not, return	
