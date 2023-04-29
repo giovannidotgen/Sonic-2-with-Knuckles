@@ -3030,6 +3030,8 @@ SuperSonicAniData: offsetTable
 	offsetTableEntry.w SonAni_Balance3	; 29 ; $1D
 	offsetTableEntry.w SonAni_Balance4	; 30 ; $1E
 	offsetTableEntry.w SupSonAni_Transform	; 31 ; $1F
+	offsetTableEntry.w SonAni_PeelOut	; 32 ; $20
+	offsetTableEntry.w SonAni_DropDash	; 33 ; $21
 
 SupSonAni_Walk:		dc.b $FF,$77,$78,$79,$7A,$7B,$7C,$75,$76,$FF
 	rev02even
