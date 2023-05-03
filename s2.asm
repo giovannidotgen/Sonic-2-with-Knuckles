@@ -37056,8 +37056,8 @@ Obj_Splash_MdSpindashDust:
 	bhs.s	Obj_Splash_ResetDisplayMode
 	tst.b	spindash_flag(a2)
 	beq.s	Obj_Splash_ResetDisplayMode
-	btst	#1,status(a2)
-	bne.s	Obj_Splash_ResetDisplayMode
+;	btst	#1,status(a2)
+;	bne.s	Obj_Splash_ResetDisplayMode
 	move.w	x_pos(a2),x_pos(a0)
 	move.w	y_pos(a2),y_pos(a0)
 	move.b	status(a2),status(a0)
