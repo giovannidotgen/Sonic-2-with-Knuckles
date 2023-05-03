@@ -4402,7 +4402,7 @@ TitleScreen_Loop:
 	moveq	#0,d0
 	move.w	d0,(Ring_count).w
 	move.l	d0,(Timer).w
-	move.l	d0,(Score).w
+	move.l	#500,(Score).w
 	move.w	d0,(Ring_count_2P).w
 	move.l	d0,(Timer_2P).w
 	move.l	d0,(Score_2P).w
@@ -82816,31 +82816,14 @@ hud_letter_vdp_delta = vdpCommDelta(tiles_to_bytes(hud_letter_num_tiles))
 
 ; loc_40804:
 BuildHUD:
-	tst.w	(Ring_count).w
-	beq.s	++	; blink ring count if it's 0
-	moveq	#0,d1
-	btst	#3,(Timer_frames+1).w
-	bne.s	+	; only blink on certain frames
-	cmpi.b	#9,(Timer_minute).w	; should the minutes counter blink?
-	bne.s	+	; if not, branch
-	addq.w	#2,d1	; set mapping frame time counter blink
-+
-	bra.s	++
-+
-	moveq	#0,d1
-	btst	#3,(Timer_frames+1).w
-	bne.s	+	; only blink on certain frames
-	addq.w	#1,d1	; set mapping frame for ring count blink
-	cmpi.b	#9,(Timer_minute).w
-	bne.s	+
-	addq.w	#2,d1	; set mapping frame for double blink
+	moveq	#0,d1	; always use mapping 0
 +
 	move.w	#128+16,d3	; set X pos
 	move.w	#128+136,d2	; set Y pos
-	lea	(HUD_MapUnc_40A9A).l,a1
-	cmpi.w	#3,(Player_mode).w
-	bne.s	+
-	lea	(HUD_MapUnc_Knuckles).l,a1
+	lea	(HUD_MapUnc_40A9A).l,a1	; no distinction between Sonic HUD and Knuckles HUD for now
+;	cmpi.w	#3,(Player_mode).w
+;	bne.s	+
+;	lea	(HUD_MapUnc_Knuckles).l,a1
 +	
 	movea.w	#make_art_tile(ArtTile_ArtNem_HUD,0,1),a3	; set art tile and flags
 	add.w	d1,d1
@@ -83134,16 +83117,16 @@ AddPoints:
 	bhi.s	+	; if yes, branch
 	move.l	d1,(a3)	; set score to #999999
 +
-	move.l	(a3),d0
-	cmp.l	(Next_Extra_life_score).w,d0
-	blo.s	+	; rts
-	addi.l	#5000,(Next_Extra_life_score).w
-	addq.b	#1,(Life_count).w
-	addq.b	#1,(Update_HUD_lives).w
-	move.w	#MusID_ExtraLife,d0
-	jmp	(PlayMusic).l
+;	move.l	(a3),d0
+;	cmp.l	(Next_Extra_life_score).w,d0
+;	blo.s	+	; rts
+;	addi.l	#5000,(Next_Extra_life_score).w
+;	addq.b	#1,(Life_count).w
+;	addq.b	#1,(Update_HUD_lives).w
+;	move.w	#MusID_ExtraLife,d0
+;	jmp	(PlayMusic).l
 ; ===========================================================================
-+	rts
+	rts
 ; End of function AddPoints
 
 
@@ -83191,20 +83174,37 @@ AddPoints2:
 HudUpdate:
 	nop
 	lea	(VDP_data_port).l,a6
-	tst.w	(Two_player_mode).w
-	bne.w	loc_40F50
-	tst.w	(Debug_mode_flag).w	; is debug mode on?
-	bne.w	loc_40E9A	; if yes, branch
-	tst.b	(Update_HUD_score).w	; does the score need updating?
+;	tst.w	(Two_player_mode).w
+;	bne.w	loc_40F50
+	
+;	tst.w	(Debug_mode_flag).w	; is debug mode on?
+;	bne.w	loc_40E9A	; if yes, branch
+
+	tst.b	(Update_HUD_timer).w	; does the time need updating?
 	beq.s	Hud_ChkRings	; if not, branch
-	clr.b	(Update_HUD_score).w
+
+	tst.w	(Game_paused).w	; is the game paused?
+	bne.s	Hud_ChkRings	; if yes, branch
+
+	lea		(Timer+4).w,a1
+;	cmpi.l	#$93B3B,(a1)+	; is the time 9.59?
+;	beq.w	loc_40E84	; if yes, branch
+	addq.b	#1,-(a1)
+	cmpi.b	#6,(a1)
+
+	blo.s	Hud_ChkRings
+	clr.b	(a1)
+
+	moveq	#1,d0
+	bsr.w	AddPoints
+
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Score),VRAM,WRITE),d0	; set VRAM address
 	move.l	(Score).w,d1	; load score
 	bsr.w	Hud_Score
 ; loc_40DBA:
 Hud_ChkRings:
 	tst.b	(Update_HUD_rings).w	; does the ring counter need updating?
-	beq.s	Hud_ChkTime	; if not, branch
+	beq.s	Hud_ChkLives	; if not, branch
 	bpl.s	loc_40DC6
 	bsr.w	Hud_InitRings
 
@@ -83214,36 +83214,20 @@ loc_40DC6:
 	moveq	#0,d1
 	move.w	(Ring_count).w,d1
 	bsr.w	Hud_Rings
+	
 ; loc_40DDA:
-Hud_ChkTime:
-	tst.b	(Update_HUD_timer).w	; does the time need updating?
-	beq.s	Hud_ChkLives	; if not, branch
-	tst.w	(Game_paused).w	; is the game paused?
-	bne.s	Hud_ChkLives	; if yes, branch
-	lea	(Timer).w,a1
-	cmpi.l	#$93B3B,(a1)+	; is the time 9.59?
-	beq.w	loc_40E84	; if yes, branch
-	addq.b	#1,-(a1)
-	cmpi.b	#60,(a1)
-	blo.s	Hud_ChkLives
-	move.b	#0,(a1)
-	addq.b	#1,-(a1)
-	cmpi.b	#60,(a1)
-	blo.s	+
-	move.b	#0,(a1)
-	addq.b	#1,-(a1)
-	cmpi.b	#9,(a1)
-	blo.s	+
-	move.b	#9,(a1)
-+
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Minutes),VRAM,WRITE),d0
-	moveq	#0,d1
-	move.b	(Timer_minute).w,d1
-	bsr.w	Hud_Mins
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Seconds),VRAM,WRITE),d0
-	moveq	#0,d1
-	move.b	(Timer_second).w,d1
-	bsr.w	Hud_Secs
+; Hud_ChkTime:
+
+
+
+	; move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Minutes),VRAM,WRITE),d0
+	; moveq	#0,d1
+	; move.b	(Timer_minute).w,d1
+	; bsr.w	Hud_Mins
+	; move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Seconds),VRAM,WRITE),d0
+	; moveq	#0,d1
+	; move.b	(Timer_second).w,d1
+	; bsr.w	Hud_Secs
 ; loc_40E38:
 Hud_ChkLives:
 	tst.b	(Update_HUD_lives).w	; does the lives counter need updating?
@@ -83484,6 +83468,8 @@ Hud_Base:
 	bsr.w	Hud_Lives
 	tst.w	(Two_player_mode).w
 	bne.s	loc_410BC
+	cmpi.l	#500,(Score).w
+	bne.s	locret_noscore
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Score_E),VRAM,WRITE),(VDP_control_port).l
 	lea	Hud_TilesBase(pc),a2
 	move.w	#(Hud_TilesBase_End-Hud_TilesBase)-1,d2
@@ -83505,6 +83491,7 @@ loc_410A4:
 
 loc_410AA:
 	dbf	d2,loc_41094
+locret_noscore:	
 	rts
 ; ===========================================================================
 
@@ -83540,12 +83527,12 @@ loc_410BC:
 
 ; byte_410D4:
 Hud_TilesBase:
-	dc.b "E      0"
-	dc.b "0:00"
+	dc.b " 0005000"
+	dc.b "    "
 ; byte_410E0:
 ; Hud_TilesZero:
 Hud_TilesRings:
-	dc.b "  0"
+	dc.b "000"
 Hud_TilesBase_End
 
 	charset
@@ -83632,13 +83619,13 @@ loc_41158:
 
 loc_41160:
 	add.l	d3,d1
-	tst.w	d2
-	beq.s	loc_4116A
-	move.w	#1,d4
+;	tst.w	d2
+;	beq.s	loc_4116A
+;	move.w	#1,d4
 
 loc_4116A:
-	tst.w	d4
-	beq.s	loc_41198
+;	tst.w	d4
+;	beq.s	loc_41198
 	lsl.w	#6,d2
 	move.l	d0,4(a6)
 	lea	(a1,d2.w),a3
