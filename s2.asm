@@ -24984,41 +24984,43 @@ CollectRing:
 	bne.s	CollectRing_Tails	; if yes, branch
 
 CollectRing_Sonic:
-	cmpi.w	#999,(Rings_Collected).w ; did Sonic collect 999 or more rings?
-	bhs.s	CollectRing_1P		; if yes, branch
-	addq.w	#1,(Rings_Collected).w	; add 1 to the number of collected rings
+;	cmpi.w	#999,(Rings_Collected).w ; did Sonic collect 999 or more rings?
+;	bhs.s	CollectRing_1P		; if yes, branch
+;	addq.w	#1,(Rings_Collected).w	; add 1 to the number of collected rings
 
 CollectRing_1P:
 
-    if gameRevision=0
-	cmpi.w	#999,(Ring_count).w	; does the player 1 have 999 or more rings?
-	bhs.s	+			; if yes, skip the increment
-	addq.w	#1,(Ring_count).w	; add 1 to the ring count
-+
-	ori.b	#1,(Update_HUD_rings).w	; set flag to update the ring counter in the HUD
+    ; if gameRevision=0
+	; cmpi.w	#999,(Ring_count).w	; does the player 1 have 999 or more rings?
+	; bhs.s	+			; if yes, skip the increment
+	; addq.w	#1,(Ring_count).w	; add 1 to the ring count
+; +
+	; ori.b	#1,(Update_HUD_rings).w	; set flag to update the ring counter in the HUD
+	; move.w	#SndID_Ring,d0		; prepare to play the ring sound
+    ; else
+	moveq	#5,d0
+	jsr		AddPoints
 	move.w	#SndID_Ring,d0		; prepare to play the ring sound
-    else
-	move.w	#SndID_Ring,d0		; prepare to play the ring sound
-	cmpi.w	#999,(Ring_count).w	; does the player 1 have 999 or more rings?
-	bhs.s	JmpTo_PlaySound2	; if yes, play the ring sound
-	addq.w	#1,(Ring_count).w	; add 1 to the ring count
-	ori.b	#1,(Update_HUD_rings).w	; set flag to update the ring counter in the HUD
-    endif
+;	cmpi.w	#999,(Ring_count).w	; does the player 1 have 999 or more rings?
+;	bra.s	JmpTo_PlaySound2	; if yes, play the ring sound
+;	addq.w	#1,(Ring_count).w	; add 1 to the ring count
+;	ori.b	#1,(Update_HUD_rings).w	; set flag to update the ring counter in the HUD
+    ; endif
 
-	cmpi.w	#100,(Ring_count).w	; does the player 1 have less than 100 rings?
-	blo.s	JmpTo_PlaySound2	; if yes, play the ring sound
-	bset	#1,(Extra_life_flags).w	; test and set the flag for the first extra life
-	beq.s	+			; if it was clear before, branch
-	cmpi.w	#200,(Ring_count).w	; does the player 1 have less than 200 rings?
-	blo.s	JmpTo_PlaySound2	; if yes, play the ring sound
-	bset	#2,(Extra_life_flags).w	; test and set the flag for the second extra life
-	bne.s	JmpTo_PlaySound2	; if it was set before, play the ring sound
+;	cmpi.w	#100,(Ring_count).w	; does the player 1 have less than 100 rings?
+;	blo.s	JmpTo_PlaySound2	; if yes, play the ring sound
+;	bset	#1,(Extra_life_flags).w	; test and set the flag for the first extra life
+;	beq.s	+			; if it was clear before, branch
+;	cmpi.w	#200,(Ring_count).w	; does the player 1 have less than 200 rings?
+;	blo.s	JmpTo_PlaySound2	; if yes, play the ring sound
+;	bset	#2,(Extra_life_flags).w	; test and set the flag for the second extra life
+;	bne.s	JmpTo_PlaySound2	; if it was set before, play the ring sound
 +
-	addq.b	#1,(Life_count).w	; add 1 to the life count
-	addq.b	#1,(Update_HUD_lives).w	; add 1 to the displayed life count
-	move.w	#MusID_ExtraLife,d0	; prepare to play the extra life jingle
+;	addq.b	#1,(Life_count).w	; add 1 to the life count
+;	addq.b	#1,(Update_HUD_lives).w	; add 1 to the displayed life count
+;	move.w	#MusID_ExtraLife,d0	; prepare to play the extra life jingle
 
-JmpTo_PlaySound2 ; JmpTo
+;JmpTo_PlaySound2 ; JmpTo
 	jmp	(PlaySound2).l
 ; ===========================================================================
 	rts
@@ -25078,18 +25080,18 @@ Obj37_Index:	offsetTable
 ; Obj_37_sub_0:
 Obj37_Init:
 	movea.l	a0,a1
-	moveq	#0,d5
-	move.w	(Ring_count).w,d5
-	tst.b	parent+1(a0)
-	beq.s	+
-	move.w	(Ring_count_2P).w,d5
-+
-	moveq	#$20,d0
-	cmp.w	d0,d5
-	blo.s	+
-	move.w	d0,d5
-+
-	subq.w	#1,d5
+	moveq	#15,d5
+;	move.w	(Ring_count).w,d5
+;	tst.b	parent+1(a0)
+;	beq.s	+
+;	move.w	(Ring_count_2P).w,d5
+;+
+;	moveq	#$20,d0
+;	cmp.w	d0,d5
+;	blo.s	+
+;	move.w	d0,d5
+;+
+;	subq.w	#1,d5
 	move.w	#$288,d4
 	bra.s	+
 ; ===========================================================================
@@ -25174,8 +25176,8 @@ loc_121B8:
 
 	subq.b  #1,objoff_1F(a0)                ; Subtract 1
 	beq.w   DeleteObject                    ; If 0, delete
-	cmpi.w	#$FF00,($FFFFEECC).w		; is vertical wrapping enabled?
-	beq.w	DisplaySprite			; if so, branch	
+;	cmpi.w	#$FF00,($FFFFEECC).w		; is vertical wrapping enabled?
+;	beq.w	DisplaySprite			; if so, branch	
 	move.w	(Camera_Max_Y_pos_now).w,d0
 	addi.w	#$E0,d0
 	cmp.w	y_pos(a0),d0
@@ -25787,11 +25789,13 @@ robotnik_monitor:
 ; gives Sonic an extra life, or Tails in a 'Tails alone' game
 ; ---------------------------------------------------------------------------
 sonic_1up:
-	addq.w	#1,(Monitors_Broken).w
-	cmpi.b	#99,(Life_count).w
-	bhs.s	+	
-	addq.b	#1,(Life_count).w
-	addq.b	#1,(Update_HUD_lives).w
+	; addq.w	#1,(Monitors_Broken).w
+	; cmpi.b	#99,(Life_count).w
+	; bhs.s	+	
+	; addq.b	#1,(Life_count).w
+	; addq.b	#1,(Update_HUD_lives).w
+	move.l	#200,d0
+	jsr		AddPoints
 	move.w	#MusID_ExtraLife,d0
 	jsr	(PlayMusic).l	; Play extra life music
 +
@@ -25802,11 +25806,8 @@ sonic_1up:
 ; gives Tails an extra life in two player mode
 ; ---------------------------------------------------------------------------
 tails_1up:
-	addq.w	#1,(Monitors_Broken_2P).w
-	cmpi.b	#99,(Life_count_2P).w
-	bhs.s	+
-	addq.b	#1,(Life_count_2P).w
-	addq.b	#1,(Update_HUD_lives_2P).w
+	move.l	#200,d0
+	jsr		AddPoints2
 	move.w	#MusID_ExtraLife,d0
 	jsr	(PlayMusic).l	; Play extra life music
 +
@@ -25819,51 +25820,53 @@ tails_1up:
 super_ring:
 	addq.w	#1,(a2)
 
-    if gameRevision=0
-	lea	(Ring_count).w,a2
-	lea	(Update_HUD_rings).w,a3
-	lea	(Extra_life_flags).w,a4
+    ; if gameRevision=0
+	; lea	(Ring_count).w,a2
+	; lea	(Update_HUD_rings).w,a3
+	; lea	(Extra_life_flags).w,a4
+	; cmpa.w	#MainCharacter,a1
+	; beq.s	+
+	; lea	(Ring_count_2P).w,a2
+	; lea	(Update_HUD_rings_2P).w,a3
+	; lea	(Extra_life_flags_2P).w,a4
+; +	; give player 10 rings
+	; addi.w	#10,(a2)
+    ; else
+	lea	(AddPoints).l,a2
+;	lea	(AddPoints).w,a3
+;	lea	(Extra_life_flags).w,a4
+;	lea	(Rings_Collected).w,a5
 	cmpa.w	#MainCharacter,a1
 	beq.s	+
-	lea	(Ring_count_2P).w,a2
-	lea	(Update_HUD_rings_2P).w,a3
-	lea	(Extra_life_flags_2P).w,a4
-+	; give player 10 rings
-	addi.w	#10,(a2)
-    else
-	lea	(Ring_count).w,a2
-	lea	(Update_HUD_rings).w,a3
-	lea	(Extra_life_flags).w,a4
-	lea	(Rings_Collected).w,a5
-	cmpa.w	#MainCharacter,a1
-	beq.s	+
-	lea	(Ring_count_2P).w,a2
-	lea	(Update_HUD_rings_2P).w,a3
-	lea	(Extra_life_flags_2P).w,a4
-	lea	(Rings_Collected_2P).w,a5
-+
-	addi.w	#10,(a5)
-	cmpi.w	#999,(a5)
-	blo.s	+
-	move.w	#999,(a5)
+	lea	(AddPoints2).l,a2
+;	lea	(AddPoints2).w,a3
+;	lea	(Extra_life_flags_2P).w,a4
+;	lea	(Rings_Collected_2P).w,a5
+;+
+;	addi.w	#10,(a5)
+;	cmpi.w	#999,(a5)
+;	blo.s	+
+;	move.w	#999,(a5)
 
-+	; give player 10 rings and max out at 999
-	addi.w	#10,(a2)
-	cmpi.w	#999,(a2)
-	blo.s	+
-	move.w	#999,(a2)
-    endif
+;+	; give player 10 rings and max out at 999
+;	addi.w	#10,(a2)
+;	cmpi.w	#999,(a2)
+;	blo.s	+
+;	move.w	#999,(a2)
+;   endif
 
 +
-	ori.b	#1,(a3)
-	cmpi.w	#100,(a2)
-	blo.s	+		; branch, if player has less than 100 rings
-	bset	#1,(a4)		; set flag for first 1up
-	beq.s	ChkPlayer_1up	; branch, if not yet set
-	cmpi.w	#200,(a2)
-	blo.s	+		; branch, if player has less than 200 rings
-	bset	#2,(a4)		; set flag for second 1up
-	beq.s	ChkPlayer_1up	; branch, if not yet set
+	moveq	#50,d0
+	jsr		(a2)
+	; ori.b	#1,(a3)
+	; cmpi.w	#100,(a2)
+	; blo.s	+		; branch, if player has less than 100 rings
+	; bset	#1,(a4)		; set flag for first 1up
+	; beq.s	ChkPlayer_1up	; branch, if not yet set
+	; cmpi.w	#200,(a2)
+	; blo.s	+		; branch, if player has less than 200 rings
+	; bset	#2,(a4)		; set flag for second 1up
+	; beq.s	ChkPlayer_1up	; branch, if not yet set
 +
 	move.w	#SndID_Ring,d0
 	jmp	(PlayMusic).l
@@ -80900,19 +80903,29 @@ Touch_Hurt:
 
 ; loc_3F878: HurtSonic:
 HurtCharacter:
-	move.w	(Ring_count).w,d0
+	move.l	(Score).w,d0
 	cmpa.w	#MainCharacter,a0
 	beq.s	loc_3F88C
 	tst.w	(Two_player_mode).w
 	beq.s	Hurt_Sidekick
-	move.w	(Ring_count_2P).w,d0
+	move.l	(Score_2P).w,d0
 
 loc_3F88C:
 	btst	#status_sec_hasShield,status_secondary(a0)
 	bne.s	Hurt_Shield
-	tst.w	d0
-	beq.w	KillCharacter
-	jsr	(SingleObjLoad).l
+	cmpi.l	#100,d0
+	ble.w	ResetScore
+	move.l	#-100,d0
+	cmpa.w	#MainCharacter,a0
+	bne.s	+
+	jsr		AddPoints
++	
+	tst.w	(Two_player_mode).w
+	beq.s	DontResetScore
+	jsr		AddPoints2	
+;	beq.w	KillCharacter
+DontResetScore:
+	jsr		(SingleObjLoad).l
 	bne.s	Hurt_Shield
 	_move.b	#ObjID_LostRings,id(a1) ; load obj
 	move.w	x_pos(a0),x_pos(a1)
@@ -80957,6 +80970,18 @@ Hurt_Sound:
 	jsr	(PlaySound).l
 	moveq	#-1,d0
 	rts
+	
+ResetScore:
+	cmpa.w	#MainCharacter,a0
+	bne.s	+
+	clr.l	(Score).w
+	ori.b	#1,(Update_HUD_score).w
+	bra.s	KillCharacter
+	
++
+	clr.l	(Score_2P).w
+	ori.b	#1,(Update_HUD_score_2P).w
+;	bra.s	KillCharacter
 ; ===========================================================================
 
 ; ---------------------------------------------------------------------------
@@ -83180,11 +83205,22 @@ HudUpdate:
 ;	tst.w	(Debug_mode_flag).w	; is debug mode on?
 ;	bne.w	loc_40E9A	; if yes, branch
 
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Score),VRAM,WRITE),d0	; set VRAM address
+	move.l	(Score).w,d1	; load score
+
+	tst.b	(Update_HUD_score).w
+	beq.s	+
+	bsr.w	Hud_Score
+
++
 	tst.b	(Update_HUD_timer).w	; does the time need updating?
-	beq.s	Hud_ChkRings	; if not, branch
+	beq.s	Hud_ChkBonus	; if not, branch
 
 	tst.w	(Game_paused).w	; is the game paused?
-	bne.s	Hud_ChkRings	; if yes, branch
+	bne.s	Hud_ChkBonus	; if yes, branch
+	
+	tst.l	(Score).w
+	beq.s	loc_40E84
 
 	lea		(Timer+4).w,a1
 ;	cmpi.l	#$93B3B,(a1)+	; is the time 9.59?
@@ -83192,28 +83228,29 @@ HudUpdate:
 	addq.b	#1,-(a1)
 	cmpi.b	#6,(a1)
 
-	blo.s	Hud_ChkRings
+	blo.s	Hud_ChkBonus
 	clr.b	(a1)
 
-	moveq	#1,d0
+	moveq	#-1,d0
 	bsr.w	AddPoints
 
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Score),VRAM,WRITE),d0	; set VRAM address
 	move.l	(Score).w,d1	; load score
+
 	bsr.w	Hud_Score
 ; loc_40DBA:
-Hud_ChkRings:
-	tst.b	(Update_HUD_rings).w	; does the ring counter need updating?
-	beq.s	Hud_ChkLives	; if not, branch
-	bpl.s	loc_40DC6
-	bsr.w	Hud_InitRings
+; Hud_ChkRings:
+	; tst.b	(Update_HUD_rings).w	; does the ring counter need updating?
+	; beq.s	Hud_ChkLives	; if not, branch
+	; bpl.s	loc_40DC6
+	; bsr.w	Hud_InitRings
 
-loc_40DC6:
-	clr.b	(Update_HUD_rings).w
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Rings),VRAM,WRITE),d0
-	moveq	#0,d1
-	move.w	(Ring_count).w,d1
-	bsr.w	Hud_Rings
+; loc_40DC6:
+	; clr.b	(Update_HUD_rings).w
+	; move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Rings),VRAM,WRITE),d0
+	; moveq	#0,d1
+	; move.w	(Ring_count).w,d1
+	; bsr.w	Hud_Rings
 	
 ; loc_40DDA:
 ; Hud_ChkTime:
@@ -83229,11 +83266,11 @@ loc_40DC6:
 	; move.b	(Timer_second).w,d1
 	; bsr.w	Hud_Secs
 ; loc_40E38:
-Hud_ChkLives:
-	tst.b	(Update_HUD_lives).w	; does the lives counter need updating?
-	beq.s	Hud_ChkBonus	; if not, branch
-	clr.b	(Update_HUD_lives).w
-	bsr.w	Hud_Lives
+; Hud_ChkLives:
+	; tst.b	(Update_HUD_lives).w	; does the lives counter need updating?
+	; beq.s	Hud_ChkBonus	; if not, branch
+	; clr.b	(Update_HUD_lives).w
+	; bsr.w	Hud_Lives
 ; loc_40E46:
 Hud_ChkBonus:
 	tst.b	(Update_Bonus_score).w	; do time/ring bonus counters need updating?
@@ -83262,7 +83299,7 @@ loc_40E84:
 	lea	(MainCharacter).w,a0 ; a0=character
 	movea.l	a0,a2
 	bsr.w	KillCharacter
-	move.b	#1,(Time_Over_flag).w
+;	move.b	#1,(Time_Over_flag).w
 	rts
 ; ===========================================================================
 
@@ -83472,7 +83509,7 @@ Hud_Base:
 	bne.s	locret_noscore
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Score_E),VRAM,WRITE),(VDP_control_port).l
 	lea	Hud_TilesBase(pc),a2
-	move.w	#(Hud_TilesBase_End-Hud_TilesBase)-1,d2
+	move.w	#(Hud_TilesBase_HUD_End-Hud_TilesBase)-1,d2
 
 loc_41090:
 	lea	Art_Hud(pc),a1
@@ -83528,6 +83565,7 @@ loc_410BC:
 ; byte_410D4:
 Hud_TilesBase:
 	dc.b " 0005000"
+Hud_TilesBase_HUD_End:
 	dc.b "    "
 ; byte_410E0:
 ; Hud_TilesZero:
