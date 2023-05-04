@@ -4396,8 +4396,8 @@ TitleScreen_Loop:
 
 	move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
 
-	move.b	#3,(Life_count).w
-	move.b	#3,(Life_count_2P).w
+	move.b	#1,(Life_count).w
+	move.b	#1,(Life_count_2P).w
 
 	moveq	#0,d0
 	move.w	d0,(Ring_count).w
@@ -4405,11 +4405,11 @@ TitleScreen_Loop:
 	move.l	#500,(Score).w
 	move.w	d0,(Ring_count_2P).w
 	move.l	d0,(Timer_2P).w
-	move.l	d0,(Score_2P).w
+	move.l	#500,(Score_2P).w
 	move.b	d0,(Continue_count).w
 
-	move.l	#5000,(Next_Extra_life_score).w
-	move.l	#5000,(Next_Extra_life_score_2P).w
+;	move.l	#5000,(Next_Extra_life_score).w
+;	move.l	#5000,(Next_Extra_life_score_2P).w
 
 	move.b	#MusID_FadeOut,d0 ; prepare to stop music (fade out)
 	bsr.w	PlaySound
@@ -4486,8 +4486,8 @@ TitleScreen_Demo:
 	bne.s	+
 	move.w	#1,(Two_player_mode).w
 +
-	move.b	#3,(Life_count).w
-	move.b	#3,(Life_count_2P).w
+	move.b	#1,(Life_count).w
+	move.b	#1,(Life_count_2P).w
 
 	moveq	#0,d0
 	move.w	d0,(Ring_count).w
@@ -10423,8 +10423,8 @@ ContinueScreen:
 ; ---------------------------------------------------------------------------
 +
 	move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-	move.b	#3,(Life_count).w
-	move.b	#3,(Life_count_2P).w
+	move.b	#1,(Life_count).w
+	move.b	#1,(Life_count_2P).w
 	moveq	#0,d0
 	move.w	d0,(Ring_count).w
 	move.l	d0,(Timer).w
@@ -10922,8 +10922,8 @@ TwoPlayerResultsDone_ZoneOrSpecialStages:
 -	move.w	#-1,(a1)+
 	dbf	d0,-
 
-	move.b	#3,(Life_count).w
-	move.b	#3,(Life_count_2P).w
+	move.b	#1,(Life_count).w
+	move.b	#1,(Life_count_2P).w
 +
 	move.b	#GameModeID_2PLevelSelect,(Game_Mode).w ; => LevelSelectMenu2P
 	rts
@@ -12512,8 +12512,8 @@ LevelSelect_PressStart:
 ;LevelSelect_SpecialStage:
 	move.b	#GameModeID_SpecialStage,(Game_Mode).w ; => SpecialStage
 	clr.w	(Current_ZoneAndAct).w
-	move.b	#3,(Life_count).w
-	move.b	#3,(Life_count_2P).w
+	move.b	#1,(Life_count).w
+	move.b	#1,(Life_count_2P).w
 	moveq	#0,d0
 	move.w	d0,(Ring_count).w
 	move.l	d0,(Timer).w
@@ -12570,8 +12570,8 @@ LevelSelect_StartZone:
 	andi.w	#$3FFF,d0
 	move.w	d0,(Current_ZoneAndAct).w
 	move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-	move.b	#3,(Life_count).w
-	move.b	#3,(Life_count_2P).w
+	move.b	#1,(Life_count).w
+	move.b	#1,(Life_count_2P).w
 	moveq	#0,d0
 	move.w	d0,(Ring_count).w
 	move.l	d0,(Timer).w
@@ -81010,6 +81010,14 @@ KillCharacter:
 +
 	jsr	(PlaySound).l
 +
+	cmpa.w	#MainCharacter,a0
+	bne.s	+
+	tst.l	(Score).l
+	bne.s	+
+	clr.b	(Update_HUD_timer).w	
+	move.w	#MusID_HPZ,d0
+	jsr	(PlaySound2).l
++	
 	moveq	#-1,d0
 	rts
 ; ===========================================================================

@@ -2477,11 +2477,11 @@ CheckGameOver:
 	cmp.w	y_pos(a0),d0
 	bge.w	return_1B31A
 	move.b	#8,routine(a0)	; => Obj01_Gone
-	move.w	#60,restart_countdown(a0)
-	addq.b	#1,(Update_HUD_lives).w	; update lives counter
-	subq.b	#1,(Life_count).w	; subtract 1 from number of lives
-	bne.s	Obj01_ResetLevel	; if it's not a game over, branch
-	move.w	#0,restart_countdown(a0)
+;	move.w	#60,restart_countdown(a0)
+;	addq.b	#1,(Update_HUD_lives).w	; update lives counter
+;	subq.b	#1,(Life_count).w	; subtract 1 from number of lives
+;	bne.s	Obj01_ResetLevel	; if it's not a game over, branch
+;	move.w	#0,restart_countdown(a0)
 	move.b	#ObjID_GameOver,(GameOver_GameText+id).w ; load Obj39 (game over text)
 	move.b	#ObjID_GameOver,(GameOver_OverText+id).w ; load Obj39 (game over text)
 	move.b	#1,(GameOver_OverText+mapping_frame).w
@@ -2504,17 +2504,17 @@ Obj01_Finished:
 ; ---------------------------------------------------------------------------
 ; loc_1B28E:
 Obj01_ResetLevel:
-	tst.b	(Time_Over_flag).w
-	beq.s	Obj01_ResetLevel_Part2
-	move.w	#0,restart_countdown(a0)
-	move.b	#ObjID_TimeOver,(TimeOver_TimeText+id).w ; load Obj39
-	move.b	#ObjID_TimeOver,(TimeOver_OverText+id).w ; load Obj39
-	move.b	#2,(TimeOver_TimeText+mapping_frame).w
-	move.b	#3,(TimeOver_OverText+mapping_frame).w
-	move.w	a0,(TimeOver_TimeText+parent).w
-	bra.s	Obj01_Finished
-; ---------------------------------------------------------------------------
-Obj01_ResetLevel_Part2:
+	; tst.b	(Time_Over_flag).w
+	; beq.s	Obj01_ResetLevel_Part2
+	; move.w	#0,restart_countdown(a0)
+	; move.b	#ObjID_TimeOver,(TimeOver_TimeText+id).w ; load Obj39
+	; move.b	#ObjID_TimeOver,(TimeOver_OverText+id).w ; load Obj39
+	; move.b	#2,(TimeOver_TimeText+mapping_frame).w
+	; move.b	#3,(TimeOver_OverText+mapping_frame).w
+	; move.w	a0,(TimeOver_TimeText+parent).w
+	; bra.s	Obj01_Finished
+; ; ---------------------------------------------------------------------------
+; Obj01_ResetLevel_Part2:
 	tst.w	(Two_player_mode).w
 	beq.s	return_1B31A
 	move.b	#0,(Scroll_lock).w
