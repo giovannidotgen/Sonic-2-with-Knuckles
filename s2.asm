@@ -14888,12 +14888,12 @@ LevelSize: zoneOrderedTable 2,8	; WrdArr_LvlSize
 
 ; ===========================================================================
 +
-	tst.b	(Last_star_pole_hit).w		; was a star pole hit yet?
-	beq.s	+				; if not, branch
-	jsr	(Obj79_LoadData).l		; load the previously saved data
-	move.w	(MainCharacter+x_pos).w,d1
-	move.w	(MainCharacter+y_pos).w,d0
-	bra.s	++
+;	tst.b	(Last_star_pole_hit).w		; was a star pole hit yet?
+;	beq.s	+				; if not, branch
+;	jsr	(Obj79_LoadData).l		; load the previously saved data
+;	move.w	(MainCharacter+x_pos).w,d1
+;	move.w	(MainCharacter+y_pos).w,d0
+;	bra.s	++
 ; ===========================================================================
 +	; Put the character at the start location for the level
 	move.w	(Current_ZoneAndAct).w,d0
@@ -27714,8 +27714,9 @@ Obj39_Display:
 ; ----------------------------------------------------------------------------
 ; Sprite_14086:
 Obj3A: ; (screen-space obj)
-	moveq	#0,d0
-	move.b	routine(a0),d0
+;	moveq	#0,d0
+;	move.b	routine(a0),d0
+	moveq	#$10,d0
 	move.w	Obj3A_Index(pc,d0.w),d1
 	jmp	Obj3A_Index(pc,d1.w)
 ; ===========================================================================
@@ -27992,7 +27993,7 @@ LevelOrder: zoneOrderedTable 2,2	; WrdArr_LevelOrder
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 7
 	zoneTableEntry.w  metropolis_zone_act_2		; 8
 	zoneTableEntry.w  metropolis_zone_act_3		; 9
-	zoneTableEntry.w  sky_chase_zone_act_1		; 10
+	zoneTableEntry.w  wing_fortress_zone_act_1	; 10
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 11
 	zoneTableEntry.w  death_egg_zone_act_1		; 12
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 13
@@ -34540,6 +34541,8 @@ Obj0D_Main:
 	move.w	#SndID_Signpost,d0
 	jsr	(PlayMusic).l	; play spinning sound
 	clr.b	(Update_HUD_timer).w
+	move.b	#100,d0
+	jsr		AddPoints
 	move.w	#1,anim(a0)
 	move.w	#0,obj0D_spinframe(a0)
 	move.w	(Camera_Max_X_pos).w,(Camera_Min_X_pos).w	; lock screen
@@ -34673,6 +34676,8 @@ Obj0D_RingSparklePositions:
 ; ===========================================================================
 ; loc_19418:
 Obj0D_Main_State3:
+	bra.w	Load_EndOfAct
+
 	tst.w	(Debug_placement_mode).w
 	bne.w	return_194D0
     if fixBugs
@@ -34747,8 +34752,8 @@ Load_EndOfAct:
 	bne.s	+
 	move.w	#5000,(Bonus_Countdown_3).w
 +
-	move.w	#MusID_EndLevel,d0
-	jsr	(PlayMusic).l
+;	move.w	#MusID_EndLevel,d0
+;	jsr	(PlayMusic).l
 
 return_194D0:
 	rts
@@ -39071,19 +39076,21 @@ Obj79_CheckActivation:
 	move.b	#2,mapping_frame(a1)
 	move.w	#$20,objoff_36(a1)
 	move.w	a0,parent(a1)
-	tst.w	(Two_player_mode).w
-	bne.s	loc_1F206
-	cmpi.b	#7,(Emerald_count).w
-	beq.s	loc_1F206
-	cmpi.w	#50,(Ring_count).w
-	blo.s	loc_1F206
-	bsr.w	Obj79_MakeSpecialStars
+;	tst.w	(Two_player_mode).w
+;	bne.s	loc_1F206
+;	cmpi.b	#7,(Emerald_count).w
+;	beq.s	loc_1F206
+;	cmpi.w	#50,(Ring_count).w
+;	blo.s	loc_1F206
+;	bsr.w	Obj79_MakeSpecialStars
 
 loc_1F206:
 	move.b	#1,anim(a0)
 	bsr.w	Obj79_SaveData
 	lea	(Object_Respawn_Table).w,a2
-	moveq	#0,d0
+	move.b	#100,d0
+	jsr		AddPoints	
+	moveq	#0,d0	
 	move.b	respawn_index(a0),d0
     if fixBugs
 	; If you spawn a checkpoint in Debug Mode and activate it, then
@@ -39093,7 +39100,7 @@ loc_1F206:
 	; that before accessing the respawn table.
 	beq.s	return_1F220
     endif
-	bset	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)
+	bset	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)	
 
 return_1F220:
 	rts
@@ -39148,26 +39155,26 @@ Obj79_SaveData:
 	bne.w	Obj79_SaveDataPlayer2	; if not, branch
 	move.b	subtype(a0),(Last_star_pole_hit).w
 	move.b	(Last_star_pole_hit).w,(Saved_Last_star_pole_hit).w
-	move.w	x_pos(a0),(Saved_x_pos).w
-	move.w	y_pos(a0),(Saved_y_pos).w
-	move.w	(MainCharacter+art_tile).w,(Saved_art_tile).w
-	move.w	(MainCharacter+top_solid_bit).w,(Saved_Solid_bits).w
-	move.w	(Ring_count).w,(Saved_Ring_count).w
-	move.b	(Extra_life_flags).w,(Saved_Extra_life_flags).w
-	move.l	(Timer).w,(Saved_Timer).w
-	move.b	(Dynamic_Resize_Routine).w,(Saved_Dynamic_Resize_Routine).w
-	move.w	(Camera_Max_Y_pos_now).w,(Saved_Camera_Max_Y_pos).w
-	move.w	(Camera_X_pos).w,(Saved_Camera_X_pos).w
-	move.w	(Camera_Y_pos).w,(Saved_Camera_Y_pos).w
-	move.w	(Camera_BG_X_pos).w,(Saved_Camera_BG_X_pos).w
-	move.w	(Camera_BG_Y_pos).w,(Saved_Camera_BG_Y_pos).w
-	move.w	(Camera_BG2_X_pos).w,(Saved_Camera_BG2_X_pos).w
-	move.w	(Camera_BG2_Y_pos).w,(Saved_Camera_BG2_Y_pos).w
-	move.w	(Camera_BG3_X_pos).w,(Saved_Camera_BG3_X_pos).w
-	move.w	(Camera_BG3_Y_pos).w,(Saved_Camera_BG3_Y_pos).w
-	move.w	(Water_Level_2).w,(Saved_Water_Level).w
-	move.b	(Water_routine).w,(Saved_Water_routine).w
-	move.b	(Water_fullscreen_flag).w,(Saved_Water_move).w
+	; move.w	x_pos(a0),(Saved_x_pos).w
+	; move.w	y_pos(a0),(Saved_y_pos).w
+	; move.w	(MainCharacter+art_tile).w,(Saved_art_tile).w
+	; move.w	(MainCharacter+top_solid_bit).w,(Saved_Solid_bits).w
+	; move.w	(Ring_count).w,(Saved_Ring_count).w
+	; move.b	(Extra_life_flags).w,(Saved_Extra_life_flags).w
+	; move.l	(Timer).w,(Saved_Timer).w
+	; move.b	(Dynamic_Resize_Routine).w,(Saved_Dynamic_Resize_Routine).w
+	; move.w	(Camera_Max_Y_pos_now).w,(Saved_Camera_Max_Y_pos).w
+	; move.w	(Camera_X_pos).w,(Saved_Camera_X_pos).w
+	; move.w	(Camera_Y_pos).w,(Saved_Camera_Y_pos).w
+	; move.w	(Camera_BG_X_pos).w,(Saved_Camera_BG_X_pos).w
+	; move.w	(Camera_BG_Y_pos).w,(Saved_Camera_BG_Y_pos).w
+	; move.w	(Camera_BG2_X_pos).w,(Saved_Camera_BG2_X_pos).w
+	; move.w	(Camera_BG2_Y_pos).w,(Saved_Camera_BG2_Y_pos).w
+	; move.w	(Camera_BG3_X_pos).w,(Saved_Camera_BG3_X_pos).w
+	; move.w	(Camera_BG3_Y_pos).w,(Saved_Camera_BG3_Y_pos).w
+	; move.w	(Water_Level_2).w,(Saved_Water_Level).w
+	; move.b	(Water_routine).w,(Saved_Water_routine).w
+	; move.b	(Water_fullscreen_flag).w,(Saved_Water_move).w
 	rts
 ; ===========================================================================
 ; second player hit a checkpoint in 2-player mode
@@ -39175,13 +39182,13 @@ Obj79_SaveData:
 Obj79_SaveDataPlayer2:
 	move.b	subtype(a0),(Last_star_pole_hit_2P).w
 	move.b	(Last_star_pole_hit_2P).w,(Saved_Last_star_pole_hit_2P).w
-	move.w	x_pos(a0),(Saved_x_pos_2P).w
-	move.w	y_pos(a0),(Saved_y_pos_2P).w
-	move.w	(Sidekick+art_tile).w,(Saved_art_tile_2P).w
-	move.w	(Sidekick+top_solid_bit).w,(Saved_Solid_bits_2P).w
-	move.w	(Ring_count_2P).w,(Saved_Ring_count_2P).w
-	move.b	(Extra_life_flags_2P).w,(Saved_Extra_life_flags_2P).w
-	move.l	(Timer_2P).w,(Saved_Timer_2P).w
+	; move.w	x_pos(a0),(Saved_x_pos_2P).w
+	; move.w	y_pos(a0),(Saved_y_pos_2P).w
+	; move.w	(Sidekick+art_tile).w,(Saved_art_tile_2P).w
+	; move.w	(Sidekick+top_solid_bit).w,(Saved_Solid_bits_2P).w
+	; move.w	(Ring_count_2P).w,(Saved_Ring_count_2P).w
+	; move.b	(Extra_life_flags_2P).w,(Saved_Extra_life_flags_2P).w
+	; move.l	(Timer_2P).w,(Saved_Timer_2P).w
 	rts
 ; ===========================================================================
 ; continue from a starpost / load checkpoint
@@ -54271,6 +54278,11 @@ JmpTo18_ObjectMove ; JmpTo
 ; ----------------------------------------------------------------------------
 ; Sprite_2BB6C:
 ObjD6:
+	tst.b	subtype(a0)
+	beq.s	+
+	clr.b	subtype(a0)
+		
++
 	moveq	#0,d0
 	move.b	routine(a0),d0
 	move.w	ObjD6_Index(pc,d0.w),d1
@@ -56849,6 +56861,7 @@ AnimateBoss_CmdParam:	; parameter $FF - reset animation to first frame
 
 ;loc_2D6CC:
 Boss_LoadExplosion:
+	clr.b	(Update_HUD_timer).w
 	move.b	(Vint_runcount+3).w,d0
 	andi.b	#7,d0
 	bne.s	+	; rts
