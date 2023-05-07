@@ -454,6 +454,7 @@ PalID_Knux =	id(PalPtr_Knux) ; 28
 PalID_CPZ_K_U =	id(PalPtr_CPZ_K_U) ; 29
 PalID_ARZ_K_U =	id(PalPtr_ARZ_K_U) ; 2A
 PalID_SSK = id(PalPtr_SSK) ; 2B
+PalID_TitleScoreRushBG = id(PalPtr_TitleScoreRushBG)	; 2C
 
 ; PLC IDs
 offset :=	ArtLoadCues
@@ -2181,7 +2182,7 @@ ArtTile_ArtUnc_Giant_Sonic            = $0088
 
 ; Title screen
 ArtTile_ArtNem_Title                  = $0000
-ArtTile_ArtNem_TitleSprites           = $0150
+ArtTile_ArtNem_TitleSprites	          = $0150
 ArtTile_ArtNem_MenuJunk               = $03F2
 ArtTile_ArtNem_Player1VS2             = $0402
 ArtTile_ArtNem_CreditText             = $0500

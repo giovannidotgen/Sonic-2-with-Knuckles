@@ -3152,93 +3152,88 @@ Pal_FadeFromBlack:
 .palettewrite:
 	move.w	d1,(a0)+
 	dbf	d0,.palettewrite	; fill palette with $000 (black)
-
-	move.w	#$15,d4
+		moveq	#$0E,d4					; MJ: prepare maximum colour check
+		moveq	#$00,d6					; MJ: clear d6
 
 .nextframe:
-	move.b	#VintID_Fade,(Vint_routine).w
-	bsr.w	WaitForVint
-	bsr.s	.UpdateAllColours
 	bsr.w	RunPLC_RAM
-	dbf	d4,.nextframe
+	move.b	#$12,(Vint_routine).w
+	bsr.w	WaitForVint
+		bchg	#$00,d6					; MJ: change delay counter
+		beq	.nextframe					; MJ: if null, delay a frame
+	bsr.s	.UpdateAllColours
+		subq.b	#$02,d4					; MJ: decrease colour check
+		bne	.nextframe					; MJ: if it has not reached null, branch
+		move.b	#$12,(Vint_routine).w			; MJ: wait for V-blank again (so colours transfer)
+		bra	WaitForVint				; MJ: ''
 
-	rts
-; End of function Pal_FadeFromBlack
+; End of function Pal_FadeTo
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to update all colours once
 ; ---------------------------------------------------------------------------
 ; sub_23FE: Pal_FadeIn:
 .UpdateAllColours:
-	; Update above-water palette
 	moveq	#0,d0
 	lea	(Normal_palette).w,a0
 	lea	(Target_palette).w,a1
 	move.b	(Palette_fade_start).w,d0
 	adda.w	d0,a0
 	adda.w	d0,a1
-
 	move.b	(Palette_fade_length).w,d0
 
-.nextcolour:
+.nextcolor
 	bsr.s	.UpdateColour
-	dbf	d0,.nextcolour
-
+	dbf	d0,.nextcolor
 	tst.b	(Water_flag).w
 	beq.s	.skipunderwater
-	; Update underwater palette
 	moveq	#0,d0
 	lea	(Underwater_palette).w,a0
 	lea	(Underwater_target_palette).w,a1
 	move.b	(Palette_fade_start).w,d0
 	adda.w	d0,a0
 	adda.w	d0,a1
-
 	move.b	(Palette_fade_length).w,d0
 
-.nextcolour2:
+.nextcolor2
 	bsr.s	.UpdateColour
-	dbf	d0,.nextcolour2
+	dbf	d0,.nextcolor2
 
 .skipunderwater:
 	rts
+
+
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to update a single colour once
 ; ---------------------------------------------------------------------------
 ; sub_243E: Pal_AddColor:
 .UpdateColour:
-	move.w	(a1)+,d2
-	move.w	(a0),d3
-	cmp.w	d2,d3
-	beq.s	.updatenone
+		move.b	(a1),d5					; MJ: load blue
+		move.w	(a1)+,d1				; MJ: load green and red
+		move.b	d1,d2					; MJ: load red
+		lsr.b	#$04,d1					; MJ: get only green
+		andi.b	#$0E,d2					; MJ: get only red
+		move.w	(a0),d3					; MJ: load current colour in buffer
+		cmp.b	d5,d4					; MJ: is it time for blue to fade?
+		bhi	FCI_NoBlue				; MJ: if not, branch
+		addi.w	#$0200,d3				; MJ: increase blue
 
-;.updateblue:
-	move.w	d3,d1
-	addi.w	#$200,d1	; increase blue value
-	cmp.w	d2,d1		; has blue reached threshold level?
-	bhi.s	.updategreen	; if yes, branch
-	move.w	d1,(a0)+	; update palette
-	rts
+FCI_NoBlue:
+		cmp.b	d1,d4					; MJ: is it time for green to fade?
+		bhi	FCI_NoGreen				; MJ: if not, branch
+		addi.b	#$20,d3					; MJ: increase green
 
-; loc_2454: Pal_AddGreen:
-.updategreen:
-	move.w	d3,d1
-	addi.w	#$20,d1		; increase green value
-	cmp.w	d2,d1
-	bhi.s	.updatered
-	move.w	d1,(a0)+	; update palette
-	rts
+FCI_NoGreen:
+		cmp.b	d2,d4					; MJ: is it time for red to fade?
+		bhi	FCI_NoRed				; MJ: if not, branch
+		addq.b	#$02,d3					; MJ: increase red
 
-; loc_2462: Pal_AddRed:
-.updatered:
-	addq.w	#2,(a0)+	; increase red value
-	rts
+FCI_NoRed:
+		move.w	d3,(a0)+				; MJ: save colour
+		rts						; MJ: return
 
-; loc_2466: Pal_AddNone:
-.updatenone:
-	addq.w	#2,a0
-	rts
+
 
 
 ; ---------------------------------------------------------------------------
@@ -3250,19 +3245,75 @@ Pal_FadeFromBlack:
 ; sub_246A: Pal_FadeFrom:
 Pal_FadeToBlack:
 	move.w	#$3F,(Palette_fade_range).w
+		moveq	#$07,d4					; MJ: set repeat times
+		moveq	#$00,d6					; MJ: clear d6
 
-	move.w	#$15,d4
-
-.nextframe:
-	move.b	#VintID_Fade,(Vint_routine).w
-	bsr.w	WaitForVint
-	bsr.s	.UpdateAllColours
+.nextbframe
 	bsr.w	RunPLC_RAM
-	dbf	d4,.nextframe
-
+	move.b	#$12,(Vint_routine).w
+	bsr.w	WaitForVint
+		bchg	#$00,d6					; MJ: change delay counter
+		beq	.nextbframe					; MJ: if null, delay a frame
+	bsr.s	.UpdateAllColours
+	dbf	d4,.nextbframe
 	rts
 ; End of function Pal_FadeToBlack
 
+; ---------------------------------------------------------------------------
+; Subroutine to update all colours once
+; ---------------------------------------------------------------------------
+; sub_248A: Pal_FadeOut:
+.UpdateAllColours:
+	moveq	#0,d0
+	lea	(Normal_palette).w,a0
+	move.b	(Palette_fade_start).w,d0
+	adda.w	d0,a0
+	move.b	(Palette_fade_length).w,d0
+
+.Nextcolour
+	bsr.s	.UpdateColour
+	dbf	d0,.Nextcolour
+	moveq	#0,d0
+	lea	(Underwater_palette).w,a0
+	move.b	(Palette_fade_start).w,d0
+	adda.w	d0,a0
+	move.b	(Palette_fade_length).w,d0
+
+.Nextcolour2
+	bsr.s	.UpdateColour
+	dbf	d0,.Nextcolour2
+	rts
+
+
+
+; ---------------------------------------------------------------------------
+; Subroutine to update a single colour once
+; ---------------------------------------------------------------------------
+; sub_24B8: Pal_DecColor:
+.UpdateColour:
+		move.w	(a0),d5					; MJ: load colour
+		move.w	d5,d1					; MJ: copy to d1
+		move.b	d1,d2					; MJ: load green and red
+		move.b	d1,d3					; MJ: load red
+		andi.w	#$0E00,d1				; MJ: get only blue
+		beq	FCO_NoBlue				; MJ: if blue is finished, branch
+		subi.w	#$0200,d5				; MJ: decrease blue
+
+FCO_NoBlue:
+		andi.b	#$E0,d2					; MJ: get only green
+		beq	FCO_NoGreen				; MJ: if green is finished, branch
+		subi.b	#$20,d5					; MJ: decrease green
+
+FCO_NoGreen:
+		andi.b	#$0E,d3					; MJ: get only red
+		beq	FCO_NoRed				; MJ: if red is finished, branch
+		subq.b	#$02,d5					; MJ: decrease red
+
+FCO_NoRed:
+		move.w	d5,(a0)+				; MJ: save new colour
+		rts						; MJ: return
+; End of function Pal_FadeToBlack
+; Everything after this point was implemented by CosmotheFoxxo
 ; ---------------------------------------------------------------------------
 ; Subroutine to update all colours once
 ; ---------------------------------------------------------------------------
@@ -3300,34 +3351,29 @@ Pal_FadeToBlack:
 ; ---------------------------------------------------------------------------
 ; sub_24B8: Pal_DecColor:
 .UpdateColour:
-	move.w	(a0),d2
-	beq.s	.updatenone
-;.updatered:
-	move.w	d2,d1
-	andi.w	#$E,d1
-	beq.s	.updategreen
-	subq.w	#2,(a0)+	; decrease red value
-	rts
+		move.w	(a0),d5
+		move.w	d5,d1
+		move.b	d1,d2
+		move.b	d1,d3
+		andi.b	#$0E,d3
+		beq	.updategreen
+		subq.b	#$02,d5
 
 ; loc_24C8: Pal_DecGreen:
 .updategreen:
-	move.w	d2,d1
-	andi.w	#$E0,d1
-	beq.s	.updateblue
-	subi.w	#$20,(a0)+	; decrease green value
-	rts
+	andi.b	#$E0,d2
+	beq	.updateblue
+	subi.b	#$20,d5
 
 ; loc_24D6: Pal_DecBlue:
 .updateblue:
-	move.w	d2,d1
-	andi.w	#$E00,d1
-	beq.s	.updatenone
-	subi.w	#$200,(a0)+	; decrease blue value
-	rts
+	andi.w	#$0E00,d1
+	beq	.updatenone
+	subi.w	#$0200,d5
 
 ; loc_24E4: Pal_DecNone:
 .updatenone:
-	addq.w	#2,a0
+	move.w	d5,(a0)+
 	rts
 
 
@@ -3347,22 +3393,21 @@ Pal_FadeFromWhite:
 	move.w	#$EEE,d1
 
 	move.b	(Palette_fade_length).w,d0
-
 .palettewrite:
 	move.w	d1,(a0)+
 	dbf	d0,.palettewrite
-
-	move.w	#$15,d4
-
+		moveq	#$0E,d4
+		moveq	#$00,d6
 .nextframe:
 	move.b	#VintID_Fade,(Vint_routine).w
 	bsr.w	WaitForVint
+		bchg	#$00,d6
+		beq	.nextframe
 	bsr.s	.UpdateAllColours
-	bsr.w	RunPLC_RAM
-	dbf	d4,.nextframe
-
-	rts
-; End of function Pal_FadeFromWhite
+		subq.b	#$02,d4
+		bne	.nextframe
+		move.b	#$12,(Vint_routine).w
+		bra	WaitForVint
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to update all colours once
@@ -3378,7 +3423,6 @@ Pal_FadeFromWhite:
 	adda.w	d0,a1
 
 	move.b	(Palette_fade_length).w,d0
-
 .nextcolour:
 	bsr.s	.UpdateColour
 	dbf	d0,.nextcolour
@@ -3394,7 +3438,6 @@ Pal_FadeFromWhite:
 	adda.w	d0,a1
 
 	move.b	(Palette_fade_length).w,d0
-
 .nextcolour2:
 	bsr.s	.UpdateColour
 	dbf	d0,.nextcolour2
@@ -3407,40 +3450,29 @@ Pal_FadeFromWhite:
 ; ---------------------------------------------------------------------------
 ; sub_2562: Pal_DecColor2:
 .UpdateColour:
-	move.w	(a1)+,d2
-	move.w	(a0),d3
-	cmp.w	d2,d3
-	beq.s	.updatenone
-;.updateblue:
-	move.w	d3,d1
-	subi.w	#$200,d1	; decrease blue value
-	bcs.s	.updategreen
-	cmp.w	d2,d1
-	blo.s	.updategreen
-	move.w	d1,(a0)+
-	rts
+		move.b	(a1),d5
+		move.w	(a1)+,d1
+		move.b	d1,d2
+		lsr.b	#$04,d1
+		andi.b	#$0E,d2
+		move.w	(a0),d3
+		cmp.b	d5,d4
+		bls	A_NoBlue
+		subi.w	#$0200,d3
 
-; loc_257A: Pal_DecGreen2:
-.updategreen:
-	move.w	d3,d1
-	subi.w	#$20,d1	; decrease green value
-	bcs.s	.updatered
-	cmp.w	d2,d1
-	blo.s	.updatered
-	move.w	d1,(a0)+
-	rts
+A_NoBlue:
+		cmp.b	d1,d4
+		bls	A_NoGreen
+		subi.b	#$20,d3
 
-; loc_258A: Pal_DecRed2:
-.updatered:
-	subq.w	#2,(a0)+	; decrease red value
-	rts
+A_NoGreen:
+		cmp.b	d2,d4
+		bls	A_NoRed
+		subq.b	#$02,d3
 
-; loc_258E: Pal_DecNone2:
-.updatenone:
-	addq.w	#2,a0
-	rts
-
-
+A_NoRed:
+		move.w	d3,(a0)+
+		rts
 ; ---------------------------------------------------------------------------
 ; Subroutine to fade out to white (used when you enter a special stage)
 ; ---------------------------------------------------------------------------
@@ -3450,16 +3482,15 @@ Pal_FadeFromWhite:
 ; sub_2592: Pal_MakeFlash:
 Pal_FadeToWhite:
 	move.w	#$3F,(Palette_fade_range).w
-
-	move.w	#$15,d4
-
-.nextframe:
+		moveq	#$07,d4					; MJ: set repeat times
+		moveq	#$00,d6					; MJ: clear d6
+.nextcframe:
 	move.b	#VintID_Fade,(Vint_routine).w
 	bsr.w	WaitForVint
+		bchg	#$00,d6
+		beq	.nextcframe
 	bsr.s	.UpdateAllColours
-	bsr.w	RunPLC_RAM
-	dbf	d4,.nextframe
-
+	dbf	d4,.nextcframe
 	rts
 ; End of function Pal_FadeToWhite
 
@@ -3475,7 +3506,6 @@ Pal_FadeToWhite:
 	adda.w	d0,a0
 
 	move.b	(Palette_fade_length).w,d0
-
 .nextcolour:
 	bsr.s	.UpdateColour
 	dbf	d0,.nextcolour
@@ -3490,7 +3520,6 @@ Pal_FadeToWhite:
 	adda.w	d0,a0
 
 	move.b	(Palette_fade_length).w,d0
-
 .nextcolour2:
 	bsr.s	.UpdateColour
 	dbf	d0,.nextcolour2
@@ -3502,41 +3531,31 @@ Pal_FadeToWhite:
 ; ---------------------------------------------------------------------------
 ; sub_25E0: Pal_AddColor2:
 .UpdateColour:
-	move.w	(a0),d2
-	cmpi.w	#$EEE,d2
-	beq.s	.updatenone
-;.updatered:
-	move.w	d2,d1
-	andi.w	#$E,d1
-	cmpi.w	#$E,d1
-	beq.s	.updategreen
-	addq.w	#2,(a0)+	; increase red value
-	rts
+		move.w	(a0),d5
+		move.w	d5,d1
+		move.b	d1,d2
+		move.b	d1,d3
+		andi.w	#$0E00,d1
+		cmpi.w	#$0E00,d1
+		beq	a_NoBlue
+		addi.w	#$0200,d5
 
-; loc_25F8: Pal_AddGreen2:
-.updategreen:
-	move.w	d2,d1
-	andi.w	#$E0,d1
-	cmpi.w	#$E0,d1
-	beq.s	.updateblue
-	addi.w	#$20,(a0)+	; increase green value
-	rts
+a_NoBlue:
+		andi.b	#$E0,d2
+		cmpi.b	#$E0,d2
+		beq	a_NoGreen
+		addi.b	#$20,d5
 
-; loc_260A: Pal_AddBlue2:
-.updateblue:
-	move.w	d2,d1
-	andi.w	#$E00,d1
-	cmpi.w	#$E00,d1
-	beq.s	.updatenone
-	addi.w	#$200,(a0)+	; increase blue value
-	rts
+a_NoGreen:
+		andi.b	#$0E,d3
+		cmpi.b	#$0E,d3
+		beq	a_NoRed
+		addq.b	#$02,d5
 
-; loc_261C: Pal_AddNone2:
-.updatenone:
-	addq.w	#2,a0
-	rts
+a_NoRed:
+		move.w	d5,(a0)+
+		rts
 ; End of function Pal_AddColor2
-
 
 ; Unused - dead code/data for old SEGA screen:
 
@@ -3775,6 +3794,7 @@ PalPtr_Knux:	palptr Pal_Knux,  0
 PalPtr_CPZ_K_U:	palptr Pal_CPZ_K_U, 0
 PalPtr_ARZ_K_U:	palptr Pal_ARZ_K_U, 0
 PalPtr_SSK: palptr Pal_SSK, 0
+PalPtr_TitleScoreRushBG: palptr Pal_TitleScoreRushBG, 2
 
 ; ----------------------------------------------------------------------------
 ; This macro defines Pal_ABC and Pal_ABC_End, so palptr can compute the size of
@@ -3829,6 +3849,7 @@ Pal_Knux:  palette Knuckles.bin,SonicAndTails2.bin ; "Sonic and Miles" backgroun
 Pal_CPZ_K_U: palette CPZ Knux underwater.bin ; Chemical Plant Zone underwater palette
 Pal_ARZ_K_U: palette ARZ Knux underwater.bin ; Aquatic Ruin Zone underwater palette
 Pal_SSK:	palette Special Stage Knuckles.bin ; Special Stage palette but for Knuckles
+Pal_TitleScoreRushBG: palette Score Rush Title Screen.bin ; Palette for the Score Rush Title Screen
 ; ===========================================================================
 
     if gameRevision<2
@@ -4134,460 +4155,7 @@ JmpTo_RunObjects ; JmpTo
 	include "_additional/Giovanni Splash Screen.asm"
 	include "_additional/DynPaletteTransition.asm"	
 	include "_additional/Text rendering routines.asm"
-
-; ===========================================================================
-; loc_3998:
-TitleScreen:
-	; Stop music.
-	move.b	#MusID_Stop,d0
-	bsr.w	PlayMusic
-
-	; Clear the PLC queue, preventing any PLCs from before loading after this point.
-	bsr.w	ClearPLC
-
-	; Fade out.
-	bsr.w	Pal_FadeToBlack
-
-	; Disable interrupts, so that we can have exclusive access to the VDP.
-	move	#$2700,sr
-
-	; Configure the VDP for this screen mode.
-	lea	(VDP_control_port).l,a6
-	move.w	#$8004,(a6)		; H-INT disabled
-	move.w	#$8200|(VRAM_TtlScr_Plane_A_Name_Table/$400),(a6)	; PNT A base: $C000
-	move.w	#$8400|(VRAM_TtlScr_Plane_B_Name_Table/$2000),(a6)	; PNT B base: $E000
-	move.w	#$9001,(a6)		; Scroll table size: 64x32
-	move.w	#$9200,(a6)		; Disable window
-	move.w	#$8B03,(a6)		; EXT-INT disabled, V scroll by screen, H scroll by line
-	move.w	#$8720,(a6)		; Background palette/color: 2/0
-
-	clr.b	(Water_fullscreen_flag).w
-
-	move.w	#$8C81,(a6)		; H res 40 cells, no interlace, S/H disabled
-
-	; Reset plane maps, sprite table, and scroll tables.
-	bsr.w	ClearScreen
-
-	; Reset a bunch of engine state.
-	clearRAM Sprite_Table_Input,Sprite_Table_Input_End ; fill $AC00-$AFFF with $0
-	clearRAM Object_RAM,Object_RAM_End ; fill object RAM ($B000-$D5FF) with $0
-	clearRAM Misc_Variables,Misc_Variables_End ; clear CPU player RAM and following variables
-	clearRAM Camera_RAM,Camera_RAM_End ; clear camera RAM and following variables
-
-	; Load the credit font for the following text.
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_CreditText),VRAM,WRITE),(VDP_control_port).l
-	lea	(ArtNem_CreditText).l,a0
-	bsr.w	NemDec
-
-	; Load the 'Sonic and Miles 'Tails' Prower in' text.
-	lea	(off_B2B0).l,a1
-	jsr	(loc_B272).l
-
-	; Fade-in, showing the text that was just loaded.
-	clearRAM Target_palette,Target_palette_End	; fill palette with 0 (black)
-	moveq	#PalID_BGND,d0
-	bsr.w	PalLoad_ForFade
-	bsr.w	Pal_FadeFromBlack
-
-	; 'Pal_FadeFromBlack' enabled the interrupts, so disable them again
-	; so that we have exclusive access to the VDP for the following calls
-	; to the Nemesis decompressor.
-	move	#$2700,sr
-
-	; Load assets while the above text is being displayed.
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_Title),VRAM,WRITE),(VDP_control_port).l
-	lea	(ArtNem_Title).l,a0
-	bsr.w	NemDec
-
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_TitleSprites),VRAM,WRITE),(VDP_control_port).l
-	lea	(ArtNem_TitleSprites).l,a0
-	bsr.w	NemDec
-
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_MenuJunk),VRAM,WRITE),(VDP_control_port).l
-	lea	(ArtNem_MenuJunk).l,a0
-	bsr.w	NemDec
-
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_Player1VS2),VRAM,WRITE),(VDP_control_port).l
-	lea	(ArtNem_Player1VS2).l,a0
-	bsr.w	NemDec
-
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_FontStuff_TtlScr),VRAM,WRITE),(VDP_control_port).l
-	lea	(ArtNem_FontStuff).l,a0
-	bsr.w	NemDec
-
-	; Clear some variables.
-	move.b	#0,(Last_star_pole_hit).w
-	move.b	#0,(Last_star_pole_hit_2P).w
-	move.w	#0,(Debug_placement_mode).w
-	move.w	#0,(Demo_mode_flag).w
-	move.w	#0,(unk_FFDA).w
-	move.w	#0,(PalCycle_Timer).w
-	move.w	#0,(Two_player_mode).w
-	move.b	#0,(Level_started_flag).w
-
-	; And finally fade out.
-	bsr.w	Pal_FadeToBlack
-
-	; 'Pal_FadeToBlack' enabled the interrupts, so disable them again
-	; so that we have exclusive access to the VDP for the following calls
-	; to the plane map loader.
-	move	#$2700,sr
-
-	; Decompress the first part of the title screen background plane map...
-	lea	(Chunk_Table).l,a1
-	lea	(MapEng_TitleScreen).l,a0
-	move.w	#make_art_tile(ArtTile_ArtNem_Title,2,0),d0
-	bsr.w	EniDec
-
-	; ...and send it to VRAM.
-	lea	(Chunk_Table).l,a1
-	move.l	#vdpComm(VRAM_TtlScr_Plane_B_Name_Table,VRAM,WRITE),d0
-	moveq	#40-1,d1 ; Width
-	moveq	#28-1,d2 ; Height
-	jsrto	PlaneMapToVRAM_H40, PlaneMapToVRAM_H40
-
-	; Decompress the second part of the title screen background plane map...
-	lea	(Chunk_Table).l,a1
-	lea	(MapEng_TitleBack).l,a0
-	move.w	#make_art_tile(ArtTile_ArtNem_Title,2,0),d0
-	bsr.w	EniDec
-
-	; ...and send it to VRAM.
-	lea	(Chunk_Table).l,a1
-	move.l	#vdpComm(VRAM_TtlScr_Plane_B_Name_Table+planeLocH40(40,0),VRAM,WRITE),d0
-	moveq	#24-1,d1 ; Width
-	moveq	#28-1,d2 ; Height
-	jsrto	PlaneMapToVRAM_H40, PlaneMapToVRAM_H40
-
-	; Decompress the title screen emblem plane map...
-	lea	(Chunk_Table).l,a1
-	lea	(MapEng_TitleLogo).l,a0
-	move.w	#make_art_tile(ArtTile_ArtNem_Title,3,1),d0
-	bsr.w	EniDec
-
-	; ...add the copyright text to it...
-	lea	(Chunk_Table+planeLocH40(44,16)).l,a1
-	lea	(CopyrightText).l,a2
-	moveq	#bytesToWcnt(CopyrightText_End-CopyrightText),d6
--	move.w	(a2)+,(a1)+
-	dbf	d6,-
-
-	; ...and send it to VRAM.
-	lea	(Chunk_Table).l,a1
-	move.l	#vdpComm(VRAM_TtlScr_Plane_A_Name_Table,VRAM,WRITE),d0
-	moveq	#40-1,d1 ; Width
-	moveq	#28-1,d2 ; Height
-	jsrto	PlaneMapToVRAM_H40, PlaneMapToVRAM_H40
-
-	; Clear the palette.
-	clearRAM Normal_palette,Target_palette_End
-
-	; Load the title screen palette, so we can fade into it later.
-	moveq	#PalID_Title,d0
-	bsr.w	PalLoad_ForFade
-
-	; Reset some variables.
-	move.b	#0,(Debug_mode_flag).w
-	move.w	#0,(Two_player_mode).w
-
-	; Set the time that the title screen lasts (little over ten seconds).
-	move.w	#60*10+40,(Demo_Time_left).w
-
-	; Clear the player's inputs, to prevent a leftover input from
-	; skipping the intro.
-	clr.w	(Ctrl_1).w
-
-	; Load the object responsible for the intro animation.
-	move.b	#ObjID_TitleIntro,(IntroSonic+id).w
-	move.b	#2,(IntroSonic+subtype).w
-
-	; Run it for a frame, so that it initialises.
-	jsr	(RunObjects).l
-	jsr	(BuildSprites).l
-
-	; Load some standard sprites.
-	moveq	#PLCID_Std1,d0
-	bsr.w	LoadPLC2
-
-	; Reset the cheat input state.
-	move.w	#0,(Correct_cheat_entries).w
-	move.w	#0,(Correct_cheat_entries_2).w
-
-	; I do not know why these are here.
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-
-	; Reset Sonic's position record buffer.
-	move.w	#4,(Sonic_Pos_Record_Index).w
-	move.w	#0,(Sonic_Pos_Record_Buf).w
-
-	; Reset the two player mode results data.
-	lea	(Results_Data_2P).w,a1
-	moveq	#bytesToWcnt(Results_Data_2P_End-Results_Data_2P),d0
--	move.w	#-1,(a1)+
-	dbf	d0,-
-
-	; Initialise the camera's X position.
-	move.w	#-$280,(Camera_X_pos).w
-
-	; Enable the VDP's display.
-	move.w	(VDP_Reg1_val).w,d0
-	ori.b	#$40,d0
-	move.w	d0,(VDP_control_port).l
-
-	; Fade into the palette that was loaded earlier.
-	bsr.w	Pal_FadeFromBlack
-
-; loc_3C14:
-TitleScreen_Loop:
-	move.b	#VintID_Title,(Vint_routine).w
-	bsr.w	WaitForVint
-
-	jsr	(RunObjects).l
-	jsrto	SwScrl_Title, JmpTo_SwScrl_Title
-	jsr	(BuildSprites).l
-
-	; Find the masking sprite, and move it to the proper location. The
-	; sprite is normally at X 128+128, but in order to perform masking,
-	; it must be at X 0.
-	; The masking sprite is used to stop Sonic and Tails from overlapping
-	; the emblem.
-	; You might be wondering why it alternates between 0 and 4 for the X
-	; position. That's because masking sprites only work if another
-	; sprite rendered before them (or if the previous scanline reached
-	; its pixel limit). Because of this, a sprite is placed at X 4 before
-	; a second one is placed at X 0.
-	lea	(Sprite_Table+4).w,a1
-	moveq	#0,d0
-
-	moveq	#(Sprite_Table_End-Sprite_Table)/8-1,d6
--	tst.w	(a1)	; The masking sprite has its art-tile set to $0000.
-	bne.s	+
-	bchg	#2,d0	; Alternate between X positions of 0 and 4.
-	move.w	d0,2(a1)
-+	addq.w	#8,a1
-	dbf	d6,-
-
-	bsr.w	RunPLC_RAM
-	bsr.w	TailsNameCheat
-
-	; If the timer has run out, go play a demo.
-	tst.w	(Demo_Time_left).w
-	beq.w	TitleScreen_Demo
-
-	; If the intro is still playing, then don't let the start button
-	; begin the game.
-	tst.b	(IntroSonic+obj0e_intro_complete).w
-	beq.w	TitleScreen_Loop
-
-	; If the start button has not been pressed, then loop back and keep
-	; running the title screen.
-	move.b	(Ctrl_1_Press).w,d0
-	or.b	(Ctrl_2_Press).w,d0
-	andi.b	#button_start_mask,d0
-	beq.w	TitleScreen_Loop ; loop until Start is pressed
-
-	; At this point, the start button has been pressed and it's time to
-	; enter one player mode, two player mode, or the options menu.
-
-	move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-
-	move.b	#1,(Life_count).w
-	move.b	#1,(Life_count_2P).w
-
-	moveq	#0,d0
-	move.w	d0,(Ring_count).w
-	move.l	d0,(Timer).w
-	move.l	#500,(Score).w
-	move.w	d0,(Ring_count_2P).w
-	move.l	d0,(Timer_2P).w
-	move.l	#500,(Score_2P).w
-	move.b	d0,(Continue_count).w
-
-;	move.l	#5000,(Next_Extra_life_score).w
-;	move.l	#5000,(Next_Extra_life_score_2P).w
-
-	move.b	#MusID_FadeOut,d0 ; prepare to stop music (fade out)
-	bsr.w	PlaySound
-
-	moveq	#0,d0
-	move.b	(Title_screen_option).w,d0
-	bne.s	TitleScreen_CheckIfChose2P	; branch if not a 1-player game
-
-	moveq	#0,d0
-	move.w	d0,(Two_player_mode_copy).w
-	move.w	d0,(Two_player_mode).w
-    if emerald_hill_zone_act_1=0
-	move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
-    else
-	move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
-    endif
-	tst.b	(Level_select_flag).w	; has level select cheat been entered?
-	beq.s	+			; if not, branch
-	btst	#button_A,(Ctrl_1_Held).w ; is A held down?
-	beq.s	+	 		; if not, branch
-	move.b	#GameModeID_LevelSelect,(Game_Mode).w ; => LevelSelectMenu
-	rts
-; ---------------------------------------------------------------------------
-+
-	move.w	d0,(Current_Special_StageAndAct).w
-	move.w	d0,(Got_Emerald).w
-	move.l	d0,(Got_Emeralds_array).w
-	move.l	d0,(Got_Emeralds_array+4).w
-	rts
-; ===========================================================================
-; loc_3CF6:
-TitleScreen_CheckIfChose2P:
-	subq.b	#1,d0
-	bne.s	TitleScreen_ChoseOptions
-
-	moveq	#1,d1
-	move.w	d1,(Two_player_mode_copy).w
-	move.w	d1,(Two_player_mode).w
-
-	moveq	#0,d0
-	move.w	d0,(Got_Emerald).w
-	move.l	d0,(Got_Emeralds_array).w
-	move.l	d0,(Got_Emeralds_array+4).w
-
-	move.b	#GameModeID_2PLevelSelect,(Game_Mode).w ; => LevelSelectMenu2P
-	move.b	#emerald_hill_zone,(Current_Zone_2P).w
-	rts
-; ---------------------------------------------------------------------------
-; loc_3D20:
-TitleScreen_ChoseOptions:
-	move.b	#GameModeID_OptionsMenu,(Game_Mode).w ; => OptionsMenu
-	move.b	#0,(Options_menu_box).w
-	rts
-; ===========================================================================
-; loc_3D2E:
-TitleScreen_Demo:
-	move.b	#MusID_FadeOut,d0
-	bsr.w	PlaySound
-
-	move.w	(Demo_number).w,d0
-	andi.w	#7,d0
-	add.w	d0,d0
-	move.w	DemoLevels(pc,d0.w),d0
-	move.w	d0,(Current_ZoneAndAct).w
-
-	addq.w	#1,(Demo_number).w
-	cmpi.w	#(DemoLevels_End-DemoLevels)/2,(Demo_number).w
-	blo.s	+
-	move.w	#0,(Demo_number).w
-+
-	move.w	#1,(Demo_mode_flag).w
-	move.b	#GameModeID_Demo,(Game_Mode).w ; => Level (Demo mode)
-	cmpi.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
-	bne.s	+
-	move.w	#1,(Two_player_mode).w
-+
-	move.b	#1,(Life_count).w
-	move.b	#1,(Life_count_2P).w
-
-	moveq	#0,d0
-	move.w	d0,(Ring_count).w
-	move.l	d0,(Timer).w
-	move.l	d0,(Score).w
-	move.w	d0,(Ring_count_2P).w
-	move.l	d0,(Timer_2P).w
-	move.l	d0,(Score_2P).w
-
-	move.l	#5000,(Next_Extra_life_score).w
-	move.l	#5000,(Next_Extra_life_score_2P).w
-
-	rts
-; ===========================================================================
-; word_3DAC:
-DemoLevels:
-	dc.w	emerald_hill_zone_act_1		; EHZ (2P)
-	dc.w	chemical_plant_zone_act_1	; CPZ
-	dc.w	aquatic_ruin_zone_act_1		; ARZ
-	dc.w	casino_night_zone_act_1		; CNZ
-DemoLevels_End:
-
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-
-; sub_3DB4:
-TailsNameCheat:
-	lea	(TailsNameCheat_Buttons).l,a0
-	move.w	(Correct_cheat_entries).w,d0
-	adda.w	d0,a0
-	move.b	(Ctrl_1_Press).w,d0
-	andi.b	#button_up_mask|button_down_mask|button_left_mask|button_right_mask,d0
-	beq.s	++	; rts
-	cmp.b	(a0),d0
-	bne.s	+
-	addq.w	#1,(Correct_cheat_entries).w
-	tst.b	1(a0)		; read the next entry
-	bne.s	++		; if it's not zero, return
-
-	; Switch the detected console's region between Japanese and
-	; international. This affects the presence of trademark symbols, and
-	; causes Tails' name to swap between 'Tails' and 'Miles'.
-	bchg	#7,(Graphics_Flags).w
-
-	move.b	#SndID_Ring,d0 ; play the ring sound for a successfully entered cheat
-	bsr.w	PlaySound
-+
-	move.w	#0,(Correct_cheat_entries).w
-+
-	rts
-; End of function TailsNameCheat
-
-; ===========================================================================
-; byte_3DEE:
-TailsNameCheat_Buttons:
-	dc.b	button_up_mask
-	dc.b	button_down_mask
-	dc.b	button_down_mask
-	dc.b	button_down_mask
-	dc.b	button_up_mask
-	dc.b	0	; end
-	even
-; ---------------------------------------------------------------------------------
-; Nemesis compressed art
-; 10 blocks
-; Player 1 2 VS Text
-; ---------------------------------------------------------------------------------
-; ArtNem_3DF4:
-ArtNem_Player1VS2:	BINCLUDE	"art/nemesis/1Player2VS.bin"
-	even
-
-	charset '0','9',0 ; Add character set for numbers
-	charset '*',$A ; Add character for star
-	charset '@',$B ; Add character for copyright symbol
-	charset ':',$C ; Add character for colon
-	charset '.',$D ; Add character for period
-	charset 'A','Z',$E ; Add character set for letters
-
-; word_3E82:
-CopyrightText:
-  irpc chr,"@ 1992 SEGA"
-    if "chr"<>" "
-	dc.w  make_art_tile(ArtTile_ArtNem_FontStuff_TtlScr + 'chr'|0,0,0)
-    else
-	dc.w  make_art_tile(ArtTile_VRAM_Start,0,0)
-    endif
-  endm
-CopyrightText_End:
-
-    charset ; Revert character set
-
-    if ~~removeJmpTos
-; sub_3E98:
-JmpTo_SwScrl_Title ; JmpTo
-	jmp	(SwScrl_Title).l
-
-	align 4
-    endif
-
-
-
+	include	"New Gamemodes/Title Screen.asm"
 
 ;----------------------------------------------------------------------------
 ; 1P Music Playlist
@@ -15319,53 +14887,73 @@ SwScrl_Index: zoneOrderedOffsetTable 2,1	; JmpTbl_SwScrlMgr
 ; ===========================================================================
 ; loc_C51E:
 SwScrl_Title:
-	; Update the background's vertical scrolling.
-	move.w	(Camera_BG_Y_pos).w,(Vscroll_Factor_BG).w
+	; ; Update the background's vertical scrolling.
+	; move.w	(Camera_BG_Y_pos).w,(Vscroll_Factor_BG).w
 
-	; Automatically scroll the background.
-	addq.w	#1,(Camera_X_pos).w
+	; ; Automatically scroll the background.
+	; addq.w	#1,(Camera_X_pos).w
 
-	; Calculate the background X position from the foreground X position.
-	move.w	(Camera_X_pos).w,d2
-	neg.w	d2
-	asr.w	#2,d2
+	; ; Calculate the background X position from the foreground X position.
+	; move.w	(Camera_X_pos).w,d2
+	; neg.w	d2
+	; asr.w	#2,d2
 
-	; Update the background's (and foreground's) horizontal scrolling.
-	lea	(Horiz_Scroll_Buf).w,a1
+	; ; Update the background's (and foreground's) horizontal scrolling.
+	; lea	(Horiz_Scroll_Buf).w,a1
 
-	; Do 160 lines that don't move.
-	moveq	#0,d0
-	move.w	#160-1,d1
--	move.l	d0,(a1)+
-	dbf	d1,-
+	; ; Do 160 lines that don't move.
+	; moveq	#0,d0
+	; move.w	#160-1,d1
+; -	move.l	d0,(a1)+
+	; dbf	d1,-
 
-	; Do 32 lines that scroll with the camera.
-	move.w	d2,d0
-	move.w	#32-1,d1
--	move.l	d0,(a1)+
-	dbf	d1,-
+	; ; Do 32 lines that scroll with the camera.
+	; move.w	d2,d0
+	; move.w	#32-1,d1
+; -	move.l	d0,(a1)+
+	; dbf	d1,-
 
-	move.w	d0,d3
-	; Make the 'ripple' animate every 8 frames.
-	move.b	(Vint_runcount+3).w,d1
-	andi.w	#7,d1
-	bne.s	+
-	subq.w	#1,(TempArray_LayerDef).w
-+
-	move.w	(TempArray_LayerDef).w,d1
-	andi.w	#$1F,d1
-	lea	SwScrl_RippleData(pc),a2
-	lea	(a2,d1.w),a2
+	; move.w	d0,d3
+	; ; Make the 'ripple' animate every 8 frames.
+	; move.b	(Vint_runcount+3).w,d1
+	; andi.w	#7,d1
+	; bne.s	+
+	; subq.w	#1,(TempArray_LayerDef).w
+; +
+	; move.w	(TempArray_LayerDef).w,d1
+	; andi.w	#$1F,d1
+	; lea	SwScrl_RippleData(pc),a2
+	; lea	(a2,d1.w),a2
 
-	; Do 16 lines that scroll with the camera and 'ripple'.
-	move.w	#16-1,d1
--	move.b	(a2)+,d0
-	ext.w	d0
-	add.w	d3,d0
-	move.l	d0,(a1)+
-	dbf	d1,-
+	; ; Do 16 lines that scroll with the camera and 'ripple'.
+	; move.w	#16-1,d1
+; -	move.b	(a2)+,d0
+	; ext.w	d0
+	; add.w	d3,d0
+	; move.l	d0,(a1)+
+	; dbf	d1,-
 
-	; The remaining 16 lines are not set.
+	; ; The remaining 16 lines are not set.
+
+	moveq   #0,d1
+	lea     (Horiz_Scroll_Buf+$7A).w,a0
+	move.w  (Demo_Time_left).w,d1
+	move.w  #17,d2
+
+Deform_Loop1:
+	move.w  d1,(a0)
+	adda.l  #4,a0
+	dbf     d2,Deform_Loop1
+	
+	lea     (Horiz_Scroll_Buf+$2C2).w,a0
+	neg.w   d1
+	move.w  #17,d2
+
+Deform_Loop2:
+	move.w  d1,(a0)
+	adda.l  #4,a0
+	dbf     d2,Deform_Loop2	
+	rts
 
 	rts
 ; ===========================================================================
@@ -27983,38 +27571,71 @@ loc_142E2:
 ; -------------------------------------------------------------------------------
 ;word_142F8:
 LevelOrder: zoneOrderedTable 2,2	; WrdArr_LevelOrder
+	; EHZ
 	zoneTableEntry.w  emerald_hill_zone_act_2
 	zoneTableEntry.w  chemical_plant_zone_act_1	; 1
+
+	; Unused
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 2
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 3
+	
+	; Unused
 	zoneTableEntry.w  wood_zone_act_2		; 4
 	zoneTableEntry.w  metropolis_zone_act_1		; 5
+
+	; Unused
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 6
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 7
+	
+	; MTZ
 	zoneTableEntry.w  metropolis_zone_act_2		; 8
 	zoneTableEntry.w  metropolis_zone_act_3		; 9
+
+	; MTZ3
 	zoneTableEntry.w  wing_fortress_zone_act_1	; 10
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 11
+	
+	; ???
 	zoneTableEntry.w  death_egg_zone_act_1		; 12
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 13
+
+	; HTZ
 	zoneTableEntry.w  hill_top_zone_act_2		; 14
 	zoneTableEntry.w  mystic_cave_zone_act_1	; 15
+
+	; Unused
 	zoneTableEntry.w  hidden_palace_zone_act_2 	; 16
 	zoneTableEntry.w  oil_ocean_zone_act_1		; 17
+
+	; Unused
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 18
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 19
+
+	; OOZ
 	zoneTableEntry.w  oil_ocean_zone_act_2		; 20
 	zoneTableEntry.w  metropolis_zone_act_1		; 21
+
+	; MCZ
 	zoneTableEntry.w  mystic_cave_zone_act_2	; 22
 	zoneTableEntry.w  oil_ocean_zone_act_1		; 23
+
+	; CNZ
 	zoneTableEntry.w  casino_night_zone_act_2	; 24
 	zoneTableEntry.w  hill_top_zone_act_1		; 25
+
+	; CPZ
 	zoneTableEntry.w  chemical_plant_zone_act_2	; 26
 	zoneTableEntry.w  aquatic_ruin_zone_act_1	; 27
+
+	; NULL
 	zoneTableEntry.w  $FFFF				; 28
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 29
+
+	; ARZ
 	zoneTableEntry.w  aquatic_ruin_zone_act_2	; 30
 	zoneTableEntry.w  casino_night_zone_act_1	; 31
+
+	; ???
 	zoneTableEntry.w  wing_fortress_zone_act_1 	; 32
 	zoneTableEntry.w  emerald_hill_zone_act_1	; 33
     zoneTableEnd
@@ -37021,7 +36642,7 @@ Obj_Splash_Init:
 	cmpa.w	#Sonic_Dust,a0
 	beq.s	+
 	move.b	#1,objoff_34(a0)
-	cmpi.b	#2,(Player_mode).w
+	cmpi.w	#2,(Player_mode).w
 	beq.s	+
 	move.w	#make_art_tile(ArtTile_ArtNem_TailsDust,0,0),art_tile(a0)
 	move.w	#Sidekick,parent(a0)
@@ -82864,7 +82485,7 @@ hud_letter_vdp_delta = vdpCommDelta(tiles_to_bytes(hud_letter_num_tiles))
 BuildHUD:
 	moveq	#0,d1	; always use mapping 0
 +
-	move.w	#128+16,d3	; set X pos
+	move.w	#128+92,d3	; set X pos
 	move.w	#128+136,d2	; set Y pos
 	lea	(HUD_MapUnc_40A9A).l,a1	; no distinction between Sonic HUD and Knuckles HUD for now
 ;	cmpi.w	#3,(Player_mode).w
@@ -86132,17 +85753,22 @@ ArtNem_IntroTrails:	BINCLUDE	"art/nemesis/Shaded blocks from intro.bin"
 MapEng_SEGA:	BINCLUDE	"mappings/misc/SEGA mappings.bin"
 ;---------------------------------------------------------------------------------------
 ; Enigma compressed art mappings
-; Mappings for title screen background	; ArtNem_74DC6:
-	even
-MapEng_TitleScreen:	BINCLUDE	"mappings/misc/Mappings for title screen background.bin"
+; Mappings for Score Rush Banner	; ArtNem_74DC6:
+;	even
+MapEng_ScoreRushBanner:	BINCLUDE	"mappings/misc/Mappings for Score Rush Banner.bin"
 ;--------------------------------------------------------------------------------------
 ; Enigma compressed art mappings
-; Mappings for title screen background (smaller part, water/horizon)	; MapEng_74E3A:
+; Mappings for title screen background	; ArtNem_74DC6:
 	even
-MapEng_TitleBack:	BINCLUDE	"mappings/misc/Mappings for title screen background 2.bin"
+MapEng_TitleScoreRushBG:	BINCLUDE	"mappings/misc/Score Rush Title Screen.bin"
+;--------------------------------------------------------------------------------------
+; Enigma compressed art mappings
+; Mappings for number 2	; MapEng_74E3A:
+	even
+MapEng_Title2:	BINCLUDE	"mappings/misc/Mappings for title screen background.bin"
 ;---------------------------------------------------------------------------------------
 ; Enigma compressed art mappings
-; "Sonic the Hedgehog 2" title screen logo mappings	; MapEng_74E86:
+; "Sonic the Hedgehog" title screen logo mappings	; MapEng_74E86:
 	even
 MapEng_TitleLogo:	BINCLUDE	"mappings/misc/Sonic the Hedgehog 2 title screen logo mappings.bin"
 ;---------------------------------------------------------------------------------------
@@ -86150,6 +85776,11 @@ MapEng_TitleLogo:	BINCLUDE	"mappings/misc/Sonic the Hedgehog 2 title screen logo
 ; Main patterns from title screen	; ArtNem_74F6C:
 	even
 ArtNem_Title:	BINCLUDE	"art/nemesis/Main patterns from title screen.bin"
+;---------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Main patterns from title screen	; ArtNem_74F6C:
+	even
+ArtNem_TitleScoreRushBG:	BINCLUDE	"art/nemesis/Score Rush Title Screen.bin"
 ;---------------------------------------------------------------------------------------
 ; Nemesis compressed art (674 blocks)
 ; Sonic and Tails from title screen	; ArtNem_7667A:
