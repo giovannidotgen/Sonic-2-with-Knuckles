@@ -632,6 +632,7 @@ Vint_Title:
 ;VintSub6
 Vint_Unused6:
 	bsr.w	Do_ControllerPal
+	bsr.w	ProcessDPLC
 	rts
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;VintSub10
@@ -56342,6 +56343,7 @@ return_2D5C2:
 Boss_Defeat:
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo_AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	move.w	#$B3,(Boss_Countdown).w
 	move.b	#8,boss_routine(a0)
 	moveq	#PLCID_Capsule,d0
@@ -56482,7 +56484,7 @@ AnimateBoss_CmdParam:	; parameter $FF - reset animation to first frame
 
 ;loc_2D6CC:
 Boss_LoadExplosion:
-	clr.b	(Update_HUD_timer).w
+;	clr.b	(Update_HUD_timer).w		; bad: doesn't work on CPZ boss for some reason, and should not be applied on DEZ boss 1
 	move.b	(Vint_runcount+3).w,d0
 	andi.b	#7,d0
 	bne.s	+	; rts
@@ -56844,6 +56846,7 @@ return_2DAE8:
 Obj5D_Defeated:
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo2_AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	move.b	#8,routine_secondary(a0)	; => Obj5D_Main_8
 	move.w	#$B3,Obj5D_defeat_timer(a0)
 	movea.l	Obj5D_parent(a0),a1 ; a1=object
@@ -58705,6 +58708,7 @@ return_2F4EC:
 loc_2F4EE:	;	boss defeated
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo3_AddPoints	; add 1000 points, reward for defeating boss
+	clr.b	(Update_HUD_timer).w		; stop the score from going down
 	move.b	#6,routine_secondary(a0)
 	move.w	#0,x_vel(a0)
 	move.w	#-$180,y_vel(a0)
@@ -59628,6 +59632,7 @@ return_300EA:
 Obj52_Defeat:
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo4_AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	move.w	#$B3,(Boss_Countdown).w
 	move.b	#8,boss_routine(a0)
 	moveq	#PLCID_Capsule,d0
@@ -60209,6 +60214,7 @@ return_307F2:
 Obj89_Main_KillBoss:
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo5_AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	move.w	#$B3,(Boss_Countdown).w		; set timer
 	move.b	#8,boss_routine(a0)	; => Obj89_Main_Sub8
 	lea	(Boss_AnimationArray).w,a1
@@ -61303,6 +61309,7 @@ return_314B6:
 Obj57_FinalDefeat:
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo6_AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	move.w	#$B3,(Boss_Countdown).w
 	move.b	#8,boss_routine(a0)	; routine boss defeated
 	moveq	#PLCID_Capsule,d0
@@ -61901,6 +61908,7 @@ return_31D40:
 loc_31D42:
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo7_AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	move.w	#$B3,(Boss_Countdown).w
 	move.b	#6,boss_routine(a0)
 	moveq	#PLCID_Capsule,d0
@@ -62885,6 +62893,7 @@ return_32924:
 Obj54_Defeated:
 	moveq	#100,d0
 	jsrto	AddPoints, JmpTo8_AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	move.w	#$EF,(Boss_Countdown).w
 	move.b	#$10,boss_routine(a0)		; => Obj54_MainSub10
 	moveq	#PLCID_Capsule,d0
@@ -72760,6 +72769,7 @@ return_39CEE:
 loc_39CF0:
 	moveq	#100,d0
 	bsr.w	AddPoints
+;   clr.b	(Update_HUD_timer).w		; Silver Sonic does not stop the timer	
 	move.w	#$FF,objoff_32(a0)
 	move.b	#$C,routine(a0)
 	clr.b	collision_flags(a0)
@@ -76711,6 +76721,7 @@ return_3CC3A:
 ObjC5_NoHitPointsLeft:	; when the boss is defeated this tells it what to do
 	moveq	#100,d0
 	bsr.w	AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	clr.b	collision_flags(a0)
 	move.w	#$EF,objoff_30(a0)
 	move.b	#$1E,routine_secondary(a0)
@@ -78474,6 +78485,7 @@ ObjC7_Flashing:
 ObjC7_Beaten:
 	moveq	#100,d0
 	bsr.w	AddPoints
+	clr.b	(Update_HUD_timer).w		; stop the score from going down	
 	clr.b	anim_frame_duration(a0)
 	move.b	#$E,routine_secondary(a0)
 	bset	#7,status(a0)

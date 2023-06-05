@@ -242,7 +242,7 @@ TitleScreen_Loop:
 ; +	addq.w	#8,a1
 	; dbf	d6,-
 
-	; bsr.w	RunPLC_RAM
+	bsr.w	RunPLC_RAM
 	; bsr.w	TailsNameCheat
 
 	; ; If the timer has run out, go play a demo.
@@ -254,8 +254,13 @@ TitleScreen_Loop:
 	; tst.b	(IntroSonic+obj0e_intro_complete).w
 	; beq.w	TitleScreen_Loop
 
+	; Check if all PLCs have been loaded first.
+	tst.l	(Plc_Buffer).w
+	bne.s	TitleScreen_Loop
+
 	; ; If the start button has not been pressed, then loop back and keep
 	; ; running the title screen.
+
 	move.b	(Ctrl_1_Press).w,d0
 	or.b	(Ctrl_2_Press).w,d0
 	andi.b	#button_start_mask,d0
