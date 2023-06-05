@@ -14,7 +14,7 @@ assert(coroutine.resume(co))
 os.exit = os_exit
 
 -- Hash the ROM.
-local hash = clownmd5.HashFile("s2built.bin")
+local hash = clownmd5.HashFile("s2scorerush.bin")
 
 -- Verify the hash against known builds.
 print "-------------------------------------------------------------"

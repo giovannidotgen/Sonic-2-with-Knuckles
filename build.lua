@@ -182,13 +182,13 @@ hashes_file:close()
 -- We can move onto building the rest of the ROM.
 
 -- Delete old ROM.
-os.remove("s2built.prev.bin")
+os.remove("s2scorerush.prev.bin")
 
 -- Backup the most recent ROM.
-os.rename("s2built.bin", "s2built.prev.bin")
+os.rename("s2scorerush.bin", "s2scorerush.prev.bin")
 
 -- Assemble the ROM.
-local assemble_result = common.assemble_file("s2.asm", "s2built.bin", tools.as, "", tools.s2p2bin, improved_sound_driver_compression and "" or "-a", true)
+local assemble_result = common.assemble_file("s2.asm", "s2scorerush.bin", tools.as, "", tools.s2p2bin, improved_sound_driver_compression and "" or "-a", true)
 
 if assemble_result == "crash" then
 	print "\n\z
@@ -215,13 +215,13 @@ elseif assemble_result == "error" then
 end
 
 -- Correct some pointers and other data that we couldn't until after the ROM had been assembled.
-os.execute(tools.fixpointer .. " s2.h s2built.bin   off_3A294 MapRUnc_Sonic 0x2D 0 4   word_728C_user Obj5F_MapUnc_7240 2 2 1")
+os.execute(tools.fixpointer .. " s2.h s2scorerush.bin   off_3A294 MapRUnc_Sonic 0x2D 0 4   word_728C_user Obj5F_MapUnc_7240 2 2 1")
 
 -- Remove the header file, since we no longer need it.
 os.remove("s2.h")
 
 -- Correct the ROM's header with a proper checksum and end-of-ROM value.
-common.fix_header("s2built.bin")
+common.fix_header("s2scorerush.bin")
 
 if assemble_result == "warning" then
 	for line in io.lines("s2.log") do

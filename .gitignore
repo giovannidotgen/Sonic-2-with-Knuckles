@@ -12,6 +12,8 @@ s2.map
 # Built ROMs.
 s2built.bin
 s2built.prev.bin
+s2scorerush.bin
+s2scorerush.prev.bin
 
 # Automatically-generated music compression data.
 sound/music/compressed/*.bin

@@ -1,6 +1,6 @@
-A disassembly of Sonic the Hedgehog 2 for the Sega Mega Drive/Genesis.
+A disassembly of Sonic 2 - Score Rush, a ROM hack of Sonic the Hedgehog 2 for the Sega Mega Drive/Genesis.
 
-To build this, use build.bat if you're a Windows user, or build.lua otherwise. The built ROM will be called 's2built.bin'.
+To build this, use build.bat if you're a Windows user, or build.lua otherwise. The built ROM will be called 's2scorerush.bin'.
 
 DISCLAIMER:
 Any and all content presented in this repository is presented for informational and educational purposes only.
