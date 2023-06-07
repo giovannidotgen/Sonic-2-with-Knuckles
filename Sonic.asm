@@ -1589,19 +1589,31 @@ Sonic_NoRelease:
 	bclr	#5,status(a0)
 	
 	; Get peelout speed cap
-	move.w	(Sonic_top_speed).w,d1
-	asl.w	d1
-	
-	; Reduce cap if using speed shoes
-	btst	#status_sec_hasSpeedShoes,status_secondary(a0)
-	beq.s	Sonic_NoSpeedShoes
-	move.w	(Sonic_top_speed).w,d0
-	asr.w	d0
-	sub.w	d0,d1
+	; GIO: rewrote this portion of code
+	move.w	#$C00,d1		; standard speed cap
+	btst	#6,status(a0)	; check if underwater
+	beq.s	+				; branch if not
+	move.w	#$600,d1		; less speed
 
-Sonic_NoSpeedShoes:
++	
+	btst	#status_sec_hasSpeedShoes,status_secondary(a0)
+	bne.s	+
+	tst.b	(Super_Sonic_flag).w
+	beq.s	++
++	
+	asl.w	d1				; double if player has speed shoes or is super
+	cmpi.w	#$E00,d1		; check if higher than $E00 (value taken from Sonic 3 Complete)
+	ble.s	+
+	move.w	#$E00,d1		; if yes, cap to that
+
++
 	; Accelerate left or right depending on our facing direction
 	move.w	#$64,d0
+	btst	#6,status(a0)	; check if underwater
+	beq.s	+				; branch if not
+	move.w	#$32,d0			; less speed	
+
++
 	move.w	inertia(a0),d2
 	
 	btst	#0,status(a0)
