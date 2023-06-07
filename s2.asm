@@ -36814,7 +36814,7 @@ loc_1DA0C:
 	; If Sonic is invincible and he turns Super, then the invincibility
 	; stars will not go away. S3K fixes this by doing this:
 	tst.b	(Super_Sonic_flag).w
-	bne.w	DeleteObject
+	jne		DeleteObject
     endif
 	movea.w	parent(a0),a1 ; a1=character
 	btst	#status_sec_isInvincible,status_secondary(a1)
@@ -80064,8 +80064,8 @@ loc_3F354:
 	move.w	#8,d3
 	move.w	x_pos(a0),d4
 	jsr	(SolidObject).l
-	move.w	objoff_30(a0),y_pos(a0)
-	move.b	status(a0),d0
+	move.w	objoff_30(a0),y_pos(a0)	
+	move.b	status(a0),d0			
 	andi.b	#standing_mask,d0
 	beq.s	+
 	addq.w	#8,y_pos(a0)

@@ -2247,114 +2247,83 @@ Sonic_DropDashRelease:
 	btst	#2,double_jump_flag(a0)
 	beq.w	Sonic_DropDashRelease_Ret
 
-	; tst.b	glidemode(a0)
-	; bne.w	Sonic_DropDashRelease_Ret
+	move.w	#$800,d2				; minimum speed
+	move.w	#$C00,d3				; maximum speed
+	
+	tst.b	(Super_Sonic_flag).w	; is player super?
+	beq.s	+						; if not, branch
+	
+	move.w	#$C00,d2				; else, use alt values
+	move.w	#$D00,d3
+	
++	
+	
+; Drop Dash landing speed mathematics from Sonic Mania
+; Motorola 68000 conversion by Giovanni
+; Fun fact: this was originally made in early 2022, before Sonic 1 - Score Rush REV02 was a thing
+; It was then slightly refined in 2023 for Sonic 2.
 
-	; move.b	status_secondary(a0),d0
-	; andi.b	#Status_FireShield_mask|Status_LtngShield_mask|Status_BublShield_mask,d0 ; got a shield?
-	; bne.w	Sonic_DropDashRelease_Ret ; yep? begone
+Sonic_DropOrientationCheck:	
+	move.w  inertia(a0),d4
+	btst	#button_left,(Ctrl_1_Held_Logical).w ; is left being pressed?
+	bne.s	Sonic_DropMathLeft	; if yes, branch	
+	btst	#button_right,(Ctrl_1_Held_Logical).w ; is right being pressed?
+	bne.s	Sonic_DropMathRight	; if yes, branch		
+	btst    #0,status(a0) ; if neither are being pressed, check orientation
+	beq.s   Sonic_DropMathRight
+	
+	
+	
+Sonic_DropMathLeft:				; drop dash speed mathematics from Sonic Mania (facing left)
+	neg.w	d2					; negate base value
+	neg.w	d3					; negate base value
 
-	move.w	#$800,d0	; [ dashspeed = 0x80000 ]
-	move.w	#$C00,d1	; [ maxspeed = 0xC0000 ]
+	bset    #0,status(a0)   	; force orientation to correct one
+	tst.w   x_vel(a0)			; check if speed is greater than 0
+	bgt.s   Sonic_DropSlopeLeft ; if yes, branch
+	asr.w   #2,d4           	; divide ground speed by 4
+	add.w   d2,d4           	; add speed base to ground speed
+	cmp.w   d3,d4           	; check if current speed is lower than speed cap
+	bgt.s   Sonic_DropMathEnd 	; if not, branch
+	move.w  d3,d4				; if yes, cap speed
+	bra.s   Sonic_DropMathEnd
+Sonic_DropSlopeLeft:
+	tst.b	angle(a0)      		; check if Sonic is on a flat surface
+	beq.s   Sonic_DropBackLeft  ; if yes, branch
+	asr.w   #1,d4           	; divide ground speed by 2
+	add.w   d2,d4          		; add speed base to ground speed
+	bra.s   Sonic_DropMathEnd
+Sonic_DropBackLeft:
+	move.w  d2,d4 				; move speed base to ground speed
+	bra.s   Sonic_DropMathEnd
+Sonic_DropMaxLeft:
+	move.w  d2,d4				; grant sonic the highest possible speed
+	bra.s   Sonic_DropMathEnd
+	
+Sonic_DropMathRight:
+	bclr    #0,status(a0) 			; force orientation to correct one			
+	tst.w	x_vel(a0)					; check if speed is lower than 0
+	blt.s   Sonic_DropSlopeRight 	; if yes, branch
+	asr.w   #2,d4           		; divide ground speed by 4
+	add.w   d2,d4           		; add speed base to ground speed
+	cmp.w   d3,d4           		; check if current speed is lower than speed cap
+	blt.s   Sonic_DropMathEnd 		; if not, branch
+	move.w  d3,d4			  		; if yes, cap speed
+	bra.s   Sonic_DropMathEnd
+Sonic_DropSlopeRight:
+	tst.b	angle(a0)      		; check if Sonic is on a flat surface
+	beq.s   Sonic_DropBackRight 	; if yes, branch
+	asr.w   #1,d4           		; divide ground speed by 2
+	add.w   d2,d4           		; add speed base to ground speed
+	bra.s   Sonic_DropMathEnd
+Sonic_DropBackRight:
+	move.w  d2,d4					; move speed base to ground speed 
+	bra.s   Sonic_DropMathEnd
+Sonic_DropMaxRight:
+	move.w  d3,d4
+Sonic_DropMathEnd:	
+	move.w	d4,inertia(a0)
 
-	; [ if ( v0->RightHeld == 1 ) ]
-	btst	#button_right,(Ctrl_1_Held_Logical).w	; is right being pressed?
-	beq.s	+			; if not, branch
-	; [ v0->Direction = 0 ]
-	bclr	#0,status(a0)
-+
-	; [ if ( v0->LeftHeld == 1 ) ]
-	btst	#button_left,(Ctrl_1_Held_Logical).w	; is left being pressed?
-	beq.s	+			; if not, branch
-	; [ v0->Direction = 1 ]
-	bset	#0,status(a0)
-+
-
-	; [ if ( v0->SuperMode == 2 ) ]
-	tst.b	(Super_Sonic_flag).w	; Ignore this code if not Super Sonic
-	beq.w	+
-	move.w	#$C00,d0	; [ dashspeed = 0xC0000 ]
-	move.w	#$D00,d1	; [ maxspeed = 0xD0000 ]
-+
-	; [ if ( v0->Direction ) ]
-	btst	#0,status(a0)		; is Sonic facing left?
-	beq.s	Sonic_DropDashRelease_Right				; if not, branch
-
-Sonic_DropDashRelease_Left:
-	; [ if ( v0->XSpeed <= 0 ) ]
-	tst.w	x_vel(a0)	; is Sonic moving left?
-	bpl.s	++		; if not, branch
-      
-	; [ v6 = -maxspeed ]
-	move.w	d1,d6
-	neg.w	d6
-
-	; [ v7 = (v0->GSpeed >> 2) - dashspeed ]
-	moveq	#0,d5
-	move.w	ground_vel(a0),d5
-	asr.w	#2,d5
-	sub.w	d0,d5
-
-	; [ v0->GSpeed = v7 ]
-	move.w	d5,ground_vel(a0)
-
-	; [ if ( v7 < v6 ) ]
-	cmp.w	d5,d6
-	bge.s	+
-	; [ v0->GSpeed = v6; ]
-	move.w	d6,ground_vel(a0)
-+
-	bra.s Sonic_DropDashRelease_Release
-+
-    ; [ if ( v0->GroundAngle ) ]
-	tst.b	angle(a0)
-	beq.s	+
-	; [ v0->GSpeed = (v0->GSpeed >> 1) - dashspeed ]
-	asr.w	#1,ground_vel(a0)
-	sub.w	d0,ground_vel(a0)
-	bra.s Sonic_DropDashRelease_Release
-+
-	; [ dashspeed = -dashspeed ]
-	neg.w	d0
-	bra.s Sonic_DropDashRelease_ApplyVel
-
-Sonic_DropDashRelease_Right:
-    ; [ if ( v0->XSpeed >= 0 ) ]
-	tst.w	x_vel(a0)	; is Sonic moving right? [ if ( v0->XSpeed <= 0 ) ]
-	bmi.s	++		; if not, branch
-
-	; [ v7 = (v0->GSpeed >> 2) - dashspeed ]
-	; [ v5 = dashspeed + (v0->GSpeed >> 2) ]
-	moveq	#0,d5
-	move.w	ground_vel(a0),d5
-	asr.w	#2,d5
-	add.w	d0,d5
-
-	; [ v0->GSpeed = v7 ]
-	; [ v0->GSpeed = v5 ]
-	move.w	d5,ground_vel(a0)
-
-	; [ if ( v5 > maxspeed ) ]
-	cmp.w	d5,d1
-	bge.s	+
-	; [ v0->GSpeed = maxspeed; ]
-	move.w	d1,ground_vel(a0)
-+
-	bra.s Sonic_DropDashRelease_Release
-+
-    ; [ if ( v0->GroundAngle ) ]
-	tst.b	angle(a0)
-	beq.s	Sonic_DropDashRelease_ApplyVel
-	; [ v0->GSpeed = dashspeed + (v0->GSpeed >> 1) ]
-	asr.w	#1,ground_vel(a0)
-	add.w	d0,ground_vel(a0)
-	bra.s Sonic_DropDashRelease_Release
-
-Sonic_DropDashRelease_ApplyVel:
-    ; [ v0->GSpeed = dashspeed ]
-	move.w	d0,ground_vel(a0)
-
-Sonic_DropDashRelease_Release:
 	move.w	#$1000,(Horiz_scroll_delay_val).w
 	bsr.w	Reset_Player_Position_Array
 	move.b	#$E,y_radius(a0)
@@ -2373,6 +2342,8 @@ Sonic_DropDashRelease_Release:
 	jsr		PlaySound
 	
 Sonic_DropDashRelease_Ret:
+	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)
 	rts	
 
 ; ===========================================================================
