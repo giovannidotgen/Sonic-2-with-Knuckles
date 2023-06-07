@@ -36444,7 +36444,7 @@ loc_1DA0C:
 	; If Sonic is invincible and he turns Super, then the invincibility
 	; stars will not go away. S3K fixes this by doing this:
 	tst.b	(Super_Sonic_flag).w
-	bne.w	DeleteObject
+	jne		DeleteObject
     endif
 	movea.w	parent(a0),a1 ; a1=character
 	btst	#status_sec_isInvincible,status_secondary(a1)
@@ -79713,8 +79713,8 @@ loc_3F354:
 	move.w	#8,d3
 	move.w	x_pos(a0),d4
 	jsr	(SolidObject).l
-	move.w	objoff_30(a0),y_pos(a0)
-	move.b	status(a0),d0
+	move.w	objoff_30(a0),y_pos(a0)	
+	move.b	status(a0),d0			
 	andi.b	#standing_mask,d0
 	beq.s	+
 	addq.w	#8,y_pos(a0)
@@ -87869,7 +87869,7 @@ SndPtr_BlockPush:	rom_ptr_z80	Sound25	; block push sound
 SndPtr_HurtBySpikes:	rom_ptr_z80	Sound26	; spiky impalement sound
 SndPtr_Sparkle:		rom_ptr_z80	Sound27	; sparkling sound
 SndPtr_Beep:		rom_ptr_z80	Sound28	; short beep
-SndPtr_Bwoop:		rom_ptr_z80	Sound29	; bwoop (unused)
+SndPtr_CDCharge:	rom_ptr_z80	Sound29	; CD charge
 SndPtr_Splash:		rom_ptr_z80	Sound2A	; splash sound
 SndPtr_Swish:		rom_ptr_z80	Sound2B	; swish
 SndPtr_BossHit:		rom_ptr_z80	Sound2C	; boss hit
@@ -87878,7 +87878,7 @@ SndPtr_ArrowFiring:
 SndPtr_LavaBall:	rom_ptr_z80	Sound2E	; arrow firing
 SndPtr_Shield:		rom_ptr_z80	Sound2F	; shield sound
 SndPtr_LaserBeam:	rom_ptr_z80	Sound30	; laser beam
-SndPtr_Zap:		rom_ptr_z80	Sound31	; zap (unused)
+SndPtr_CDRelease:	rom_ptr_z80	Sound31 ; CD release
 SndPtr_Drown:		rom_ptr_z80	Sound32	; drownage
 SndPtr_FireBurn:	rom_ptr_z80	Sound33	; fire + burn
 SndPtr_Bumper:		rom_ptr_z80	Sound34	; bumper bing
@@ -87961,7 +87961,7 @@ Sound25:	include "sound/sfx/A5 - Block Push.asm"
 Sound26:	include "sound/sfx/A6 - Hurt by Spikes.asm"
 Sound27:	include "sound/sfx/A7 - Sparkle.asm"
 Sound28:	include "sound/sfx/A8 - Beep.asm"
-Sound29:	include "sound/sfx/A9 - Special Stage Item (Unused).asm"
+Sound29:	include "sound/sfx/CD_Charge.asm"
 Sound2A:	include "sound/sfx/AA - Splash.asm"
 Sound2B:	include "sound/sfx/AB - Swish.asm"
 Sound2C:	include "sound/sfx/AC - Boss Hit.asm"
@@ -87969,7 +87969,7 @@ Sound2D:	include "sound/sfx/AD - Inhaling Bubble.asm"
 Sound2E:	include "sound/sfx/AE - Lava Ball.asm"
 Sound2F:	include "sound/sfx/AF - Shield.asm"
 Sound30:	include "sound/sfx/B0 - Laser Beam.asm"
-Sound31:	include "sound/sfx/B1 - Electricity (Unused).asm"
+Sound31:	include "sound/sfx/CD_Release.asm"
 Sound32:	include "sound/sfx/B2 - Drown.asm"
 Sound33:	include "sound/sfx/B3 - Fire Burn.asm"
 Sound34:	include "sound/sfx/B4 - Bumper.asm"
