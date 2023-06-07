@@ -1542,7 +1542,7 @@ Sonic_CheckPeelout:
 	beq.w	return_Peelout1
 	
 	; Play rev sound
-	move.b	#SndID_SpindashRev,d0	; Placeholder
+	move.b	#SndID_CDCharge,d0	; Placeholder
 	jsr		PlaySound
 	
 	; Start peelout state
@@ -1576,7 +1576,7 @@ Sonic_Charged:
 	bne.s	Sonic_NoRelease
 	
 	move.b	#0,spindash_flag(a0)
-	move.w	#SndID_SpindashRelease,d0	; spindash zoom sound
+	move.w	#SndID_CDRelease,d0	; CD zoom sound
 	jsr		(PlaySound).l
 	rts
 
@@ -2351,11 +2351,13 @@ Sonic_DropMathEnd:
 	andi.b	#1,(Sonic_Dust+status).w	
 	
 	move.b	#SndID_SpindashRelease,d0
+	tst.b	(Super_Sonic_flag).w
+	beq.s	+
+	move.b	#SndID_CDRelease,d0
++	
 	jsr		PlaySound
 	
 Sonic_DropDashRelease_Ret:
-	clr.b	double_jump_flag(a0)
-	clr.b	double_jump_property(a0)
 	rts	
 
 ; ===========================================================================
