@@ -34298,6 +34298,7 @@ Obj0D_RingSparklePositions:
 ; ===========================================================================
 ; loc_19418:
 Obj0D_Main_State3:
+	clr.b	routine_secondary(a0)
 	bra.w	Load_EndOfAct
 
 	tst.w	(Debug_placement_mode).w
@@ -53900,11 +53901,8 @@ JmpTo18_ObjectMove ; JmpTo
 ; ----------------------------------------------------------------------------
 ; Sprite_2BB6C:
 ObjD6:
-	tst.b	subtype(a0)
-	beq.s	+
 	clr.b	subtype(a0)
-		
-+
+
 	moveq	#0,d0
 	move.b	routine(a0),d0
 	move.w	ObjD6_Index(pc,d0.w),d1
@@ -53926,15 +53924,15 @@ ObjD6_Init:
 	move.b	#1,priority(a0)
 ; loc_2BBA6:
 ObjD6_Main:
-	move.w	#$23,d1
+	move.w	#$23,d1			
 	move.w	#$10,d2
 	move.w	#$11,d3
-	move.w	x_pos(a0),d4
-	lea	objoff_30(a0),a3
+	move.w	x_pos(a0),d4	; get X pos of object
+	lea	objoff_30(a0),a3	; place RAM offset $30 into a3
 	lea	(MainCharacter).w,a1 ; a1=character
 	moveq	#p1_standing_bit,d6
-	movem.l	d1-d4,-(sp)
-	bsr.w	loc_2BBE8
+	movem.l	d1-d4,-(sp)		; move the various values to the stack
+	bsr.w	loc_2BBE8		; branch
 	movem.l	(sp)+,d1-d4
 	lea	objoff_34(a0),a3 ; a3=object
 	lea	(Sidekick).w,a1 ; a1=character
@@ -53946,57 +53944,70 @@ ObjD6_Main:
 ; ===========================================================================
 
 loc_2BBE8:
-	move.w	(a3),d0
-	move.w	off_2BBF2(pc,d0.w),d0
-	jmp	off_2BBF2(pc,d0.w)
+	move.w	(a3),d0					; get the contents of a3 (object offset $30 as player 1)
+	move.w	off_2BBF2(pc,d0.w),d0	; get routine based on content of offset
+	jmp	off_2BBF2(pc,d0.w)			; jump
 ; ===========================================================================
 off_2BBF2:	offsetTable
 		offsetTableEntry.w loc_2BBF8	; 0
-		offsetTableEntry.w loc_2BDF8	; 2
+		offsetTableEntry.w loc_2BDF8	; 2	(the one that is actually used by the points machine)
 		offsetTableEntry.w loc_2BE9C	; 4
 ; ===========================================================================
 
 loc_2BBF8:
-	tst.b	obj_control(a1)
-	bne.w	return_2BC84
-	tst.b	subtype(a0)
-	beq.s	loc_2BC0C
+	tst.b	obj_control(a1)			; check if player is in control
+	bne.w	return_2BC84			; if not, return
+	tst.b	subtype(a0)				; check for subtype (useless in S2 score rush)
+	beq.s	loc_2BC0C				; branch if 0 (always 0)
 	tst.w	(SlotMachineInUse).w
 	bne.w	return_2BC84
 
 loc_2BC0C:
 	jsrto	SolidObject_Always_SingleCharacter, JmpTo7_SolidObject_Always_SingleCharacter
-	tst.w	d4
-	bpl.w	return_2BC84
-	tst.b	(Flying_carrying_Sonic_flag).w
+	tst.w	d4						; check for solidity
+	bpl.w	return_2BC84			; if positive, set return
+	tst.b	(Flying_carrying_Sonic_flag).w	
 	beq.s	+
 	lea		(MainCharacter).w,a2
 	clr.b	obj_control(a2)
 	bset	#1,status(a2)
 	clr.b	(Flying_carrying_Sonic_flag).w		
 +		
-	move.w	x_pos(a0),x_pos(a1)
-	move.w	y_pos(a0),y_pos(a1)
-	move.w	#0,x_vel(a1)
+	move.w	x_pos(a0),x_pos(a1)		; set player's X pos
+	move.w	y_pos(a0),y_pos(a1)		; set player's Y pos
+	move.w	#0,x_vel(a1)			; clear the player's speeds
 	move.w	#0,y_vel(a1)
 	move.w	#0,inertia(a1)
-	move.b	#$81,obj_control(a1)
+	move.b	#$81,obj_control(a1)	; make player uncontrollable
+	clr.b	(Update_HUD_timer).w	; stop score from counting down
 	bset	#2,status(a1)
 	move.b	#$E,y_radius(a1)
 	move.b	#7,x_radius(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
-	move.b	#1,anim(a0)
-	addq.w	#2,(a3)+
-	move.w	#$78,(a3)
-	move.w	a1,parent(a0)
-	tst.b	subtype(a0)
-	beq.s	return_2BC84
+	move.b	#1,anim(a0)				; set animation of object
+	addq.w	#2,(a3)+				; add 2 to object offset 30 and set timer
+	move.w	#$78,(a3)				; set timer to $78 frames
+	move.w	a1,parent(a0)			; set player as parent
+	tst.b	subtype(a0)				; get subtype
+	beq.s	ObjD6_RememberState		; if 0, branch
 	cmpi.b	#$18,(SlotMachine_Routine).w	; Is it the null routine?
 	bne.s	return_2BC84					; Branch if not
 	move.b	#8,(SlotMachine_Routine).w		; => SlotMachine_Routine3
 	clr.w	objoff_2E(a0)
 	move.w	#-1,(SlotMachineInUse).w
 	move.w	#-1,objoff_2A(a0)
+
+ObjD6_RememberState:
+	lea	(Object_Respawn_Table).w,a2
+	moveq	#0,d0	
+	move.b	respawn_index(a0),d0	
+	btst	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)	; test if object was used already
+	beq.s	return_2BC84										; if not, branch
+	move.w	#6,(a3)												; clear timer
+	move.w	#SndID_Error,d0										; grab SFX
+	jmp	(PlaySound).l											; play it
+
+
 
 return_2BC84:
 	rts
@@ -54097,10 +54108,10 @@ return_2BDF6:
 ; ===========================================================================
 
 loc_2BDF8:
-	tst.b	render_flags(a0)
-	bpl.s	loc_2BE2E
-	tst.b	subtype(a0)
-	beq.s	loc_2BE28
+	tst.b	render_flags(a0)				; check if on screen
+	bpl.s	loc_2BE2E						; if not, branch
+	tst.b	subtype(a0)						; test for subtype
+	beq.s	loc_2BE28						; branch if 0
 	move.w	a1,objoff_3E(a0)
 	cmpi.b	#$18,(SlotMachine_Routine).w	; Is it the null routine?
 	beq.w	loc_2BC86						; Branch if yes
@@ -54114,19 +54125,24 @@ loc_2BDF8:
 ; ===========================================================================
 
 loc_2BE28:
-	subq.w	#1,2(a3)
-	bpl.s	loc_2BE5E
+	subq.w	#1,2(a3)						; subtract from timer
+	bpl.s	loc_2BE5E						; branch if not 0
 
-loc_2BE2E:
+loc_2BE2E:									; reset playthrough
 	move.w	#0,objoff_2C(a0)
 	move.b	#0,anim(a0)
-	move.b	#0,objoff_2A(a1)
+	move.b	#0,obj_control(a1)
+	ori.b	#1,(Update_HUD_timer).w
 	bclr	d6,status(a0)
 	bclr	#3,status(a1)
 	bset	#1,status(a1)
 	move.w	#$400,y_vel(a1)
 	addq.w	#2,(a3)+
 	move.w	#$1E,(a3)
+	lea	(Object_Respawn_Table).w,a2
+	moveq	#0,d0	
+	move.b	respawn_index(a0),d0	
+	bset	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)
 	rts
 ; ===========================================================================
 
@@ -54134,6 +54150,13 @@ loc_2BE5E:
 	move.w	2(a3),d0
 	andi.w	#$F,d0
 	bne.s	+	; rts
+
+	lea	(Object_Respawn_Table).w,a2
+	moveq	#0,d0	
+	move.b	respawn_index(a0),d0	
+	btst	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)	; test if object was used already
+	bne.s	+													; if not, branch
+
 	move.w	#SndID_CasinoBonus,d0
 	jsr	(PlaySound).l
 	moveq	#10,d0
