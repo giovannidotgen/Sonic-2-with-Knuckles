@@ -79692,6 +79692,8 @@ loc_3F2B4:
 	move.w	x_pos(a2),x_pos(a1)
 	move.w	y_pos(a2),y_pos(a1)
 +
+	move.w	#100,d0
+	jsr		AddPoints
 	move.w	#-$400,y_vel(a2)
 	move.w	#$800,x_vel(a2)
 	addq.b	#2,routine_secondary(a2)
