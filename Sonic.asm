@@ -2366,6 +2366,8 @@ Sonic_DropDashRelease_Ret:
 ; ---------------------------------------------------------------------------
 ; loc_1B120: Obj_01_Sub_4:
 Obj01_Hurt:
+	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)
 	tst.w	(Debug_mode_flag).w
 	beq.s	Obj01_Hurt_Normal
 	btst	#button_B,(Ctrl_1_Press).w
