@@ -42814,6 +42814,7 @@ loc_22688:
 	add.w	y_pos(a0),d5
 	addq.b	#2,(a4)
 	clr.b	(Flying_carrying_Sonic_flag).w				
+	clr.b	(Update_HUD_timer).w			; freeze the score
 	move.b	#$81,obj_control(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
 	move.w	#$800,inertia(a1)
@@ -42889,6 +42890,7 @@ loc_227A6:
 	andi.w	#$7FF,y_pos(a1)
 	move.b	#6,(a4)
 	clr.b	obj_control(a1)
+	ori.b	#1,(Update_HUD_timer).w				; unfreeze the score
 	move.w	#SndID_SpindashRelease,d0
 	jmp	(PlaySound).l
 ; ===========================================================================
@@ -45479,6 +45481,7 @@ loc_24FC2:
 	addq.b	#2,(a4)	
 	move.b	#$81,obj_control(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
+	clr.b	(Update_HUD_timer).w
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
 	move.w	#$800,inertia(a1)
@@ -45745,6 +45748,7 @@ loc_252F0:
 	move.w	x_pos(a0),x_pos(a1)
 	move.w	y_pos(a0),y_pos(a1)
 	move.b	#$81,obj_control(a1)
+	clr.b	(Update_HUD_timer).w	
 	move.b	#2,anim(a1)
 	move.w	#$1000,inertia(a1)
 	move.w	#0,x_vel(a1)
@@ -45805,6 +45809,7 @@ loc_25408:
 	tst.b	subtype(a0)
 	bpl.s	return_25462
 	move.b	#0,obj_control(a1)
+	ori.b	#1,(Update_HUD_timer).w	
 	bset	#1,status(a1)
 	bclr	#3,status(a1)
 	move.b	#0,jumping(a1)
@@ -47984,6 +47989,7 @@ loc_271D0:
 	addq.b	#2,(a4)
 	move.b	#$81,obj_control(a1)
 	move.b	#AniIDSonAni_Roll,anim(a1)
+	clr.b	(Update_HUD_timer).w
 	move.w	#$800,inertia(a1)
 	move.w	#0,x_vel(a1)
 	move.w	#0,y_vel(a1)
@@ -48063,6 +48069,7 @@ loc_272EE:
 	andi.w	#$7FF,y_pos(a1)
 	clr.b	(a4)
 	clr.b	obj_control(a1)
+	ori.b	#1,(Update_HUD_timer).w	
 	btst	#4,subtype(a0)
 	bne.s	+
 	move.w	#0,x_vel(a1)
