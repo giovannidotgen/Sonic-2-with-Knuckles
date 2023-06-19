@@ -82902,6 +82902,9 @@ HudUpdate:
 	tst.b	(Update_HUD_timer).w	; does the time need updating?
 	beq.s	Hud_ChkBonus	; if not, branch
 
+	btst	#status_sec_isInvincible,(MainCharacter+status_secondary).w	; check if player is invincible
+	bne.s	Hud_ChkBonus	; if yes, branch
+
 	tst.w	(Game_paused).w	; is the game paused?
 	bne.s	Hud_ChkBonus	; if yes, branch
 	
