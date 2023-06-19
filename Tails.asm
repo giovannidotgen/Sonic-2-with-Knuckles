@@ -170,7 +170,6 @@ Obj02_ChkInvinc:	; Checks if invincibility has expired and disables it if it has
 ; loc_1BA96:
 Obj02_RmvInvin:
 	bclr	#status_sec_isInvincible,status_secondary(a0)
-	ori.b	#1,(Update_HUD_timer).w	
 ; loc_1BA9C:
 Obj02_ChkShoes:		; Checks if Speed Shoes have expired and disables them if they have.
 	btst	#status_sec_hasSpeedShoes,status_secondary(a0)
