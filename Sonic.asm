@@ -4,7 +4,7 @@
 ; ----------------------------------------------------------------------------
 ; Sprite_19F50: Object_Sonic:
 Obj01:
-	; a0=character
+	; a0=character	
 	tst.w	(Debug_placement_mode).w	; is debug mode being used?
 	beq.s	Obj01_Normal			; if not, branch
 	jmp	(DebugMode).l

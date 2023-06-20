@@ -401,6 +401,7 @@ GameModeID_EndingSequence =	id(GameMode_EndingSequence) ; 20
 GameModeID_OptionsMenu =	id(GameMode_OptionsMenu) ; 24
 GameModeID_LevelSelect =	id(GameMode_LevelSelect) ; 28
 GameModeID_Giovanni =		id(GameMode_GiovanniSplash) ; 2C
+GameModeID_ScoreRushMenu =	id(GameMode_ScoreRushMenu) ; 30
 GameModeFlag_TitleCard =	7 ; flag bit
 GameModeID_TitleCard =		1<<GameModeFlag_TitleCard ; flag mask
 

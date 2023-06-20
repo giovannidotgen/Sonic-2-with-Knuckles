@@ -293,23 +293,14 @@ TitleScreen_Loop:
 	moveq	#0,d0
 	move.w	d0,(Two_player_mode_copy).w
 	move.w	d0,(Two_player_mode).w
-    if emerald_hill_zone_act_1=0
-	move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
-    else
-	move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
-    endif
-	; tst.b	(Level_select_flag).w	; has level select cheat been entered?
-	; beq.s	+			; if not, branch
-	btst	#button_A,(Ctrl_1_Held).w ; is A held down?
-	beq.s	+	 		; if not, branch
-	move.b	#GameModeID_OptionsMenu,(Game_Mode).w ; => LevelSelectMenu
-	rts
-; ---------------------------------------------------------------------------
-+
+	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; => LevelSelectMenu
 	move.w	d0,(Current_Special_StageAndAct).w
 	move.w	d0,(Got_Emerald).w
 	move.l	d0,(Got_Emeralds_array).w
-	move.l	d0,(Got_Emeralds_array+4).w
+	move.l	d0,(Got_Emeralds_array+4).w	
+	rts
+; ---------------------------------------------------------------------------
++
 	rts
 ; ===========================================================================
 ; ; loc_3CF6:

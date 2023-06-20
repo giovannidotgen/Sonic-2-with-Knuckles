@@ -5,7 +5,6 @@
 Obj4C:						  ; ...
 
 ; FUNCTION CHUNK AT 0033A066 SIZE 0000000E BYTES
-
 		tst.w	($FFFFFE08).w
 		beq.s	Obj4C_Normal
 		jmp	DebugMode

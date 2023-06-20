@@ -423,7 +423,8 @@ GameMode_2PLevelSelect:	bra.w	LevelSelectMenu2P	; 2P level select mode
 GameMode_EndingSequence:bra.w	JmpTo_EndingSequence	; End sequence mode
 GameMode_OptionsMenu:	bra.w	OptionsMenu		; Options mode
 GameMode_LevelSelect:	bra.w	LevelSelectMenu		; Level select mode
-GameMode_GiovanniSplash bra.w	GiovanniSplash	; Giovanni Splash Screen
+GameMode_GiovanniSplash: bra.w	GiovanniSplash	; Giovanni Splash Screen
+GameMode_ScoreRushMenu: bra.w	ScoreRushMenu
 ; ===========================================================================
     if skipChecksumCheck=0	; checksum error code
 ; loc_3CE:
@@ -4157,6 +4158,7 @@ JmpTo_RunObjects ; JmpTo
 	include "_additional/DynPaletteTransition.asm"	
 	include "_additional/Text rendering routines.asm"
 	include	"New Gamemodes/Title Screen.asm"
+	include "New Gamemodes/Score Rush Menu.asm"
 
 ;----------------------------------------------------------------------------
 ; 1P Music Playlist
