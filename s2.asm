@@ -38643,9 +38643,9 @@ Obj79_Init:
 	btst	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)
 	bne.s	loc_1F120
 	move.b	(Last_star_pole_hit).w,d1
-	andi.b	#$7F,d1
-	move.b	subtype(a0),d2
-	andi.b	#$7F,d2
+;	andi.b	#$7F,d1
+;	move.b	subtype(a0),d2
+;	andi.b	#$7F,d2
 	cmp.b	d2,d1
 	blo.s	Obj79_Main
 
@@ -38669,9 +38669,9 @@ Obj79_Main:
 ; ---------------------------------------------------------------------------
 ; loc_1F154:
 Obj79_CheckActivation:
-	andi.b	#$7F,d1
-	move.b	subtype(a0),d2
-	andi.b	#$7F,d2
+;	andi.b	#$7F,d1
+;	move.b	subtype(a0),d2
+;	andi.b	#$7F,d2
 	cmp.b	d2,d1
 	bhs.w	loc_1F222
 	move.w	x_pos(a3),d0
@@ -38778,8 +38778,8 @@ Obj79_MoveDonglyThing:
 Obj79_SaveData:
 	cmpa.w	#MainCharacter,a3	; is it player 1?
 	bne.w	Obj79_SaveDataPlayer2	; if not, branch
-	move.b	subtype(a0),(Last_star_pole_hit).w
-	move.b	(Last_star_pole_hit).w,(Saved_Last_star_pole_hit).w
+;	move.b	subtype(a0),(Last_star_pole_hit).w
+;	move.b	(Last_star_pole_hit).w,(Saved_Last_star_pole_hit).w
 	; move.w	x_pos(a0),(Saved_x_pos).w
 	; move.w	y_pos(a0),(Saved_y_pos).w
 	; move.w	(MainCharacter+art_tile).w,(Saved_art_tile).w
@@ -38805,8 +38805,8 @@ Obj79_SaveData:
 ; second player hit a checkpoint in 2-player mode
 ; loc_1F326:
 Obj79_SaveDataPlayer2:
-	move.b	subtype(a0),(Last_star_pole_hit_2P).w
-	move.b	(Last_star_pole_hit_2P).w,(Saved_Last_star_pole_hit_2P).w
+;	move.b	subtype(a0),(Last_star_pole_hit_2P).w
+;	move.b	(Last_star_pole_hit_2P).w,(Saved_Last_star_pole_hit_2P).w
 	; move.w	x_pos(a0),(Saved_x_pos_2P).w
 	; move.w	y_pos(a0),(Saved_y_pos_2P).w
 	; move.w	(Sidekick+art_tile).w,(Saved_art_tile_2P).w
