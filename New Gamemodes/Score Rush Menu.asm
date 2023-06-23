@@ -54,7 +54,7 @@ ScoreRushMenu:
 	jsrto	PlaneMapToVRAM_H40, JmpTo_PlaneMapToVRAM_H40	; fullscreen background
 
 ; clear a bunch of variables
-	clr.b	(Options_menu_box).w
+	clr.b	(LevSel_HoldTimer).w
 	clr.b	(Options_menu_box).w
 	clr.b	(Level_started_flag).w
 	clr.w	(Anim_Counters).w
@@ -86,7 +86,9 @@ ScoreRushMenu:
 	jsrto	PlayMusic, JmpTo_PlayMusic
 
 ; initialize text
+	move.w	#4,(Vscroll_Factor_FG).w	; Align text vertically
 	bsr.w	TextRender_Headings
+	bsr.w	TextRender_MainMenu
 
 ; wait one frame
 	move.b	#VintID_Menu,(Vint_routine).w
@@ -105,12 +107,77 @@ ScoreRushMenu:
 	bsr.w	WaitForVint
 	lea	(Anim_SonicMilesBG).l,a2
 	jsrto	Dynamic_Normal, JmpTo2_Dynamic_Normal	
-	move.b	(Ctrl_1_Press).w,d0
-	andi.b	#button_start_mask,d0
-	bne.s	.Menu_StartGame
+	bsr.w	MainMenu_Controls
 	bra.w	.Menu_Loop
+
+
+; End of function ScoreRushMenu.
+
+; ===========================================================================
+; Controls subroutine: Main Menu
+; ===========================================================================
+
+MainMenu_Controls:
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands
+		andi.b  #$C0,d1            ; is start or A being pressed?
+		bne.s   MainMenu_StartEvents
+		move.b	(Ctrl_1_Press).w,d1
+		andi.b	#3,d1		; is up/down pressed and held?
+		bne.s	MainMenu_UpDown	; if yes, branch
+		subq.w	#1,(LevSel_HoldTimer).w ; subtract 1 from time	to next	move
+		bpl.w	MainMenu_NoInput	; if time remains, branch
+
+MainMenu_UpDown:
+		move.w	#$B,(LevSel_HoldTimer).w ; reset time delay
+		move.b	(Ctrl_1_Held).w,d1
+		andi.b	#3,d1		; is up/down pressed?
+		beq.s	MainMenu_NoInput	; if not, branch
+		move.w	(Options_menu_box).w,d0
+		btst	#0,d1		; is up	pressed?
+		beq.s	MainMenu_Down	; if not, branch
+		subq.w	#1,d0		; move up 1 selection
+		bcc.s	MainMenu_Down
+		moveq	#6,d0		; if selection moves below 0, jump to selection	5.
+
+MainMenu_Down:
+		btst	#1,d1		; is down pressed?
+		beq.s	MainMenu_Refresh	; if not, branch
+		addq.w	#1,d0		; move down 1 selection
+		cmpi.w	#$7,d0
+		bcs.s	MainMenu_Refresh
+		moveq	#0,d0		; if selection moves above 6, jump to selection 0
+		
+MainMenu_Refresh:
+		move.w	d0,(Options_menu_box).w ; set new selection
+		bsr.w	TextRender_MainMenu ; refresh option names
+		; move.w	#$CD,d0
+		; jsr	(PlaySound_Special).l ;	play "blip" sound		
 	
-.Menu_StartGame:
+MainMenu_NoInput:
+		rts	
+
+MainMenu_StartEvents:
+		moveq	#0,d0				; clear d0
+		moveq	#0,d1
+		move.w	(Options_menu_box).w,d0	; check input
+		add.w	d0,d0				; double the amount contained in d0
+		move.w	.StartEvents_Index(pc,d0.w),d1	; fetch the index
+		jmp	.StartEvents_Index(pc,d1.w)			; jump to the appropriate instruction
+		
+; ===========================================================================
+.StartEvents_Index:	dc.w MainMenu_ScoreRush-.StartEvents_Index		; Score Rush
+		dc.w .Start_Null-.StartEvents_Index		; Endless Rush
+		dc.w .Start_Null-.StartEvents_Index	; Quick Rush
+		dc.w .Start_Null-.StartEvents_Index		; Instructions
+		dc.w .Start_Null-.StartEvents_Index	     	; Settings
+		dc.w .Start_Null-.StartEvents_Index		; Leaderboards
+		dc.w .Start_Null-.StartEvents_Index		; View credits
+; ===========================================================================		
+
+.Start_Null:
+		rts
+		
+MainMenu_ScoreRush:		
 	moveq	#0,d0
 	move.w	d0,(Two_player_mode).w
 	move.w	d0,(Two_player_mode_copy).w
@@ -126,19 +193,16 @@ ScoreRushMenu:
 	move.l	d0,(Got_Emeralds_array+4).w
 
 	move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-	move.w	#1,(Player_option).w		
+	move.w	#1,(Player_option).w			; get selected character
+	addq.l	#4,sp							; end loop
 	rts
-
-; End of function ScoreRushMenu.
-
 ; ===========================================================================
 ; Subroutine to render the Main menu's headings.
 ; ===========================================================================
 
 TextRender_Headings:
-	lea	(VDP_data_port).l,a6
+;	lea	(VDP_data_port).l,a6
 	
-; 	
 	lea	(TextData_Version).l,a1 ; where to fetch the lines from
 	lea	($C00000).l,a6
 	move.l	#$4C120003,d4	; starting screen position
@@ -157,9 +221,60 @@ TextRender_Headings:
 ; End of function TextRender_Headings.
 
 ; ===========================================================================
+; Subroutine to render the Score Rush's main menu.
+; ===========================================================================
+
+TextRender_MainMenu:
+		lea	(TextData_MainMenu).l,a1 ; where to fetch the lines from
+		move.l	#$441C0003,d4	; (CHANGE) starting screen position 
+		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+		moveq	#6,d1		; number of lines of text to be displayed -1
+
+-
+		move.l	d4,4(a6)
+		moveq	#11,d2		; number of characters to be rendered in a line -1
+		bsr.w	SingleLineRender
+		addi.l	#(2*$800000),d4  ; replace number to the left with desired distance between each line
+		dbf	d1,-
+		moveq	#0,d0
+	
+	; calculate where the line to be yellowed out is
+		move.w	(Options_menu_box).w,d0		; move the currently selected line to d0
+		move.w	d0,d1					; store d0 in d1 for future use
+		move.l	#$441C0003,d4			; where does the text begin on the screen
+		lsl.w	#8,d0					; logical shift by 8 bits (multiply by 8)
+		swap	d0						; swap the two words that compose d0
+		add.l	d0,d4					; add that to d4, effectively determining where the correct line is
+		
+	; yellow out the appropriate text of a line in a list of 17 characters	
+		lea  	(TextData_MainMenu).l,a1	; go to the text's ROM address
+		move.w	d1,d0					; store the value of d1 in d0 for future use
+		lsl.w	#3,d1					; shift to the left by 3 bits (d1 * 8)
+	;	add.w	d1,d1
+		lsl.w   #2,d0                 	; shift to the left by 2 bits (d0 * 4)
+		add.w	d0,d1					; add whatever is in d0 to d1 to fix misalignment (d1 + d2 = $FFFFFF82 * 12)
+		adda.w	d1,a1					; set address
+		move.w	#$C680,d3				; set VRAM address (text but yellow)
+		move.l	d4,4(a6)
+		moveq	#11,d2		
+		bsr.w	SingleLineRender	
+		rts					
+
+; End of function TextRender_MainMenu.
+
+; ===========================================================================
 ; All text data used by this screen.
 ; ===========================================================================	
 TextData_Version:
 	dc.b	"SONIC 2 - SCORE RUSH DEVBUILD"
 	dc.b	"        NOT FOR PUBLIC ACCESS"
 	dc.b	"  ORIGINAL GAME BY SEGA, 1992"
+	
+TextData_MainMenu:
+	dc.b    " SCORE RUSH "
+	dc.b    "ENDLESS RUSH"
+	dc.b    " QUICK RUSH "
+	dc.b    "INSTRUCTIONS"
+	dc.b    "  SETTINGS  "
+	dc.b    "LEADERBOARDS"
+	dc.b    "VIEW CREDITS"
