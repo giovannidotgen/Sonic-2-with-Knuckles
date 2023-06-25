@@ -1,0 +1,25 @@
+Operating system: Microsoft Windows NT 6.2.9200.0
+Opening INI file "E:\Giovanni's Files\SEGA Genesis Stuff\Sonic ROM Hacking\Disassemblies\Sonic-2---Knuckles\SonPLN.ini"...
+Game type is S2.
+Opening INI file "E:\Giovanni's Files\SEGA Genesis Stuff\Sonic ROM Hacking\Disassemblies\Sonic-2---Knuckles\SonPLN.ini"...
+Game type is S2.
+Loading Giovanni Splash Screen...
+Loading palette file "art/palettes/Giovanni Splash.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading 8x8 tiles from file "art/nemesis/Giovanni Splash.bin", using compression Nemesis...
+Loading plane mappings from file "mappings/misc/Giovanni Splash.bin", using compression Enigma...
+Mappings data size does not match given width/height. Expected: 0 (0x0*2) Actual: 160.
+System.AggregateException: Si sono verificati uno o più errori. ---> System.IndexOutOfRangeException: Indice oltre i limiti della matrice.
+   in SonicRetro.SonLVL.SonPLN.MainForm.LoadLevelLayout() in D:\Programs\SonLVL\SonPLN\MainForm.cs:riga 406
+   in System.Threading.Tasks.Task.InnerInvoke()
+   in System.Threading.Tasks.Task.Execute()
+   --- Fine della traccia dello stack dell'eccezione interna ---
+   in System.Threading.Tasks.Task.FastWaitAll(Task[] tasks)
+   in System.Threading.Tasks.Parallel.Invoke(ParallelOptions parallelOptions, Action[] actions)
+   in System.Threading.Tasks.Parallel.Invoke(Action[] actions)
+   in SonicRetro.SonLVL.SonPLN.MainForm.backgroundLevelLoader_DoWork(Object sender, DoWorkEventArgs e) in D:\Programs\SonLVL\SonPLN\MainForm.cs:riga 323
+---> (Eccezione interna 0) System.IndexOutOfRangeException: Indice oltre i limiti della matrice.
+   in SonicRetro.SonLVL.SonPLN.MainForm.LoadLevelLayout() in D:\Programs\SonLVL\SonPLN\MainForm.cs:riga 406
+   in System.Threading.Tasks.Task.InnerInvoke()
+   in System.Threading.Tasks.Task.Execute()<---
+
