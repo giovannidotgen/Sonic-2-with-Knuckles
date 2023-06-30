@@ -37013,7 +37013,7 @@ Obj_Splash_Init:
 	cmpa.w	#Sonic_Dust,a0
 	beq.s	+
 	move.b	#1,objoff_34(a0)
-	cmpi.b	#2,(Player_mode).w
+	cmpi.w	#2,(Player_mode).w
 	beq.s	+
 	move.w	#make_art_tile(ArtTile_ArtNem_TailsDust,0,0),art_tile(a0)
 	move.w	#Sidekick,parent(a0)
