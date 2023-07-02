@@ -13,6 +13,7 @@
 8D - SCZ
 8E - CPZ
 8F - WFZ
+90 - HPZ
 91 - Options
 92 - Special Stage
 93 - Boss

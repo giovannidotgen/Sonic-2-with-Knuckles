@@ -80695,7 +80695,7 @@ KillCharacter:
 	tst.l	(Score).l
 	bne.s	+
 	clr.b	(Update_HUD_timer).w	
-	move.w	#MusID_HPZ,d0
+	move.w	#MusID_HPZ,d0	; HPZ = Silence in S2 Score Rush
 	jsr	(PlaySound2).l
 +	
 	moveq	#-1,d0

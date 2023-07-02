@@ -82,7 +82,7 @@ ScoreRushMenu:
 	
 
 ; get music
-	move.b	#MusID_Options,d0
+	move.b	#MusID_2PResult,d0
 	jsrto	PlayMusic, JmpTo_PlayMusic
 
 ; initialize text
