@@ -1533,11 +1533,9 @@ Sonic_CheckPeelout:
 	; Disable all moves in 2P
 	tst.w	(Two_player_mode).w
 	bne.w	return_Peelout1
-	; cmpi.b	#1,(Option_PeelOut).w
-	; beq.s	+
-	; cmpi.b	#3,(Option_PeelOut).w
-	; beq.s	+
-	; rts
+	tst.b	(Option_PeelOut).w
+	beq.s	+
+	rts
 +
 	cmpi.b	#2,spindash_flag(a0)
 	beq.s	Sonic_UpdatePeelout
