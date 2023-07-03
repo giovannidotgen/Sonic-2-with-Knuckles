@@ -293,6 +293,7 @@ TitleScreen_Loop:
 	moveq	#0,d0
 	move.w	d0,(Two_player_mode_copy).w
 	move.w	d0,(Two_player_mode).w
+	move.b	d0,(MainMenu_Screen).w
 	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; => LevelSelectMenu
 	move.w	d0,(Current_Special_StageAndAct).w
 	move.w	d0,(Got_Emerald).w

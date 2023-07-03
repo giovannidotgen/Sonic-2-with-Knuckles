@@ -10208,7 +10208,7 @@ ObjDB_Sonic_StartRunning:
 	move.b	#AniIDSonAni_LieDown,anim(a0)
 	clr.w	inertia(a0)
 	move.b	#SndID_SpindashRev,d0 ; super peel-out sound
-	bsr.w	PlaySound
+	jsr		PlaySound
 
 ; loc_7BFA:
 ObjDB_Sonic_Run:
@@ -10250,7 +10250,7 @@ ObjDB_Tails_StartRunning:
 	move.b	#AniIDSonAni_Walk,anim(a0)
 	clr.w	inertia(a0)
 	move.b	#SndID_SpindashRev,d0 ; super peel-out sound
-	bsr.w	PlaySound
+	jsr		PlaySound
 
 ; loc_7C88:
 ObjDB_Tails_Run:
@@ -10298,7 +10298,7 @@ TwoPlayerResults:
 	move.w	(VDP_Reg1_val).w,d0
 	andi.b	#$BF,d0
 	move.w	d0,(VDP_control_port).l
-	bsr.w	ClearScreen
+	jsr		ClearScreen
 	lea	(VDP_control_port).l,a6
 	move.w	#$8004,(a6)		; H-INT disabled
 	move.w	#$8200|(VRAM_Menu_Plane_A_Name_Table/$400),(a6)	; PNT A base: $C000
@@ -10313,10 +10313,10 @@ TwoPlayerResults:
 
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_FontStuff),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_FontStuff).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_1P2PWins),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_1P2PWins).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	lea	(Chunk_Table).l,a1
 	lea	(MapEng_MenuBack).l,a0
 	move.w	#make_art_tile(ArtTile_VRAM_Start,3,0),d0
@@ -10325,7 +10325,7 @@ TwoPlayerResults:
 	move.l	#vdpComm(VRAM_Plane_B_Name_Table,VRAM,WRITE),d0
 	moveq	#$27,d1
 	moveq	#$1B,d2
-	jsrto	PlaneMapToVRAM_H40, PlaneMapToVRAM_H40
+	jsr		PlaneMapToVRAM_H40
 	move.w	(Results_Screen_2P).w,d0
 	add.w	d0,d0
 	add.w	d0,d0
@@ -10341,7 +10341,7 @@ TwoPlayerResults:
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_TwoPlayerResults),VRAM,WRITE),d0
 	moveq	#$27,d1
 	moveq	#$1B,d2
-	jsrto	PlaneMapToVRAM_H40, PlaneMapToVRAM_H40
+	jsr		PlaneMapToVRAM_H40
 	clr.w	(VDP_Command_Buffer).w
 	move.l	#VDP_Command_Buffer,(VDP_Command_Buffer_Slot).w
 	clr.b	(Level_started_flag).w
@@ -10357,7 +10357,7 @@ TwoPlayerResults:
 	cmp.w	(Level_Music).w,d0
 	beq.s	+
 	move.w	d0,(Level_Music).w
-	bsr.w	PlayMusic
+	jsr		PlayMusic
 +
 	move.w	#(30*60)-1,(Demo_Time_left).w	; 30 seconds
 	clr.w	(Two_player_mode).w
@@ -11683,7 +11683,7 @@ MenuScreen_Options:
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
-	bsr.w	Pal_FadeFromBlack
+	jsr		Pal_FadeFromBlack
 ; loc_9060:
 OptionScreen_Main:
 	move.b	#VintID_Menu,(Vint_routine).w
@@ -12015,7 +12015,7 @@ MenuScreen_LevelSelect:
 	jsrto	Dynamic_Normal, JmpTo2_Dynamic_Normal	; background
 
 	moveq	#PalID_Menu,d0
-	bsr.w	PalLoad_ForFade
+	jsr		PalLoad_ForFade
 
 	lea	(Normal_palette_line3).w,a1
 	lea	(Target_palette_line3).w,a2
@@ -12818,7 +12818,7 @@ EndgameCredits:
 	move.w	#$144,d0
 
 /	move.b	#VintID_Ending,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	dbf	d0,-
 
 	jsr		Pal_FadeToBlack
@@ -12847,12 +12847,12 @@ EndgameCredits:
 
 	move.w	#$3B,d0
 -	move.b	#VintID_Ending,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	dbf	d0,-
 
 	move.w	#$257,d6
 -	move.b	#VintID_Ending,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	addq.w	#1,(CreditsScreenIndex).w
 	bsr.w	EndgameLogoFlash
 	cmpi.w	#$5E,(CreditsScreenIndex).w

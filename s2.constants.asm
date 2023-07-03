@@ -1725,7 +1725,19 @@ Loser_Time_Left:				; 2 bytes
 
 				ds.b	$16	; $FFFFFEFA-$FFFFFF0F ; seems unused
 Results_Screen_2P:		ds.w	1	; 0 = act, 1 = zone, 2 = game, 3 = SS, 4 = SS all
-				ds.b	$E	; $FFFFFF12-$FFFFFF1F ; seems unused
+MainMenu_Screen:		ds.b    1
+Option_AirSpeedCap:		ds.b	1
+Option_RollJumpLock:	ds.b	1
+Option_PeelOut:			ds.b	1
+Option_DropDash:		ds.b	1
+Option_InstaShield:		ds.b	1
+Option_Flight:			ds.b	1
+Option_FlightCancel:	ds.b	1
+Option_KiS2Monitors:	ds.b	1
+Option_PenaltySystem:	ds.b	1
+Option_Difficulty:		ds.b	1
+;Option_Elemental:		ds.b	1
+				ds.b	$3	; $FFFFFF1D-$FFFFFF1F ; seems unused
 
 Results_Data_2P:				; $18 (24) bytes
 EHZ_Results_2P:			ds.b	6	; 6 bytes
