@@ -1500,7 +1500,7 @@ Knuckles_ChgJumpDir:				  ; ...
 		neg.w	d1
 		cmp.w	d1,d0
 		bgt.s	loc_31630E
-		tst.w	(Demo_mode_flag).w
+		tst.b	(Option_AirSpeedCap).w
 		bne.w	loc_31630C
 		add.w	d5,d0
 		cmp.w	d1,d0
@@ -1516,7 +1516,7 @@ loc_31630E:					  ; ...
 		add.w	d5,d0
 		cmp.w	d6,d0
 		blt.s	loc_316332
-		tst.w	(Demo_mode_flag).w
+		tst.b	(Option_AirSpeedCap).w
 		bne.w	loc_316330
 		sub.w	d5,d0
 		cmp.w	d6,d0

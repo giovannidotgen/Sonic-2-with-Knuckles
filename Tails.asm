@@ -1747,30 +1747,38 @@ Tails_ChgJumpDir:
 	bne.s	Obj02_Jump_ResetScr	; if yes, branch to skip midair control
 	move.w	x_vel(a0),d0
 	btst	#button_left,(Ctrl_2_Held_Logical).w
-	beq.s	+	; if not holding left, branch
+	beq.s	++	; if not holding left, branch
 
 	bset	#0,status(a0)
 	sub.w	d5,d0	; add acceleration to the left
 	move.w	d6,d1
 	neg.w	d1
 	cmp.w	d1,d0	; compare new speed with top speed
-	bgt.s	+	; if new speed is less than the maximum, branch
+	bgt.s	++	; if new speed is less than the maximum, branch
+	tst.b	(Option_AirSpeedCap).w
+	bne.s	+	
 	add.w	d5,d0		; +++ remove this frame's acceleration change
 	cmp.w	d1,d0		; +++ compare speed with top speed
-	ble.s	+	; +++ if speed was already greater than the maximum, branch		
+	ble.s	++	; +++ if speed was already greater than the maximum, branch		
+
++
 	move.w	d1,d0	; limit speed in air going left, even if Tails was already going faster (speed limit/cap)
 
 +
 	btst	#button_right,(Ctrl_2_Held_Logical).w
-	beq.s	+	; if not holding right, branch
+	beq.s	++	; if not holding right, branch
 
 	bclr	#0,status(a0)
 	add.w	d5,d0	; accelerate right in the air
 	cmp.w	d6,d0	; compare new speed with top speed
-	blt.s	+	; if new speed is less than the maximum, branch
+	blt.s	++	; if new speed is less than the maximum, branch
+	tst.b	(Option_AirSpeedCap).w
+	bne.s	+	
 	sub.w	d5,d0		; +++ remove this frame's acceleration change
 	cmp.w	d6,d0		; +++ compare speed with top speed
-	bge.s	+	; +++ if speed was already greater than the maximum, branch
+	bge.s	++	; +++ if speed was already greater than the maximum, branch
+
++
 	move.w	d6,d0	; limit speed in air going right, even if Tails was already going faster (speed limit/cap)
 ; Obj02_JumpMove:
 +	move.w	d0,x_vel(a0)
