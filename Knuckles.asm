@@ -1704,8 +1704,11 @@ loc_3164B2:
 		jsr	PlaySound
 		move.b	#$E,y_radius(a0)
 		move.b	#7,x_radius(a0)
-;		btst	#2,status(a0)
-;		bne.s	Knuckles_RollJump
+		tst.b	(Option_RollJumpLock).w
+		beq.s	+		
+		btst	#2,status(a0)
+		bne.s	Knuckles_RollJump
++
 		move.b	#2,anim(a0)
 		bset	#2,status(a0)
 		addq.w	#5,y_pos(a0)
