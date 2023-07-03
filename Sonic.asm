@@ -430,11 +430,9 @@ Sonic_AirMoves:
 	bra.w	Sonic_Dropdash	
 	
 Sonic_InstaShield:
-	; cmpi.b	#1,(Option_SonicAbility).l	This will be the check for the Insta shield ability once it's implemented
-	; beq.s	Sonic_InstaShieldCont
-	; cmpi.b	#3,(Option_SonicAbility).l
-	; beq.s	Sonic_InstaShieldCont
-	; rts
+	tst.b	(Option_InstaShield).l
+	bne.s	Sonic_InstaShieldCont
+	rts
 
 Sonic_InstaShieldCont:
 	btst	#status_sec_isInvincible,status_secondary(a0)	; is Sonic invincible?
@@ -455,6 +453,8 @@ locret_11A14:
 	rts
 
 Sonic_Dropdash:
+	tst.b	(Option_DropDash).w
+	beq.w	Sonic_DropCancel3
 	tst.b 	(WindTunnel_flag).w
 	bne.w	Sonic_DropCancel3
 	btst 	#1,double_jump_flag(a0) 	; is the drop dash charging flag set?
@@ -1534,7 +1534,7 @@ Sonic_CheckPeelout:
 	tst.w	(Two_player_mode).w
 	bne.w	return_Peelout1
 	tst.b	(Option_PeelOut).w
-	beq.s	+
+	bne.s	+
 	rts
 +
 	cmpi.b	#2,spindash_flag(a0)

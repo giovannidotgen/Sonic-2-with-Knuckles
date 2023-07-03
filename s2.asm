@@ -402,6 +402,7 @@ GameClrRAM:
 	bsr.w	VDPSetupGame
 	bsr.w	JmpTo_SoundDriverLoad
 	bsr.w	JoypadInit
+	bsr.w	InitSRAM
 	move.b	#GameModeID_SegaScreen,(Game_Mode).w ; set Game Mode to Sega Screen
 ; loc_394:
 MainGameLoop:
@@ -465,6 +466,29 @@ JmpTo_TwoPlayerResults:
 JmpTo_ContinueScreen:
 	jmp (ContinueScreen).l	
 ; ===========================================================================
+
+InitSRAM:
+; For the time being, not actually SRAM initialization. Just the default options.
+
+	lea		(Settings_Data).l,a0
+	lea		(DefaultOptions).l,a1
+	
+-
+	tst.b	(a1)
+	bmi.s	+
+	movea.l	(a0),a2
+	adda.l	#6,a0
+	move.b	(a1)+,(a2)
+	bra.s	-
+	
++
+	rts
+
+; ===========================================================================
+
+DefaultOptions:
+	dc.b	0,0,1,1,1,1,1,0,1,$FF
+	even
 
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; vertical and horizontal interrupt handlers
@@ -36866,7 +36890,7 @@ Obj7E_Init:
 	move.b	#1,priority(a0)
 	move.b	#$18,width_pixels(a0)
 	move.w	#make_art_tile(ArtTile_ArtNem_SuperSonic_stars,0,0),art_tile(a0)
-	bsr.w	Adjust2PArtPointer
+	jsr		Adjust2PArtPointer
 	btst	#high_priority_bit,(MainCharacter+art_tile).w
 	beq.s	Obj7E_Main
 	bset	#high_priority_bit,art_tile(a0)
