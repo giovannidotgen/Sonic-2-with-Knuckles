@@ -1736,8 +1736,8 @@ Option_FlightCancel:	ds.b	1
 Option_KiS2Monitors:	ds.b	1
 Option_PenaltySystem:	ds.b	1
 Option_Difficulty:		ds.b	1
-;Option_Elemental:		ds.b	1
-				ds.b	$3	; $FFFFFF1D-$FFFFFF1F ; seems unused
+Option_SlowDucking:		ds.b	1
+				ds.b	$2	; $FFFFFF1E-$FFFFFF1F ; seems unused
 
 Results_Data_2P:				; $18 (24) bytes
 EHZ_Results_2P:			ds.b	6	; 6 bytes

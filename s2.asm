@@ -487,7 +487,7 @@ InitSRAM:
 ; ===========================================================================
 
 DefaultOptions:
-	dc.b	0,0,1,1,1,1,1,0,1,$FF
+	dc.b	0,0,1,1,1,1,1,1,0,1,$FF
 	even
 
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -11441,7 +11441,7 @@ MenuScreen:
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
-	bsr.w	Pal_FadeFromBlack
+	jsr		Pal_FadeFromBlack
 
 ;loc_8DA8:
 LevelSelect2P_Main:

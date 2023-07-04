@@ -200,13 +200,13 @@ Settings_UpDown:
 		beq.s	Settings_Down	; if not, branch
 		subq.w	#1,d0		; move up 1 selection
 		bcc.s	Settings_Down
-		moveq	#8,d0		; if selection moves below 0, jump to selection	5.
+		moveq	#9,d0		; if selection moves below 0, jump to selection
 
 Settings_Down:
 		btst	#1,d1		; is down pressed?
 		beq.s	Settings_FullRefresh	; if not, branch
 		addq.w	#1,d0		; move down 1 selection
-		cmpi.w	#$9,d0
+		cmpi.w	#10,d0
 		bcs.s	Settings_FullRefresh
 		moveq	#0,d0		; if selection moves above 6, jump to selection 0
 		
@@ -254,6 +254,9 @@ Settings_Data:
 		dc.b	0,1
 		
 		dc.l	Option_RollJumpLock
+		dc.b	0,1
+
+		dc.l	Option_SlowDucking
 		dc.b	0,1
 
 		dc.l	Option_PeelOut
@@ -443,7 +446,7 @@ Settings_Selections:
 		lea	(TextData_SettingsMenu).l,a1 ; where to fetch the lines from
 		move.l	#$41880003,d4	; (CHANGE) starting screen position 
 		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
-		moveq	#8,d1		; number of lines of text to be displayed -1
+		moveq	#9,d1		; number of lines of text to be displayed -1
 
 -
 		move.l	d4,4(a6)
@@ -476,7 +479,7 @@ Settings_Values:
 		lea Settings_Data,a2  ; options table beginning	
 		move.l	#$41C00003,d4	; starting screen position
 		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
-		moveq	#8,d1		; number of lines of text to be displayed -1
+		moveq	#9,d1		; number of lines of text to be displayed -1
 		
 -
 		moveq	#0,d2
@@ -543,6 +546,7 @@ TextData_MainMenu:
 TextData_SettingsMenu:
 	dc.b	"AIR SPEED CAP       "
 	dc.b	"ROLLING JUMP LOCK   "
+	dc.b	"SLOW DUCKING        "
 	dc.b	"SUPER PEEL-OUT      "
 	dc.b	"DROP DASH           "
 	dc.b	"INSTA-SHIELD        "
