@@ -1033,6 +1033,7 @@ Obj02_MdAir:
 Tails_FlyingSwimming:
 	bsr.w	Tails_Move_FlySwim
 	bsr.w	Tails_ChgJumpDir
+	bsr.w	Tails_CancelFlight
 	bsr.w	Tails_LevelBound
 	jsr	(ObjectMove).l
 	bsr.w	Sonic_JumpAngle
@@ -1052,6 +1053,28 @@ Tails_FlyingSwimming:
 locret_14820:
 		rts	
 ; End of subroutine Obj02_MdAir
+
+; =============== S U B R O U T I N E =======================================
+Tails_CancelFlight:
+
+	tst.b	(Option_FlightCancel).w			; is flight cancellation enabled?
+	beq.s	+								; if not, branch
+
+	move.b	(Ctrl_2_Press_Logical).w,d0
+	btst	#button_down,(Ctrl_2_Held_Logical).w			; is down being pressed?
+	beq.s	+								; if not, branch
+	andi.b	#button_A_mask|button_B_mask|button_C_mask,d0	; are either of these buttons being pressed?
+	beq.s	+								; if not, branch
+
+	clr.b	jumping(a0)
+	move.b	#$E,y_radius(a0)
+	move.b	#7,x_radius(a0)
+	move.b	#AniIDSonAni_Roll,anim(a0)	; use "jumping" animation
+	bset	#2,status(a0)
+	clr.b	double_jump_flag(a0)
++
+	rts
+
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -2023,12 +2046,21 @@ Tails_Test_For_Flight:
 	bne.s	+
 	tst.b	(WindTunnel_flag).w
 	bne.s	+
+	tst.b	(Option_Flight).w
+	beq.s	+
 	tst.b	double_jump_flag(a0) ; Is tails already flying?
 	beq.w	Tails_Test_For_Flight_2P ; If not, branch
 +
 	rts
 
 Tails_Test_For_Flight_2P:
+
+		tst.b	(Option_FlightCancel).w
+		beq.s	+
+		btst	#button_down,(Ctrl_2_Held_Logical).w			; is down being pressed?
+		bne.s	locret_151A2									; if yes, branch
+
++
 		move.b	(Ctrl_2_Press_Logical).w,d0
 		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
 		beq.w	Tails_Test_For_Flight_Assist
