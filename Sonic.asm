@@ -2537,7 +2537,7 @@ CheckGameOver:
 ;	addq.b	#1,(Update_HUD_lives).w	; update lives counter
 ;	subq.b	#1,(Life_count).w	; subtract 1 from number of lives
 ;	bne.s	Obj01_ResetLevel	; if it's not a game over, branch
-;	move.w	#0,restart_countdown(a0)
+	move.w	#$0,restart_countdown(a0)
 	move.b	#ObjID_GameOver,(GameOver_GameText+id).w ; load Obj39 (game over text)
 	move.b	#ObjID_GameOver,(GameOver_OverText+id).w ; load Obj39 (game over text)
 	move.b	#1,(GameOver_OverText+mapping_frame).w
@@ -2598,6 +2598,8 @@ return_1B31A:
 ; ---------------------------------------------------------------------------
 ; loc_1B31C: Obj_01_Sub_8:
 Obj01_Gone:
+	cmpi.b	#ObjID_GameOver,(GameOver_GameText+id).w	; check if the Game Over object is loaded
+	beq.s	+
 	tst.w	restart_countdown(a0)
 	beq.s	+
 	subq.w	#1,restart_countdown(a0)

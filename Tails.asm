@@ -2875,6 +2875,8 @@ return_1CD8E:
 ; ---------------------------------------------------------------------------
 ; loc_1CD90:
 Obj02_Gone:
+	cmpi.b	#ObjID_GameOver,(GameOver_GameText+id).w	; check if the Game Over object is loaded
+	beq.s	+
 	tst.w	restart_countdown(a0)
 	beq.s	+
 	subq.w	#1,restart_countdown(a0)
