@@ -31,6 +31,11 @@ ScoreRushMenu:
 	jsr		NemDec
 	
 ; Load char select graphics	
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_MenuBox),VRAM,WRITE),(VDP_control_port).l
+	lea	(ArtNem_MenuBox).l,a0									
+	jsr		NemDec		
+	
+; Load char select graphics	
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_LevelSelectPics),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_CharSelect).l,a0									
 	jsr		NemDec	
@@ -152,6 +157,8 @@ TextInit_Settings:
 	bra.w	Settings_Init
 	
 TextInit_CharSel:
+	bsr.w	CharSel_Headings
+	bsr.w	CharSel_Difficulties
 	bra.w	CharSel_LoadPlayer
 	
 ; ===========================================================================
@@ -204,6 +211,11 @@ CharSel_BeginGame:
 		move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
 		add.w	#1,(Options_menu_box).w
 		move.w	(Options_menu_box).w,(Player_option).w			; get selected character
+		move.b	#10,(ScoreRush_TimerSpeed).w
+		tst.b	(Option_Difficulty).w
+		beq.s	+
+		sub.b	#4,(ScoreRush_TimerSpeed).w
++	
 		addq.l	#4,sp							; end loop
 		rts
 	
@@ -223,28 +235,28 @@ CharSel_Controls:
 		bpl.w	CharSel_NoInput	; if time remains, branch
 
 CharSel_UpDown:
-		rts
-		; move.w	#$B,(LevSel_HoldTimer).w ; reset time delay
-		; move.b	(Ctrl_1_Held).w,d1
-		; andi.b	#3,d1		; is up/down pressed?
-		; beq.s	CharSel_NoInput	; if not, branch
-		; move.w	(Options_menu_box).w,d0
-		; btst	#0,d1		; is up	pressed?
-		; beq.s	CharSel_Down	; if not, branch
-		; subq.w	#1,d0		; move up 1 selection
-		; bcc.s	CharSel_Down
-		; moveq	#9,d0		; if selection moves below 0, jump to selection
+		move.w	#$B,(LevSel_HoldTimer).w ; reset time delay
+		move.b	(Ctrl_1_Held).w,d1
+		andi.b	#3,d1		; is up/down pressed?
+		beq.s	CharSel_NoInput	; if not, branch
+		move.b	(Option_Difficulty).w,d0
+		btst	#0,d1		; is up	pressed?
+		beq.s	CharSel_Down	; if not, branch
+		subq.b	#1,d0		; move up 1 selection
+		bcc.s	CharSel_Down
+		moveq	#1,d0		; if selection moves below 0, jump to selection
 
-; CharSel_Down:
-		; btst	#1,d1		; is down pressed?
-		; beq.s	CharSel_FullRefresh	; if not, branch
-		; addq.w	#1,d0		; move down 1 selection
-		; cmpi.w	#10,d0
-		; bcs.s	CharSel_FullRefresh
-		; moveq	#0,d0		; if selection moves above 6, jump to selection 0
+CharSel_Down:
+		btst	#1,d1		; is down pressed?
+		beq.s	CharSel_RefreshDiff	; if not, branch
+		addq.b	#1,d0		; move down 1 selection
+		cmpi.b	#2,d0
+		bcs.s	CharSel_RefreshDiff
+		moveq	#0,d0		; if selection moves above 6, jump to selection 0
 		
 CharSel_RefreshDiff:
-		rts
+		move.b	d0,(Option_Difficulty).w
+		bra.w	CharSel_Difficulties
 CharSel_RefreshChar:
 		move.w	d2,(Options_menu_box).w ; set new selection
 		bra.w	CharSel_LoadPlayer 		; refresh option names
@@ -619,6 +631,7 @@ Settings_Values:
 		bra.w	SingleLineRender		; render one line of text		
 
 ; ===========================================================================
+
 CharSel_LoadPlayer:
 	lea	($C00000).l,a6
 ; load palette
@@ -645,18 +658,14 @@ CharSel_LoadPlayer:
 		
 ; place them in the foreground		
 	lea	(Chunk_Table).l,a1
-	move.l	#$41040003,d0
+	move.l	#$44240003,d0
 	moveq	#$3,d1
 	moveq	#$5,d2
 	jsr		PlaneMapToVRAM_H40
 	rts
-	
-
-
-
-
 
 ; ===========================================================================
+
 CharSel_CharData:
 	dc.l	MapEng_CSelSonic
 	dc.l	Pal_BGND+$2
@@ -666,6 +675,69 @@ CharSel_CharData:
 	
 	dc.l	MapEng_CSelKnuckles
 	dc.l	Pal_Knux+2
+
+; ===========================================================================
+
+CharSel_Headings:
+	lea	(Chunk_Table).l,a1
+	lea	(MapEng_CSelContainer).l,a0
+	move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,2,0),d0
+	jsr		EniDec
+	
+	lea	(Chunk_Table).l,a1
+	move.l	#$43A00003,d0
+	moveq	#$8,d1
+	moveq	#$8,d2
+	jsr		PlaneMapToVRAM_H40	
+	
+	lea	(TextData_CharSelect).l,a1 ; where to fetch the lines from
+	move.l	#$42960003,4(a6)	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#17,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
+
+	lea	(TextData_Difficulty).l,a1 ; where to fetch the lines from
+	move.l	#$49920003,4(a6)	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#21,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
+	
+	rts
+
+; ===========================================================================
+
+CharSel_Difficulties:
+		lea	(TextData_Difficulties).l,a1 ; where to fetch the lines from
+		move.l	#$4AA20003,d4	; (CHANGE) starting screen position 
+		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+		moveq	#1,d1		; number of lines of text to be displayed -1
+
+-
+		move.l	d4,4(a6)
+		moveq	#5,d2		; number of characters to be rendered in a line -1
+		bsr.w	SingleLineRender
+		addi.l	#(2*$800000),d4  ; replace number to the left with desired distance between each line
+		dbf	d1,-
+		moveq	#0,d0
+		moveq	#0,d1
+	
+	; calculate where the line to be yellowed out is
+		move.b	(Option_Difficulty).w,d0		; move the currently selected line to d0
+		move.b	d0,d1					; store d0 in d1 for future use
+		move.l	#$4AA20003,d4			; where does the text begin on the screen
+		lsl.w	#8,d0					; logical shift by 8 bits (multiply by 8)
+		swap	d0						; swap the two words that compose d0
+		add.l	d0,d4					; add that to d4, effectively determining where the correct line is
+		
+	; yellow out the appropriate text of a line in a list of 17 characters	
+		lea  	(TextData_Difficulties).l,a1	; go to the text's ROM address
+		mulu.w	#6,d1
+		adda.w	d1,a1					; set address
+		move.w	#$C680,d3				; set VRAM address (text but yellow)
+		move.l	d4,4(a6)
+		moveq	#5,d2		
+		bsr.w	SingleLineRender	
+		rts				
 
 ; ===========================================================================
 ; All text data used by this screen.
@@ -698,6 +770,16 @@ TextData_SettingsMenu:
 	dc.b	"BULLET DEFLECTION   "
 	dc.b	"PENALTY SYSTEM      "
 	even
+	
+TextData_CharSelect:
+	dc.b	"CHOOSE A CHARACTER"
+	
+TextData_Difficulty:
+	dc.b	"SELECT YOUR DIFFICULTY"
+	
+TextData_Difficulties:
+	dc.b	"NORMAL"
+	dc.b	" HARD "
 	
 TextData_OnOff:				
 	dc.b    "OFF     "

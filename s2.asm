@@ -9939,7 +9939,7 @@ ContinueScreen:
 	lea	(VDP_control_port).l,a6
 	move.w	#$8004,(a6)		; H-INT disabled
 	move.w	#$8700,(a6)		; Background palette/color: 0/0
-	bsr.w	ClearScreen
+	jsr		ClearScreen
 
 	clearRAM Object_RAM,Object_RAM_End
 
@@ -10359,7 +10359,7 @@ TwoPlayerResults:
 	movea.l	4(a2,d0.w),a2
 	lea	(Chunk_Table).l,a1
 	move.w	#make_art_tile(ArtTile_VRAM_Start,0,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	jsr	(a2)	; dynamic call! to Setup2PResults_Act, Setup2PResults_Zone, Setup2PResults_Game, Setup2PResults_SpecialAct, or Setup2PResults_SpecialZone, assuming the pointers in TwoPlayerResultsPointers have not been changed
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_TwoPlayerResults),VRAM,WRITE),d0
@@ -11335,7 +11335,7 @@ JmpTo_Dynamic_Normal ; JmpTo
 ; ===========================================================================
 ; loc_8BD4:
 MenuScreen:
-	bsr.w	Pal_FadeToBlack
+	jsr		Pal_FadeToBlack
 	move	#$2700,sr
 	move.w	(VDP_Reg1_val).w,d0
 	andi.b	#$BF,d0
@@ -82940,10 +82940,12 @@ HudUpdate:
 	beq.s	loc_40E84
 
 	lea		(Timer+4).w,a1
+	move.b	(ScoreRush_TimerSpeed).w,d1
 ;	cmpi.l	#$93B3B,(a1)+	; is the time 9.59?
 ;	beq.w	loc_40E84	; if yes, branch
 	addq.b	#1,-(a1)
-	cmpi.b	#6,(a1)
+	move.b	(a1),d2
+	cmp.b	d1,d2
 
 	blo.s	Hud_ChkBonus
 	clr.b	(a1)
@@ -86057,6 +86059,8 @@ MapEng_CSelSonic:	BINCLUDE	"mappings/misc/Menu - Characters (Sonic).bin"
 MapEng_CSelTails:	BINCLUDE	"mappings/misc/Menu - Characters (Tails).bin"
 	even
 MapEng_CSelKnuckles:	BINCLUDE	"mappings/misc/Menu - Characters (Knuckles).bin"
+	even
+MapEng_CSelContainer:	BINCLUDE	"mappings/misc/Character container.bin"
 ;---------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Sonic/Miles animated background patterns	; ArtUnc_7CD2C:

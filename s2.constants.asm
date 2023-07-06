@@ -1737,7 +1737,8 @@ Option_BulletDeflect:	ds.b	1
 Option_PenaltySystem:	ds.b	1
 Option_Difficulty:		ds.b	1
 Option_SlowDucking:		ds.b	1
-				ds.b	$2	; $FFFFFF1E-$FFFFFF1F ; seems unused
+ScoreRush_TimerSpeed:	ds.b	1
+				ds.b	$1	; $FFFFFF1F ; seems unused
 
 Results_Data_2P:				; $18 (24) bytes
 EHZ_Results_2P:			ds.b	6	; 6 bytes
