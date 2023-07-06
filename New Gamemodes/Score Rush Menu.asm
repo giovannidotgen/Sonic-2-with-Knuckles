@@ -29,6 +29,11 @@ ScoreRushMenu:
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_FontStuff),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_FontStuff).l,a0									; Background graphics from Sonic 2
 	jsr		NemDec
+	
+; Load char select graphics	
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_LevelSelectPics),VRAM,WRITE),(VDP_control_port).l
+	lea	(ArtNem_CharSelect).l,a0									
+	jsr		NemDec	
 
 ; load Sonic 2 ASCII graphics (uncompressed)
 	lea		(VDP_data_port).l,a6

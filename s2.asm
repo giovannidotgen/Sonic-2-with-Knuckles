@@ -86034,6 +86034,11 @@ byte_33B1F0:	BINCLUDE	"art/uncompressed/Slot Pictures (Knuckles patch).bin"
 	even
 ArtNem_FontStuff:	BINCLUDE	"art/nemesis/Standard font.bin"
 ;---------------------------------------------------------------------------------------
+; Nemesis compressed art
+; Character select character portraits		; ArtNem_7C43A:
+	even
+ArtNem_CharSelect:	BINCLUDE	"art/nemesis/Menu - Characters.bin"
+;---------------------------------------------------------------------------------------
 ; Nemesis compressed art (38 blocks)
 ; 1P/2P wins text from 2P mode		; ArtNem_7C9AE:
 	even
@@ -86043,6 +86048,15 @@ ArtNem_1P2PWins:	BINCLUDE	"art/nemesis/1P and 2P wins text from 2P mode.bin"
 ; Sonic/Miles animated background mappings	; MapEng_7CB80:
 	even
 MapEng_MenuBack:	BINCLUDE	"mappings/misc/Sonic and Miles animated background.bin"
+;---------------------------------------------------------------------------------------
+; Enigma compressed art mappings
+; Character select mappings	; MapEng_7CB80:
+	even
+MapEng_CSelSonic:	BINCLUDE	"mappings/misc/Menu - Characters (Sonic).bin"
+	even
+MapEng_CSelTails:	BINCLUDE	"mappings/misc/Menu - Characters (Tails).bin"
+	even
+MapEng_CSelKnuckles:	BINCLUDE	"mappings/misc/Menu - Characters (Knuckles).bin"
 ;---------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Sonic/Miles animated background patterns	; ArtUnc_7CD2C:
