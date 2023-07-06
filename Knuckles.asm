@@ -2753,6 +2753,8 @@ return_316F64:					  ; ...
 
 
 Obj4C_Gone:					  ; ...
+		cmpi.b	#ObjID_GameOver,(GameOver_GameText+id).w	; check if the Game Over object is loaded
+		beq.s	return_316F78
 		tst.w	spindash_counter(a0)
 		beq.s	return_316F78
 		subq.w	#1,spindash_counter(a0)
