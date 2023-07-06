@@ -1,0 +1,33 @@
+Operating system: Microsoft Windows NT 6.2.9200.0
+Opening INI file "E:\Giovanni's Files\SEGA Genesis Stuff\Sonic ROM Hacking\Disassemblies\Sonic-2---Knuckles\SonPLN.ini"...
+Game type is S2.
+Loading Sonic...
+Loading plane mappings from file "mappings/misc/Menu - Characters (Sonic).bin", using compression Enigma...
+Loading palette file "art/palettes/SonicandTails.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading 8x8 tiles from file "art/uncompressed/Menu - Characters.bin", using compression Nemesis...
+Load completed.
+Loading Tails...
+Loading palette file "art/palettes/SonicandTails.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading plane mappings from file "mappings/misc/Menu - Characters (Tails).bin", using compression Enigma...
+Loading 8x8 tiles from file "art/uncompressed/Menu - Characters.bin", using compression Nemesis...
+Load completed.
+System.IndexOutOfRangeException: Indice oltre i limiti della matrice.
+   in SonicRetro.SonLVL.SonPLN.MainForm.deleteToolStripMenuItem1_Click(Object sender, EventArgs e) in D:\Programs\SonLVL\SonPLN\MainForm.cs:riga 1918
+   in System.Windows.Forms.ToolStripItem.RaiseEvent(Object key, EventArgs e)
+   in System.Windows.Forms.ToolStripMenuItem.OnClick(EventArgs e)
+   in System.Windows.Forms.ToolStripItem.HandleClick(EventArgs e)
+   in System.Windows.Forms.ToolStripItem.HandleMouseUp(MouseEventArgs e)
+   in System.Windows.Forms.ToolStripItem.FireEventInteractive(EventArgs e, ToolStripItemEventType met)
+   in System.Windows.Forms.ToolStripItem.FireEvent(EventArgs e, ToolStripItemEventType met)
+   in System.Windows.Forms.ToolStrip.OnMouseUp(MouseEventArgs mea)
+   in System.Windows.Forms.ToolStripDropDown.OnMouseUp(MouseEventArgs mea)
+   in System.Windows.Forms.Control.WmMouseUp(Message& m, MouseButtons button, Int32 clicks)
+   in System.Windows.Forms.Control.WndProc(Message& m)
+   in System.Windows.Forms.ScrollableControl.WndProc(Message& m)
+   in System.Windows.Forms.ToolStrip.WndProc(Message& m)
+   in System.Windows.Forms.ToolStripDropDown.WndProc(Message& m)
+   in System.Windows.Forms.Control.ControlNativeWindow.OnMessage(Message& m)
+   in System.Windows.Forms.Control.ControlNativeWindow.WndProc(Message& m)
+   in System.Windows.Forms.NativeWindow.Callback(IntPtr hWnd, Int32 msg, IntPtr wparam, IntPtr lparam)

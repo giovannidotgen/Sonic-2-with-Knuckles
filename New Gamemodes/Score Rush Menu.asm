@@ -129,8 +129,9 @@ Menu_Loop:
 ; ===========================================================================
 
 MainMenu_InitIndex:
-	dc.w	TextInit_GameSel-MainMenu_InitIndex
-	dc.w	TextInit_Settings-MainMenu_InitIndex
+	dc.w	TextInit_GameSel-MainMenu_InitIndex		; Gamemode selection
+	dc.w	TextInit_Settings-MainMenu_InitIndex	; Settings
+	dc.w	TextInit_CharSel-MainMenu_InitIndex		; Character Select - Score Rush
 
 ; ===========================================================================
 ; Text initialization routines
@@ -144,6 +145,9 @@ TextInit_GameSel:
 ; Settings menu
 TextInit_Settings:
 	bra.w	Settings_Init
+	
+TextInit_CharSel:
+	rts
 	
 ; ===========================================================================
 ; Controls subroutine: Main Menu
@@ -166,6 +170,12 @@ MainMenu_Controls:
 MenuCtrls_Index:
 		dc.w	GameSel_Controls-MenuCtrls_Index
 		dc.w	Settings_Controls-MenuCtrls_Index
+		dc.w	CharSel_Controls-MenuCtrls_Index
+
+; ===========================================================================
+
+CharSel_Controls:
+		rts
 
 ; ===========================================================================
 
@@ -350,25 +360,32 @@ GameSel_Settings:
 	move.w	#SndID_Checkpoint,d0
 	jmp		PlaySound
 		
-GameSel_ScoreRush:		
-	moveq	#0,d0
-	move.w	d0,(Two_player_mode).w
-	move.w	d0,(Two_player_mode_copy).w
-    if emerald_hill_zone_act_1=0
-	move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
-    else
-	move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
-    endif
+GameSel_ScoreRush:	
+	clr.w	(Options_menu_box).w
+	move.l	#Menu_Update,(sp)	; overwrite stack
+	move.l	#"UPDT",d6
+	move.b	#2,(MainMenu_Screen).w	; set menu
+	move.w	#SndID_Checkpoint,d0
+	jmp		PlaySound
+	
+	; moveq	#0,d0
+	; move.w	d0,(Two_player_mode).w
+	; move.w	d0,(Two_player_mode_copy).w
+    ; if emerald_hill_zone_act_1=0
+	; move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
+    ; else
+	; move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
+    ; endif
 
-	move.w	d0,(Current_Special_StageAndAct).w
-	move.w	d0,(Got_Emerald).w
-	move.l	d0,(Got_Emeralds_array).w
-	move.l	d0,(Got_Emeralds_array+4).w
+	; move.w	d0,(Current_Special_StageAndAct).w
+	; move.w	d0,(Got_Emerald).w
+	; move.l	d0,(Got_Emeralds_array).w
+	; move.l	d0,(Got_Emeralds_array+4).w
 
-	move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-	move.w	#1,(Player_option).w			; get selected character
-	addq.l	#4,sp							; end loop
-	rts
+	; move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
+	; move.w	#1,(Player_option).w			; get selected character
+	; addq.l	#4,sp							; end loop
+	; rts
 ; ===========================================================================
 ; Subroutine to render the Main menu's headings.
 ; ===========================================================================
