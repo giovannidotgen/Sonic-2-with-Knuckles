@@ -274,7 +274,7 @@ Settings_Data:
 		dc.l	Option_FlightCancel
 		dc.b	0,1
 
-		dc.l	Option_KiS2Monitors
+		dc.l	Option_BulletDeflect
 		dc.b	0,1
 
 		dc.l	Option_PenaltySystem
@@ -552,7 +552,7 @@ TextData_SettingsMenu:
 	dc.b	"INSTA-SHIELD        "
 	dc.b	"TAILS FLIGHT        "
 	dc.b	"FLIGHT CANCEL       "
-	dc.b	"KIS2 MONITOR GLIDING"
+	dc.b	"BULLET DEFLECTION   "
 	dc.b	"PENALTY SYSTEM      "
 	even
 	

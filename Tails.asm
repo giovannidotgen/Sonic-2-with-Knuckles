@@ -1072,6 +1072,7 @@ Tails_CancelFlight:
 	move.b	#AniIDSonAni_Roll,anim(a0)	; use "jumping" animation
 	bset	#2,status(a0)
 	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)
 +
 	rts
 
@@ -1909,6 +1910,27 @@ Tails_Roll:
 	bne.w	Obj02_NoRoll
     endif
 	mvabs.w	inertia(a0),d0
+	tst.b   (Option_SlowDucking).w
+	beq.s   Obj02_NoSlowDucking	
+
+	move.b	(Ctrl_1_Held_Logical).w,d0		
+	andi.b	#$C,d0		; is left/right	being pressed?
+	bne.s	Obj02_NoRoll	; if yes, branch	
+	btst	#1,(Ctrl_1_Held_Logical).w ; is down being pressed?
+	beq.s	Obj02_ChkWalk	; if yes, branch		
+	move.w	inertia(a0),d0
+	bpl.s	+
+	neg.w	d0
+
++
+	cmpi.w	#$100,d0		; is Sonic moving at $80 speed or faster?
+	bhs.s	Obj02_ChkRoll	; if not, branch
+	btst	#3,status(a0)
+	bne.s	Obj02_NoRoll
+	move.b	#AniIDSonAni_Duck,anim(a0)	; enter ducking animation	
+	bra.s   Obj02_NoRoll
+
+Obj02_NoSlowDucking:	
 	cmpi.w	#$80,d0		; is Tails moving at $80 speed or faster?
 	blo.s	Obj02_NoRoll	; if not, branch
 	move.b	(Ctrl_2_Held_Logical).w,d0
@@ -1921,6 +1943,13 @@ Obj02_NoRoll:
 	rts
 
 ; ---------------------------------------------------------------------------
+
+Obj02_ChkWalk:
+	cmpi.b	#AniIDSonAni_Duck,anim(a0)	; is Sonic ducking?
+	bne.s	Obj02_NoRoll
+	move.b	#AniIDSonAni_Walk,anim(a0)	; if so, enter walking animation
+	rts
+
 ; loc_1C5E0:
 Obj02_ChkRoll:
 	btst	#2,status(a0)	; is Tails already rolling?
@@ -1988,11 +2017,8 @@ Tails_Jump:
 	jsr	(PlaySound).l	; play jumping sound
 	move.b	#$E,y_radius(a0)
 	move.b	#7,x_radius(a0)
-	tst.b	(Option_RollJumpLock).w
-	beq.s	+	
 	btst	#2,status(a0)
 	bne.s	Tails_RollJump
-+
 	move.b	#AniIDSonAni_Roll,anim(a0)	; use "jumping" animation
 	bset	#2,status(a0)
 	addq.w	#1,y_pos(a0)		
@@ -2002,7 +2028,10 @@ return_1C6C2:
 ; ---------------------------------------------------------------------------
 ; loc_1C6C4:
 Tails_RollJump:
+	tst.b	(Option_RollJumpLock).w
+	beq.s	+	
 	bset	#4,status(a0) ; set the rolling+jumping flag
++	
 	rts
 ; End of function Tails_Jump
 
@@ -2666,18 +2695,49 @@ Tails_ResetOnFloor:
 +
 	clr.b	(Flying_carrying_Sonic_flag).w	
 	tst.b	pinball_mode(a0)
-	bne.s	Tails_ResetOnFloor_Part3
+	bne.w	Tails_ResetOnFloor_Part3
 	move.b	#AniIDSonAni_Walk,anim(a0)
 ; loc_1CB5C:
 Tails_ResetOnFloor_Part2:
-	
 	btst	#2,status(a0)
-	beq.s	Tails_ResetOnFloor_Part3
+	beq.w	Tails_ResetOnFloor_Part3
 	bclr	#2,status(a0)
 	move.b	#$F,y_radius(a0) ; this slightly increases Tails' collision height to standing
 	move.b	#9,x_radius(a0)
 	move.b	#AniIDSonAni_Walk,anim(a0)	; use running/walking/standing animation
 	subq.w	#1,y_pos(a0)	; move Tails up 1 pixel so the increased height doesn't push him slightly into the ground
+	tst.b	(WindTunnel_flag).w
+	bne.w	return_1B11E
+	cmp.b   #4,routine(a0)
+	beq.s   Tails_ResetOnFloor_Part3	
+	move.w	inertia(a0),d0
+	bpl.s	.rollspeedcheck
+	neg.w	d0		
+.rollspeedcheck:
+	tst.b   (Option_SlowDucking).w
+	bne.s   .slowduckcheck		
+	cmpi.w	#$80,d0	; is Sonic moving at $80 speed or faster?
+	bcs.s	Tails_ResetOnFloor_Part3	; if not, branch
+	bra.s   Tails_CheckRollSpeedCommon
+.slowduckcheck:
+	cmpi.w	#$100,d0	; is Sonic moving at $80 speed or faster?
+	bcs.s	Tails_ResetOnFloor_Part3	; if not, branch		
+Tails_CheckRollSpeedCommon:
+	move.b	(Ctrl_1_Held_Logical).w,d0
+	andi.b	#$C,d0		; is left/right	being pressed?
+	bne.s	Tails_ResetOnFloor_Part3	; if yes, branch
+	btst	#1,(Ctrl_1_Held_Logical).w ; is down being pressed?
+	beq.s	Tails_ResetOnFloor_Part3	; if not, branch
+;	move.b  #1,$2E(a0)  ; store 1 in this spot of Sonic's RAM
+	move.b  #AniIDSonAni_Roll,anim(a0)  ; set Sonic's animation		
+	addq.w  #1,y_pos(a0)   ; correct Sonic's Y coordinate
+	move.b	#$E,y_radius(a0) ; correct Sonic's width
+	move.b	#7,x_radius(a0)	; correct Sonic's height	
+	bset    #2,status(a0)  ; set Sonic to rolling
+;	btst 	#2,double_jump_flag(a0)          ; check if Sonic is performing a Drop Dash	
+;	bne.s   Tails_ResetOnFloor_Part3
+	move.w	#SndID_Roll,d0
+	jsr		PlaySound				
 ; loc_1CB80:
 Tails_ResetOnFloor_Part3:
 	bclr	#1,status(a0)

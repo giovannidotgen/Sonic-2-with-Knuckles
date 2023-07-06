@@ -1733,7 +1733,7 @@ Option_DropDash:		ds.b	1
 Option_InstaShield:		ds.b	1
 Option_Flight:			ds.b	1
 Option_FlightCancel:	ds.b	1
-Option_KiS2Monitors:	ds.b	1
+Option_BulletDeflect:	ds.b	1
 Option_PenaltySystem:	ds.b	1
 Option_Difficulty:		ds.b	1
 Option_SlowDucking:		ds.b	1
