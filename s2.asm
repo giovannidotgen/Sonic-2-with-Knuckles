@@ -10373,7 +10373,7 @@ TwoPlayerResults:
 	lea	(Anim_SonicMilesBG).l,a2
 	jsrto	Dynamic_Normal, JmpTo_Dynamic_Normal
 	moveq	#PLCID_Std1,d0
-	bsr.w	LoadPLC2
+	jsr		LoadPLC2
 	moveq	#PalID_Menu,d0
 	bsr.w	PalLoad_ForFade
 	moveq	#0,d0
@@ -10404,7 +10404,7 @@ TwoPlayerResults:
 	jsrto	Dynamic_Normal, JmpTo_Dynamic_Normal
 	jsr	(RunObjects).l
 	jsr	(BuildSprites).l
-	bsr.w	RunPLC_RAM
+	jsr		RunPLC_RAM
 	tst.l	(Plc_Buffer).w
 	bne.s	-
 	move.b	(Ctrl_1_Press).w,d0
@@ -11694,7 +11694,7 @@ MenuScreen_Options:
 	lea	(Anim_SonicMilesBG).l,a2
 	jsrto	Dynamic_Normal, JmpTo2_Dynamic_Normal
 	moveq	#PalID_Menu,d0
-	bsr.w	PalLoad_ForFade
+	jsr		PalLoad_ForFade
 	move.b	#MusID_Options,d0
 	jsrto	PlayMusic, JmpTo_PlayMusic
 	clr.w	(Two_player_mode).w
@@ -12743,13 +12743,13 @@ EndingSequence:
 	move.w	#$100,objoff_3C(a1)
 +
 	move.b	#VintID_Ending,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
 -
 	move.b	#VintID_Ending,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	addq.w	#1,(Timer_frames).w
 	jsr	(RandomNumber).l
 	jsr	(RunObjects).l

@@ -152,7 +152,7 @@ TextInit_Settings:
 	bra.w	Settings_Init
 	
 TextInit_CharSel:
-	rts
+	bra.w	CharSel_LoadPlayer
 	
 ; ===========================================================================
 ; Controls subroutine: Main Menu
@@ -178,9 +178,100 @@ MenuCtrls_Index:
 		dc.w	CharSel_Controls-MenuCtrls_Index
 
 ; ===========================================================================
+CharSel_GoBack:
+		clr.w	(Options_menu_box).w
+		move.l	#Menu_Update,(sp)	; overwrite stack
+		move.l	#"UPDT",d6
+		clr.b	(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Checkpoint,d0
+		jmp		PlaySound	
 
-CharSel_Controls:
+CharSel_BeginGame:
+		moveq	#0,d0
+		move.w	d0,(Two_player_mode).w
+		move.w	d0,(Two_player_mode_copy).w
+		if emerald_hill_zone_act_1=0
+		move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
+		else
+		move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
+		endif
+
+		move.w	d0,(Current_Special_StageAndAct).w
+		move.w	d0,(Got_Emerald).w
+		move.l	d0,(Got_Emeralds_array).w
+		move.l	d0,(Got_Emeralds_array+4).w
+
+		move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
+		add.w	#1,(Options_menu_box).w
+		move.w	(Options_menu_box).w,(Player_option).w			; get selected character
+		addq.l	#4,sp							; end loop
 		rts
+	
+CharSel_Controls:
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands
+		andi.b  #$C0,d1            ; is start or A being pressed?
+		bne.s   CharSel_BeginGame	
+		btst	#button_B,(Ctrl_1_Press).w
+		bne.s	CharSel_GoBack
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
+		andi.b	#$C,d1		; is left/right pressed and held?
+		bne.s	CharSel_LeftRight	; if yes, branch
+		move.b	(Ctrl_1_Press).w,d1
+		andi.b	#3,d1		; is up/down pressed and held?
+		bne.s	CharSel_UpDown	; if yes, branch
+		subq.w	#1,(LevSel_HoldTimer).w ; subtract 1 from time	to next	move
+		bpl.w	CharSel_NoInput	; if time remains, branch
+
+CharSel_UpDown:
+		rts
+		; move.w	#$B,(LevSel_HoldTimer).w ; reset time delay
+		; move.b	(Ctrl_1_Held).w,d1
+		; andi.b	#3,d1		; is up/down pressed?
+		; beq.s	CharSel_NoInput	; if not, branch
+		; move.w	(Options_menu_box).w,d0
+		; btst	#0,d1		; is up	pressed?
+		; beq.s	CharSel_Down	; if not, branch
+		; subq.w	#1,d0		; move up 1 selection
+		; bcc.s	CharSel_Down
+		; moveq	#9,d0		; if selection moves below 0, jump to selection
+
+; CharSel_Down:
+		; btst	#1,d1		; is down pressed?
+		; beq.s	CharSel_FullRefresh	; if not, branch
+		; addq.w	#1,d0		; move down 1 selection
+		; cmpi.w	#10,d0
+		; bcs.s	CharSel_FullRefresh
+		; moveq	#0,d0		; if selection moves above 6, jump to selection 0
+		
+CharSel_RefreshDiff:
+		rts
+CharSel_RefreshChar:
+		move.w	d2,(Options_menu_box).w ; set new selection
+		bra.w	CharSel_LoadPlayer 		; refresh option names
+;		move.b  d5,(a2)		
+;		bra.w	CharSel_Values
+		; move.w	#$CD,d0
+		; jsr	(PlaySound_Special).l ;	play "blip" sound		
+	
+CharSel_NoInput:
+		rts	
+
+CharSel_LeftRight:	
+		move.w  (Options_menu_box).w,d2        ; load choice number		
+		btst	#2,d1		; is left pressed?
+		beq.s	CharSel_Right	; if not, branch
+		subq.w	#1,d2		; subtract 1 to selection
+		bpl.s	CharSel_Right
+		move.w  #2,d2     
+		
+CharSel_Right:
+		btst	#3,d1		; is right pressed?
+		beq.s	CharSel_RefreshChar	; if not, branch
+		addq.w	#1,d2	; add 1 selection
+		cmp.w	#2,d2
+		ble.s	CharSel_RefreshChar
+		move.w	#0,d2	
+		bra.s   CharSel_RefreshChar
 
 ; ===========================================================================
 
@@ -372,25 +463,7 @@ GameSel_ScoreRush:
 	move.b	#2,(MainMenu_Screen).w	; set menu
 	move.w	#SndID_Checkpoint,d0
 	jmp		PlaySound
-	
-	; moveq	#0,d0
-	; move.w	d0,(Two_player_mode).w
-	; move.w	d0,(Two_player_mode_copy).w
-    ; if emerald_hill_zone_act_1=0
-	; move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
-    ; else
-	; move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
-    ; endif
 
-	; move.w	d0,(Current_Special_StageAndAct).w
-	; move.w	d0,(Got_Emerald).w
-	; move.l	d0,(Got_Emeralds_array).w
-	; move.l	d0,(Got_Emeralds_array+4).w
-
-	; move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-	; move.w	#1,(Player_option).w			; get selected character
-	; addq.l	#4,sp							; end loop
-	; rts
 ; ===========================================================================
 ; Subroutine to render the Main menu's headings.
 ; ===========================================================================
@@ -545,6 +618,54 @@ Settings_Values:
 		moveq	#2,d2					; number of characters to be rendered -1
 		bra.w	SingleLineRender		; render one line of text		
 
+; ===========================================================================
+CharSel_LoadPlayer:
+	lea	($C00000).l,a6
+; load palette
+	move.w	(Options_menu_box).w,d1
+	lea		(CharSel_CharData).l,a2
+	lsl.w	#3,d1
+	adda.l	d1,a2
+	movea.l	4(a2),a0
+	move.w	#14,d0
+	lea		(Normal_palette+2).w,a1
+	move.l  #vdpComm(2,CRAM,WRITE),VDP_control_port-VDP_data_port(a6)	; funny way of writing 4(a6) lol
+-
+	move.w	(a0),(a6)		; palette needs to ve written in CRAM too, otherwise it will update too late
+	move.w	(a0)+,(a1)+
+	dbf		d0,-
+
+; load Player plane graphics
+	lea	(Chunk_Table).l,a1
+	moveq	#0,d1
+	move.w	(Options_menu_box).w,d1
+	movea.l	(a2),a0
+	move.w	#make_art_tile(ArtTile_ArtNem_LevelSelectPics,0,0),d0
+	jsr		EniDec
+		
+; place them in the foreground		
+	lea	(Chunk_Table).l,a1
+	move.l	#$41040003,d0
+	moveq	#$3,d1
+	moveq	#$5,d2
+	jsr		PlaneMapToVRAM_H40
+	rts
+	
+
+
+
+
+
+; ===========================================================================
+CharSel_CharData:
+	dc.l	MapEng_CSelSonic
+	dc.l	Pal_BGND+$2
+	
+	dc.l	MapEng_CSelTails
+	dc.l	Pal_BGND+$2
+	
+	dc.l	MapEng_CSelKnuckles
+	dc.l	Pal_Knux+2
 
 ; ===========================================================================
 ; All text data used by this screen.
