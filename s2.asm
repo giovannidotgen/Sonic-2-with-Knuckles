@@ -79878,6 +79878,8 @@ JmpTo20_SingleObjLoad ; JmpTo
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 ShieldTouchResponse:
+		tst.b	(Option_BulletDeflect)
+		beq.w	locret_1045C
 		bsr.w	IsInstaShielding
 		tst.b	d0
 		bne.s	.isSonic
