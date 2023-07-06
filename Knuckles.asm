@@ -1619,8 +1619,29 @@ Knuckles_Roll:					  ; ...
 		tst.b	status_secondary(a0)
 		bmi.s	Obj4C_NoRoll
 		move.w	inertia(a0),d0
-		bpl.s	loc_3163E6
+		bpl.s	+
 		neg.w	d0
+
++
+		tst.b   (Option_SlowDucking).w
+		beq.s   loc_3163E6
+
+		move.b	(Ctrl_1_Held_Logical).w,d0		
+		andi.b	#$C,d0		; is left/right	being pressed?
+		bne.s	Obj4C_NoRoll	; if yes, branch	
+		btst	#1,(Ctrl_1_Held_Logical).w ; is down being pressed?
+		beq.s	Obj4C_ChkWalk	; if yes, branch		
+		move.w	inertia(a0),d0
+		bpl.s	+
+		neg.w	d0
+
++
+		cmpi.w	#$100,d0		; is Sonic moving at $80 speed or faster?
+		bhs.s	Obj4C_ChkRoll	; if not, branch
+		btst	#3,status(a0)
+		bne.s	Obj4C_NoRoll
+		move.b	#8,anim(a0)	; enter ducking animation	
+		bra.s   Obj4C_NoRoll		
 
 loc_3163E6:					  ; ...
 		cmp.w	#$80,d0
@@ -1634,6 +1655,14 @@ loc_3163E6:					  ; ...
 Obj4C_NoRoll:					  ; ...
 		rts
 ; ---------------------------------------------------------------------------
+
+
+Obj4C_ChkWalk:
+		cmpi.b	#8,anim(a0)	; is Sonic ducking?
+		bne.s	Obj4C_NoRoll
+		move.b	#0,anim(a0)	; if so, enter walking animation
+		rts
+
 
 Obj4C_ChkRoll:					  ; ...
 		btst	#2,status(a0)
@@ -1704,11 +1733,8 @@ loc_3164B2:
 		jsr	PlaySound
 		move.b	#$E,y_radius(a0)
 		move.b	#7,x_radius(a0)
-		tst.b	(Option_RollJumpLock).w
-		beq.s	+		
 		btst	#2,status(a0)
 		bne.s	Knuckles_RollJump
-+
 		move.b	#2,anim(a0)
 		bset	#2,status(a0)
 		addq.w	#5,y_pos(a0)
@@ -1718,7 +1744,10 @@ return_3164EC:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Knuckles_RollJump:				  ; ...
+		tst.b	(Option_RollJumpLock).w
+		beq.s	+		
 		bset	#4,status(a0)
++		
 		rts
 ; End of function Knuckles_Jump
 
@@ -2527,7 +2556,7 @@ return_316CD4:					  ; ...
 
 Knuckles_ResetOnFloor:				  ; ...
 		tst.b	spindash_flag(a0)
-		bne.s	Knuckles_ResetOnFloor_Part3
+		bne.w	Knuckles_ResetOnFloor_Part3
 		move.b	#0,anim(a0)
 ; End of function Knuckles_ResetOnFloor
 
@@ -2540,12 +2569,44 @@ Knuckles_ResetOnFloor_Part2:			  ; ...
 		move.b	#$13,y_radius(a0)
 		move.b	#9,x_radius(a0)
 		btst	#2,status(a0)
-		beq.s	Knuckles_ResetOnFloor_Part3
+		beq.w	Knuckles_ResetOnFloor_Part3
 		bclr	#2,status(a0)
 		move.b	#0,anim(a0)
 		sub.b	#$13,d0
 		ext.w	d0
 		add.w	d0,y_pos(a0)
+		
+		tst.b	(WindTunnel_flag).w
+		bne.w	return_1B11E
+		cmp.b   #4,routine(a0)
+		beq.s   Knuckles_ResetOnFloor_Part3	
+		move.w	inertia(a0),d0
+		bpl.s	.rollspeedcheck
+		neg.w	d0		
+.rollspeedcheck:
+		tst.b   (Option_SlowDucking).w
+		bne.s   .slowduckcheck		
+		cmpi.w	#$80,d0	; is Sonic moving at $80 speed or faster?
+		bcs.s	Knuckles_ResetOnFloor_Part3	; if not, branch
+		bra.s   Knuckles_CheckRollSpeedCommon
+.slowduckcheck:
+		cmpi.w	#$100,d0	; is Sonic moving at $80 speed or faster?
+		bcs.s	Knuckles_ResetOnFloor_Part3	; if not, branch		
+Knuckles_CheckRollSpeedCommon:
+		move.b	(Ctrl_1_Held_Logical).w,d0
+		andi.b	#$C,d0		; is left/right	being pressed?
+		bne.s	Knuckles_ResetOnFloor_Part3	; if yes, branch
+		btst	#1,(Ctrl_1_Held_Logical).w ; is down being pressed?
+		beq.s	Knuckles_ResetOnFloor_Part3	; if not, branch
+	;	move.b  #1,$2E(a0)  ; store 1 in this spot of Sonic's RAM
+		move.b  #2,anim(a0)  ; set Sonic's animation		
+		addq.w  #5,y_pos(a0)   ; correct Sonic's Y coordinate
+		move.b	#$E,y_radius(a0) ; correct Sonic's width
+		move.b	#7,x_radius(a0)	; correct Sonic's height	
+		bset    #2,status(a0)  ; set Sonic to rolling
+		move.w	#SndID_Roll,d0
+		jsr		PlaySound			
+		
 
 Knuckles_ResetOnFloor_Part3:			  ; ...
 		bclr	#1,status(a0)
