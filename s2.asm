@@ -9960,21 +9960,21 @@ ContinueScreen:
 	bsr.w	ContinueScreen_LoadLetters
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_ContinueTails),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_ContinueTails).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_MiniContinue),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_MiniSonic).l,a0
 	cmpi.w	#2,(Player_mode).w
 	bne.s	+
 	lea	(ArtNem_MiniTails).l,a0
 +
-	bsr.w	NemDec
+	jsr		NemDec
 	moveq	#$A,d1
 	jsr	(ContScrCounter).l
 	moveq	#PalID_SS1,d0
 	bsr.w	PalLoad_ForFade
 	move.w	#0,(Target_palette).w
 	move.b	#MusID_Continue,d0
-	bsr.w	PlayMusic
+	jsr		PlayMusic
 	move.w	#(11*60)-1,(Demo_Time_left).w	; 11 seconds minus 1 frame
 	clr.b	(Level_started_flag).w
 	clr.l	(Camera_X_pos_copy).w
@@ -10040,10 +10040,10 @@ ContinueScreen:
 ContinueScreen_LoadLetters:
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_TitleCard),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_TitleCard).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	lea	(Level_Layout).w,a4
 	lea	(ArtNem_TitleCard2).l,a0
-	bsr.w	NemDecToRAM
+	jsr		NemDecToRAM
 	lea	(ContinueScreen_AdditionalLetters).l,a0
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ContinueScreen_Additional),VRAM,WRITE),(VDP_control_port).l
 	lea	(Level_Layout).w,a1
@@ -10344,7 +10344,7 @@ TwoPlayerResults:
 	lea	(Chunk_Table).l,a1
 	lea	(MapEng_MenuBack).l,a0
 	move.w	#make_art_tile(ArtTile_VRAM_Start,3,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(VRAM_Plane_B_Name_Table,VRAM,WRITE),d0
 	moveq	#$27,d1
@@ -11421,7 +11421,7 @@ MenuScreen:
 	lea	(Anim_SonicMilesBG).l,a2
 	jsrto	Dynamic_Normal, JmpTo2_Dynamic_Normal
 	moveq	#PalID_Menu,d0
-	bsr.w	PalLoad_ForFade
+	jsr		PalLoad_ForFade
 	lea	(Normal_palette_line3).w,a1
 	lea	(Target_palette_line3).w,a2
 
@@ -38665,13 +38665,13 @@ Obj79_Init:
     endif
 	bclr	#7,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)
 	btst	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)
-	bne.s	loc_1F120
-	move.b	(Last_star_pole_hit).w,d1
-	andi.b	#$7F,d1
-	move.b	subtype(a0),d2
-	andi.b	#$7F,d2
-	cmp.b	d2,d1
-	blo.s	Obj79_Main
+	beq.s	Obj79_Main
+	; move.b	(Last_star_pole_hit).w,d1
+	; andi.b	#$7F,d1
+	; move.b	subtype(a0),d2
+	; andi.b	#$7F,d2
+	; cmp.b	d2,d1
+	; blo.s	Obj79_Main
 
 loc_1F120:
 	bset	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)
@@ -38693,11 +38693,19 @@ Obj79_Main:
 ; ---------------------------------------------------------------------------
 ; loc_1F154:
 Obj79_CheckActivation:
-	andi.b	#$7F,d1
-	move.b	subtype(a0),d2
-	andi.b	#$7F,d2
-	cmp.b	d2,d1
-	bhs.w	loc_1F222
+	lea	(Object_Respawn_Table).w,a2
+	moveq	#0,d0
+	move.b	respawn_index(a0),d0
+    if fixBugs
+	; If you spawn a checkpoint in Debug Mode and activate it, then
+	; every checkpoint that is spawned with Debug Mode afterwards will be
+	; activated too. The cause of the bug is that the spawned checkpoint
+	; does not have a respawn entry, but this object fails to check for
+	; that before accessing the respawn table.
+	beq.w	loc_1F222
+    endif
+	btst	#0,Obj_respawn_data-Object_Respawn_Table(a2,d0.w)
+	bne.w	loc_1F222
 	move.w	x_pos(a3),d0
 	sub.w	x_pos(a0),d0
 	addi_.w	#8,d0

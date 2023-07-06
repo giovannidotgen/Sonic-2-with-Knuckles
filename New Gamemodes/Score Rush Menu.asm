@@ -330,7 +330,7 @@ Settings_Down:
 		
 Settings_FullRefresh:
 		move.w	d0,(Options_menu_box).w ; set new selection
-		bra.w	Settings_Init 			; refresh option names
+		bra.w	Settings_Init			; refresh option names
 Settings_PartialRefresh:
 		move.b  d5,(a2)		
 		bra.w	Settings_Values
@@ -579,7 +579,23 @@ Settings_Selections:
 		move.l	d4,4(a6)
 		moveq	#19,d2		
 		bsr.w	SingleLineRender	
-		rts							
+
+;Settings_Description:					
+		lea	(TextData_Descriptions).l,a1 ; where to fetch the lines from
+		moveq	#0,d1
+		move.w	(Options_menu_box).w,d1
+		mulu.w	#108,d1
+		adda.w	d1,a1					; set address		
+		move.l	#$4C040003,d4	; (CHANGE) starting screen position 
+		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+		moveq	#2,d1		; number of lines of text to be displayed -1
+
+-
+		move.l	d4,4(a6)
+		moveq	#35,d2		; number of characters to be rendered in a line -1
+		bsr.w	SingleLineRender
+		addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
+		dbf	d1,-
 
 Settings_Values:
 		lea	($C00000).l,a6
@@ -628,7 +644,8 @@ Settings_Values:
 		move.w	#$C680,d3
 		move.l	d4,4(a6)
 		moveq	#2,d2					; number of characters to be rendered -1
-		bra.w	SingleLineRender		; render one line of text		
+		bra.w	SingleLineRender		; render one line of text
+		
 
 ; ===========================================================================
 
@@ -770,6 +787,48 @@ TextData_SettingsMenu:
 	dc.b	"BULLET DEFLECTION   "
 	dc.b	"PENALTY SYSTEM      "
 	even
+	
+TextData_Descriptions:
+	dc.b	"AFFECTS ALL CHARACTERS. APPLIES A   "
+	dc.b	"LIMIT TO YOUR HORIZONTAL SPEED IN   "
+	dc.b	"MID-AIR.                            "
+	
+	dc.b	"AFFECTS ALL CHARACTERS. REMOVES     "
+	dc.b	"DIRECTIONAL CONTROL IF YOU JUMP     "
+	dc.b	"AFTER ROLLING.                      "
+	
+	dc.b	"AFFECTS ALL CHARACTERS. INCREASES   "
+	dc.b	"THE REQUIRED SPEED FOR ROLLING,     "
+	dc.b	"MAKING SPIN DASHING EASIER.         "
+	
+	dc.b	"AFFECTS SONIC. ALLOWS HIM TO PERFORM"
+	dc.b	"THE SUPER PEEL-OUT FROM SONIC CD.   "
+	dc.b	"                                    "
+	
+	dc.b	"AFFECTS SONIC. ALLOWS HIM TO PERFORM"
+	dc.b	"THE DROP DASH FROM SONIC MANIA.     "
+	dc.b	"                                    "
+	
+	dc.b	"AFFECTS SONIC. ALLOWS HIM TO PERFORM"
+	dc.b	"THE INSTA-SHIELD FROM SONIC 3.      "
+	dc.b	"                                    "
+	
+	dc.b	"AFFECTS TAILS. ALLOWS HIM TO FLY,   "
+	dc.b	"JUST LIKE IN SONIC 3.               "
+	dc.b	"                                    "
+	
+	dc.b	"AFFECTS TAILS. PRESS DOWN AND JUMP  "
+	dc.b	"AT THE SAME TIME TO CANCEL A FLIGHT."
+	dc.b	"                                    "
+	
+	dc.b	"AFFECTS ALL CHARACTERS. ALLOWS THEM "
+	dc.b	"TO DEFLECT BULLETS WHILE USING THEIR"
+	dc.b	"MID-AIR ABILITIES, LIKE IN SONIC 3. "
+	
+	dc.b	"THIS SETTING HAS NOT YET BEEN       "
+	dc.b	"IMPLEMENTED IN THIS BUILD. FEEL FREE"
+	dc.b	"TO USE SAVE STATES INSTEAD!         "
+	
 	
 TextData_CharSelect:
 	dc.b	"CHOOSE A CHARACTER"
