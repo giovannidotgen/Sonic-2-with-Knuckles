@@ -482,7 +482,7 @@ Sonic_DropCharge:
 	bne.s  	Sonic_DropReturn 				; if not, return
     move.b 	#AniIDSonAni_DropDash,anim(a0) 				; set Sonic's animation
 	bclr   	#4,status(a0) 				; clear roll jump lock, like in Triple Trouble 16-bit
-	move.b	#SndID_Dropdash,d0
+	move.b	#SndID_Roll,d0
 	jsr		PlaySound					; play rolling sound
 	bset	#2,double_jump_flag(a0)		; set drop dash fully charged flag
 	bra.s  	Sonic_DropReturn

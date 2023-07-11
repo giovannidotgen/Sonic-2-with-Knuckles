@@ -845,7 +845,6 @@ SndID_RingRight =	id(SndPtr_RingRight)		; B5
 SndID_SpikesMove =	id(SndPtr_SpikesMove)		; B6
 SndID_Rumbling =	id(SndPtr_Rumbling)		; B7
 SndID_Smash =		id(SndPtr_Smash)		; B9
-SndID_Dropdash =	id(SndPtr_Dropdash)		; BA
 SndID_DoorSlam =	id(SndPtr_DoorSlam)		; BB
 SndID_SpindashRelease =	id(SndPtr_SpindashRelease)	; BC
 SndID_Hammer =		id(SndPtr_Hammer)		; BD
