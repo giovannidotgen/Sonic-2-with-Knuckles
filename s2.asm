@@ -88199,7 +88199,7 @@ SndPtr_SpikesMove:	rom_ptr_z80	Sound36
 SndPtr_Rumbling:	rom_ptr_z80	Sound37	; rumbling
 			rom_ptr_z80	Sound38	; (unused)
 SndPtr_Smash:		rom_ptr_z80	Sound39	; smash/breaking
-			rom_ptr_z80	Sound3A	; nondescript ding (unused)
+SndPtr_Dropdash:		rom_ptr_z80	Sound3A	; Drop Dash (TomatoWave_0)
 SndPtr_DoorSlam:	rom_ptr_z80	Sound3B	; door slamming shut
 SndPtr_SpindashRelease:	rom_ptr_z80	Sound3C	; spindash unleashed
 SndPtr_Hammer:		rom_ptr_z80	Sound3D	; slide-thunk
@@ -88289,7 +88289,7 @@ Sound36:	include "sound/sfx/B6 - Spikes Move.asm"
 Sound37:	include "sound/sfx/B7 - Rumbling.asm"
 Sound38:	include "sound/sfx/B8 - Unknown (Unused).asm"
 Sound39:	include "sound/sfx/B9 - Smash.asm"
-Sound3A:	include "sound/sfx/BA - Special Stage Glass (Unused).asm"
+Sound3A:	include "sound/sfx/BA - Drop Dash.asm"
 Sound3B:	include "sound/sfx/BB - Door Slam.asm"
 Sound3C:	include "sound/sfx/BC - Spin Dash Release.asm"
 Sound3D:	include "sound/sfx/BD - Hammer.asm"
