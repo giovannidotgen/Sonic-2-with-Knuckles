@@ -1,28 +1,26 @@
 SndBA_DropDash_Header:
 	smpsHeaderStartSong 2, 1
-	smpsHeaderVoice     SndE3_DropDash_Voices
+	smpsHeaderVoice     Sound3E_Roll_Voices
 	smpsHeaderTempoSFX  $01
 	smpsHeaderChanSFX   $01
 
-	smpsHeaderSFXChannel cFM5, SndE3_DropDash_FM5,	$2C, $0B
+	smpsHeaderSFXChannel cFM4, SoundBA_FM4,	$0C, $05
 
-; FM5 Data
-SndE3_DropDash_FM5:
+; FM4 Data
+SoundBA_FM4:
 	smpsSetvoice        $00
 	dc.b	nRst, $01
-	smpsModSet          $02, $01, $10, $FF
-	dc.b	nCs6, $24
-	smpsModOn
-	
-Sound_E3_Loop00	
+	smpsModSet          $01, $02, $24, $FF
+	dc.b	nB5, $12
+
+SoundBA_Loop00:
 	dc.b	smpsNoAttack
-	smpsFMAlterVol      $01
-	dc.b	nCs6, $02
-	smpsLoop            $00, $2A, Sound_E3_Loop00
-	smpsModOff
+	smpsAlterVol        $02
+	dc.b	$02
+	smpsLoop            $00, $12, SoundBA_Loop00
 	smpsStop
 
-SndE3_DropDash_Voices:
+SndBA_DropDash_Voices:
 
 ;	Voice $00
 ;	$3C
