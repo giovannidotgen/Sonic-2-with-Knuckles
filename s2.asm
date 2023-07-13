@@ -1475,6 +1475,13 @@ PlaySoundLocal:
 ; Subroutine to pause the game
 ; ---------------------------------------------------------------------------
 
+Unpause_Skip_WFZ:
+	move.w	#death_egg_zone_act_1,(Current_ZoneAndAct).w
+	move.w	#1,(Level_Inactive_flag).w
+	clr.b	(Last_star_pole_hit).w
+	clr.b	(Last_star_pole_hit_2P).w
+	rts
+
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 ; sub_1388:
@@ -1492,7 +1499,7 @@ PauseGame:
 	beq.w	Pause_DoNothing	; if not, branch
 +
 	tst.b	(WFZ_Can_Skip).w
-	bne.w	Unpause_Skip_WFZ
+	bne.s	Unpause_Skip_WFZ
 	move.w	#1,(Game_paused).w	; freeze time
 	btst	#button_start,(Ctrl_2_Press).w		; was it player 2 who paused?
 	beq.s	+
@@ -1558,14 +1565,6 @@ Pause_SlowMo:
 	move.w	#1,(Game_paused).w
 	move.b	#MusID_Unpause,(Sound_Queue.Music0).w
 	rts
-; ===========================================================================
-
-Unpause_Skip_WFZ:
-	move.w	#death_egg_zone_act_1,(Current_ZoneAndAct).w
-	move.w	#1,(Level_Inactive_flag).w
-	clr.b	(Last_star_pole_hit).w
-	clr.b	(Last_star_pole_hit_2P).w
-	bra.s	Unpause
 
 ; End of function PauseGame
 ; ===========================================================================
@@ -73705,11 +73704,6 @@ ObjB2_Wait_Leader_position:
 	addq.w	#1,objoff_2E(a0)
 	cmpi.w	#$40,objoff_2E(a0)
 	bhs.s	++
-+ ; return_3A99E:
-	rts
-; ===========================================================================
-+ ; loc_3A9A0:
-	addq.b	#2,routine_secondary(a0)
 	move.w	#$2E58,x_pos(a0)
 	move.w	#$66C,y_pos(a0)
 	lea	(MainCharacter).w,a1 ; a1=character
