@@ -1449,6 +1449,13 @@ PlaySoundLocal:
 ; Subroutine to pause the game
 ; ---------------------------------------------------------------------------
 
+Unpause_Skip_WFZ:
+	move.w	#death_egg_zone_act_1,(Current_ZoneAndAct).w
+	move.w	#1,(Level_Inactive_flag).w
+	clr.b	(Last_star_pole_hit).w
+	clr.b	(Last_star_pole_hit_2P).w
+	rts
+
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 ; sub_1388:
@@ -1474,7 +1481,7 @@ PauseGame:
 	beq.w	Pause_DoNothing	; if not, branch
 +
 	tst.b	(WFZ_Can_Skip).w
-	bne.w	Unpause_Skip_WFZ
+	bne.s	Unpause_Skip_WFZ
 	move.w	#1,(Game_paused).w	; freeze time
 	btst	#button_start,(Ctrl_2_Press).w		; was it player 2 who paused?
 	beq.s	+
@@ -1540,14 +1547,6 @@ Pause_SlowMo:
 	move.w	#1,(Game_paused).w
 	move.b	#MusID_Unpause,(Sound_Queue.Music0).w
 	rts
-; ===========================================================================
-
-Unpause_Skip_WFZ:
-	move.w	#death_egg_zone_act_1,(Current_ZoneAndAct).w
-	move.w	#1,(Level_Inactive_flag).w
-	clr.b	(Last_star_pole_hit).w
-	clr.b	(Last_star_pole_hit_2P).w
-	bra.s	Unpause
 
 ; End of function PauseGame
 ; ===========================================================================
@@ -73994,19 +73993,20 @@ ObjB2_Main_WFZ_states:	offsetTable
 ; ===========================================================================
 ; loc_3A982:
 ObjB2_Wait_Leader_position:
-	lea	(MainCharacter).w,a1 ; a1=character
-	cmpi.w	#$5EC,y_pos(a1)
-	blo.s	+	; rts
-	move.b	#1,(WFZ_Can_Skip).w
-	clr.w	(Ctrl_1_Logical).w
-	addq.w	#1,objoff_2E(a0)
-	cmpi.w	#$40,objoff_2E(a0)
-	bhs.s	++
+	lea	(MainCharacter).w,a1 	; a1=character
+	cmpi.w	#$5EC,y_pos(a1)		; check if the player is here on the Y axis
+	blo.s	+					; if not, return
+	st.b	(WFZ_Can_Skip).w	; mark the cutscene as skippable
+	clr.w	(Ctrl_1_Logical).w	; wipe all player inputs
+	addq.w	#1,objoff_2E(a0)	; add 1 to this timer
+	cmpi.w	#$40,objoff_2E(a0)	; check if 64 frames have passed
+	bhs.s	++					; if yes, branch
 + ; return_3A99E:
-	rts
+	rts							; else, return
 ; ===========================================================================
 + ; loc_3A9A0:
-	addq.b	#2,routine_secondary(a0)
+	addq.b	#2,routine_secondary(a0)	; next routine
+	; from there forward, it sets a bunch of variables
 	move.w	#$2E58,x_pos(a0)
 	move.w	#$66C,y_pos(a0)
 	lea	(MainCharacter).w,a1 ; a1=character
