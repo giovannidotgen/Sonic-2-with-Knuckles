@@ -68145,19 +68145,19 @@ loc_36ADC:
 	abs.w	d2
 	cmpi.w	#$60,d2
 	bls.s	+
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 +
 	addq.b	#2,routine(a0)
 	st.b	objoff_2B(a0)
 	bsr.w	loc_36C2C
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 ; loc_36B00:
 Obj8D_Animate:
 	lea	(Ani_obj8D_b).l,a1
-	jsrto	AnimateSprite, JmpTo25_AnimateSprite
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jsr		AnimateSprite
+	jmp		MarkObjGone
 ; ===========================================================================
 
 loc_36B0E:
@@ -68169,7 +68169,7 @@ loc_36B0E:
 	beq.s	+
 	bset	#0,status(a0)
 +
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 ; word_36B30:
 Obj8D_Directions:
@@ -68540,12 +68540,12 @@ Obj91_VerticalSpeeds:
 ; ===========================================================================
 ; loc_36E66:
 Obj91_Charge:
-	jsrto	ObjectMove, JmpTo26_ObjectMove
+	jsr		ObjectMove
 ; loc_36E6A:
 Obj91_Animate:
 	lea	(Ani_obj91).l,a1
-	jsrto	AnimateSprite, JmpTo25_AnimateSprite
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jsr		AnimateSprite
+	jmp		MarkObjGone
 ; ===========================================================================
 ; loc_36E78:
 Obj91_MakeBubble:
@@ -73746,6 +73746,7 @@ ObjB2_Wait_for_plane:
 ; ===========================================================================
 + ; loc_3AA5C:
 	addq.b	#2,routine_secondary(a0)
+	bsr.w	WFZ_DelAllInvBlocks		; GIO	
 	move.w	#$100,x_vel(a0)
 	move.w	#-$100,y_vel(a0)
 	clr.w	objoff_2A(a0)
@@ -74379,6 +74380,31 @@ ObjB2_MapUnc_3B292:	BINCLUDE "mappings/sprite/objB2_b.bin"
 
 
 ; ===========================================================================
+
+; ----------------------------------------------------------------------------
+; GIO: Subroutine to remove all invisible blocks during the WFZ cutscene
+; ----------------------------------------------------------------------------
+
+WFZ_DelAllInvBlocks:
+	movem.l	a0-a2,-(sp)					; move some values into stack
+	lea		(Dynamic_Object_RAM).l,a2	; get dynamic object ram
+	moveq	#$6F,d6						; number of objects
+	
+-
+	movea.l	a2,a0						; object in a0
+	cmpi.b	#ObjID_InvisibleBlock,(a0)	; check if the selected object is an invisible block
+	bne.s	+							; if not, branch
+	jsr		DeleteObject				; else, delete the object
+	
++
+	adda.l	#object_size,a2				; next object
+	dbf		d6,-						; repeat
+
+	movem.l	(sp)+,a0-a2					; grab the values from stack
+	rts									; return
+	
+	
+
 ; ----------------------------------------------------------------------------
 ; Object B3 - Clouds (placeable object) from SCZ
 ; ----------------------------------------------------------------------------
