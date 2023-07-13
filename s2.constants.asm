@@ -1537,7 +1537,8 @@ Flying_picking_Sonic_timer:				ds.b 1
 Boss_defeated_flag:		ds.b	1
 				ds.b	2	; $FFFFF7A8-$FFFFF7A9 ; seems unused
 Current_Boss_ID:		ds.b	1
-				ds.b	5	; $FFFFF7AB-$FFFFF7AF ; seems unused
+WFZ_Can_Skip:			ds.b	1
+				ds.b	4	; $FFFFF7AC-$FFFFF7AF ; seems unused
 MTZ_Platform_Cog_X:		ds.w	1	; X position of moving MTZ platform for cog animation.
 MTZCylinder_Angle_Sonic:	ds.b	1
 MTZCylinder_Angle_Tails:	ds.b	1

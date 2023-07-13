@@ -1491,6 +1491,8 @@ PauseGame:
 	andi.b	#button_start_mask,d0
 	beq.w	Pause_DoNothing	; if not, branch
 +
+	tst.b	(WFZ_Can_Skip).w
+	bne.w	Unpause_Skip_WFZ
 	move.w	#1,(Game_paused).w	; freeze time
 	btst	#button_start,(Ctrl_2_Press).w		; was it player 2 who paused?
 	beq.s	+
@@ -1556,7 +1558,18 @@ Pause_SlowMo:
 	move.w	#1,(Game_paused).w
 	move.b	#MusID_Unpause,(Sound_Queue.Music0).w
 	rts
+; ===========================================================================
+
+Unpause_Skip_WFZ:
+	move.w	#death_egg_zone_act_1,(Current_ZoneAndAct).w
+	move.w	#1,(Level_Inactive_flag).w
+	clr.b	(Last_star_pole_hit).w
+	clr.b	(Last_star_pole_hit_2P).w
+	bra.s	Unpause
+
 ; End of function PauseGame
+; ===========================================================================
+
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to transfer a plane map to VRAM
@@ -73687,6 +73700,7 @@ ObjB2_Wait_Leader_position:
 	lea	(MainCharacter).w,a1 ; a1=character
 	cmpi.w	#$5EC,y_pos(a1)
 	blo.s	+	; rts
+	move.b	#1,(WFZ_Can_Skip).w
 	clr.w	(Ctrl_1_Logical).w
 	addq.w	#1,objoff_2E(a0)
 	cmpi.w	#$40,objoff_2E(a0)
