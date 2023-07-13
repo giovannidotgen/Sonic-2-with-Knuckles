@@ -73704,6 +73704,12 @@ ObjB2_Wait_Leader_position:
 	addq.w	#1,objoff_2E(a0)
 	cmpi.w	#$40,objoff_2E(a0)
 	bhs.s	++
++ ; return_3A99E:
+	rts							; else, return
+; ===========================================================================
++ ; loc_3A9A0:
+	addq.b	#2,routine_secondary(a0)	; next routine
+	; from there forward, it sets a bunch of variables
 	move.w	#$2E58,x_pos(a0)
 	move.w	#$66C,y_pos(a0)
 	lea	(MainCharacter).w,a1 ; a1=character
