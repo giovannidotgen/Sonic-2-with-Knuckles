@@ -1461,7 +1461,7 @@ Bumper_Manager_Addresses_P2_End:
 Screen_redraw_flag:		ds.b	1	; if whole screen needs to redraw, such as when you destroy that piston before the boss in WFZ
 CPZ_UnkScroll_Timer:		ds.b	1	; Used only in unused CPZ scrolling function
 WFZ_SCZ_Fire_Toggle:		ds.b	1
-				ds.b	1	; $FFFFF72F ; seems unused
+Suicide_Flag:				ds.b	1
 Water_flag:			ds.b	1	; if the level has water or oil
 				ds.b	1	; $FFFFF731 ; seems unused
 Demo_button_index_2P:		ds.w	1	; index into button press demo data, for player 2

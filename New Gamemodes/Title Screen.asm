@@ -277,6 +277,7 @@ TitleScreen_Loop:
 	; bne.s	TitleScreen_CheckIfChose2P	; branch if not a 1-player game
 
 	moveq	#0,d0
+	move.w	d0,(Options_menu_box).w
 	move.w	d0,(Two_player_mode_copy).w
 	move.w	d0,(Two_player_mode).w
 	move.b	d0,(MainMenu_Screen).w

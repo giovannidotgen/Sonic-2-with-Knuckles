@@ -1494,61 +1494,35 @@ PauseGame:
 	tst.w	(Game_paused).w	; is game already paused?
 	bne.s	+		; if yes, branch
 	move.b	(Ctrl_1_Press).w,d0 ; is Start button pressed?
-	or.b	(Ctrl_2_Press).w,d0 ; (either player)
 	andi.b	#button_start_mask,d0
 	beq.w	Pause_DoNothing	; if not, branch
 +
 	tst.b	(WFZ_Can_Skip).w
 	bne.s	Unpause_Skip_WFZ
 	move.w	#1,(Game_paused).w	; freeze time
-	btst	#button_start,(Ctrl_2_Press).w		; was it player 2 who paused?
-	beq.s	+
-	move.w	#2,(Game_paused).w
-+	
 	move.b	#MusID_Pause,(Sound_Queue.Music0).w	; pause music
 ; loc_13B2:
 Pause_Loop:
 	move.b	#VintID_Pause,(Vint_routine).w
 	bsr.w	WaitForVint
-	tst.w	(Two_player_mode).w		; is this 2PVS mode?
-	bne.s	Pause_ChkStart			; if so, ignore cheats	
-	tst.b	(Slow_motion_flag).w	; is slow-motion cheat on?
-	beq.s	Pause_ChkStart		; if not, branch
 	btst	#button_A,(Ctrl_1_Press).w	; is button A pressed?
-	beq.s	Pause_ChkBC		; if not, branch
-	move.b	#GameModeID_TitleScreen,(Game_Mode).w ; set game mode to 4 (title screen)
+	beq.s	Pause_ChkStart		; if not, branch
+	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; set game mode to 4 (title screen)
+	clr.w	(Options_menu_box).w
+	clr.b	(MainMenu_Screen).w	; set menu
 	nop
 	bra.s	Pause_Resume
 ; ===========================================================================
-; loc_13D4:
-Pause_ChkBC:
-	btst	#button_B,(Ctrl_1_Held).w ; is button B pressed?
-	bne.s	Pause_SlowMo		; if yes, branch
-	btst	#button_C,(Ctrl_1_Press).w ; is button C pressed?
-	bne.s	Pause_SlowMo		; if yes, branch
 ; loc_13E4:
 Pause_ChkStart:
 	btst	#button_start,(Ctrl_1_Press).w	; is Start button pressed?
-	beq.s	.checkplayer2					; if not, branch
-	cmpi.w	#2,(Game_paused).w				; was it player 2 who paused?
-	beq.s	.checkplayer2					; if yes, branch
+	beq.s	Pause_CheckC					; if not, branch
 	bra.s	Pause_Resume					; resume game
 	
-.checkplayer2:	
-	btst	#button_start,(Ctrl_2_Press).w	; is Start button pressed?
-	beq.s	.checkplayerswap				; if not, branch
-	cmpi.w	#2,(Game_paused).w				; was it player 2 who paused?
-	bne.s	.checkplayerswap				; if not, branch
-	bra.s	Pause_Resume					; resume game
-	
-.checkplayerswap:
-	tst.w	(Two_player_mode).w
-	bne.s	Pause_Loop
-	move.b	(Ctrl_1_Held).w,d0
-	and.b	(Ctrl_2_Held).w,d0
-	cmpi.b	#button_A_mask,d0
-	bne.s	Pause_Loop
-	not.b	(Invert_Joypads_Flag).w
+Pause_CheckC:
+	btst	#button_C,(Ctrl_1_Press).w	; is C button pressed?
+	beq.s	Pause_Loop					; if not, branch
+	move.b	#1,(Suicide_Flag).w
 	
 ; loc_13F2:
 Pause_Resume:
@@ -29315,7 +29289,12 @@ RunObjects:
 	tst.b	(Teleport_flag).w
 	bne.s	RunObjects_End	; rts
 	lea	(Object_RAM).w,a0 ; a0=object
-
+	tst.b	(Suicide_Flag).w
+	beq.s	+
+	clr.b	(Suicide_Flag).w
+	lea		(MainCharacter).w,a0
+	jsr		KillCharacter
++
 	moveq	#(Object_RAM_End-Object_RAM)/object_size-1,d7 ; run the first $80 objects out of levels
 	moveq	#0,d0
 	cmpi.b	#GameModeID_Demo,(Game_Mode).w	; demo mode?

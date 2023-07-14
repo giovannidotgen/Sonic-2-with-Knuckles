@@ -2727,7 +2727,7 @@ Obj4C_Dead:					  ; ...
 ; ---------------------------------------------------------------------------
 
 loc_316E4A:					  ; ...
-		bsr.w	Obj4C_CheckGameOver
+		bsr.w	CheckGameOver
 		jsr	ObjectMoveAndFall
 		bsr.w	Knuckles_RecordPositions
 		bsr.w	Knuckles_Animate
