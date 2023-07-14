@@ -36136,9 +36136,18 @@ Obj0A_ReduceAir:
 	move.b	#$C,routine(a0)	; Force the character to drown	
 	movea.l	(sp)+,a0 ; load 0bj address ; restore a0 = obj0A
 	cmpa.w	#MainCharacter,a2
-	bne.s	+	; if it isn't player 1, branch
+	bne.s	+++	; if it isn't player 1, branch
 	move.b	#1,(Deform_lock).w
-	clr.b  (Update_HUD_timer).w	; Stop the timer immediately	
+	sub.l	#500,(Score_Saved).w
+	tst.b	(Option_PenaltySystem).w
+	beq.s	+
+	tst.l	(Score_Saved).w
+	bgt.s	++
++
+	clr.l	(Score).w
+	clr.l	(Score_Saved).w
++		
+	clr.b   (Update_HUD_timer).w	; Stop the timer immediately	
 +
 	rts
 ; ===========================================================================
