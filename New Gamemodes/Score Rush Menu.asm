@@ -195,6 +195,12 @@ CharSel_GoBack:
 
 CharSel_BeginGame:
 		moveq	#0,d0
+		move.b	#1,(Life_count).w
+		move.w	d0,(Ring_count).w
+		move.l	d0,(Timer).w
+		move.l	#500,(Score).w
+		move.l	#500,(Score_Saved).w
+		move.b	d0,(Continue_count).w		
 		move.w	d0,(Two_player_mode).w
 		move.w	d0,(Two_player_mode_copy).w
 		if emerald_hill_zone_act_1=0
@@ -222,9 +228,9 @@ CharSel_BeginGame:
 CharSel_Controls:
 		move.b	(Ctrl_1_Press).w,d1 ; fetch commands
 		andi.b  #$C0,d1            ; is start or A being pressed?
-		bne.s   CharSel_BeginGame	
+		bne.w   CharSel_BeginGame	
 		btst	#button_B,(Ctrl_1_Press).w
-		bne.s	CharSel_GoBack
+		bne.w	CharSel_GoBack
 		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
 		andi.b	#$C,d1		; is left/right pressed and held?
 		bne.s	CharSel_LeftRight	; if yes, branch

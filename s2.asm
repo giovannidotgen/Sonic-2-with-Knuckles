@@ -4403,9 +4403,9 @@ Level_PalNotCPZ:
 ; loc_409E:
 Level_WaterPal:
 	bsr.w	PalLoad_Water_Now	; load underwater palette (with d0)
-	tst.b	(Last_star_pole_hit).w ; is it the start of the level?
-	beq.s	Level_GetBgm	; if yes, branch
-	move.b	(Saved_Water_move).w,(Water_fullscreen_flag).w
+;	tst.b	(Last_star_pole_hit).w ; is it the start of the level?
+;	beq.s	Level_GetBgm	; if yes, branch
+;	move.b	(Saved_Water_move).w,(Water_fullscreen_flag).w
 ; loc_40AE:
 Level_GetBgm:
 	tst.w	(Demo_mode_flag).w
@@ -4480,16 +4480,13 @@ Level_TtlCard:
 ; Level_LoadObj: misnomer now
 Level_ClrHUD:
 	moveq	#0,d0
-	tst.b	(Last_star_pole_hit).w	; are you starting from a lamppost?
-	bne.s	Level_FromCheckpoint	; if yes, branch
+	move.l	(Score_Saved).w,(Score).w
 	move.w	d0,(Ring_count).w	; clear rings
 	move.l	d0,(Timer).w		; clear time
 	move.b	d0,(Extra_life_flags).w	; clear extra lives counter
 	move.w	d0,(Ring_count_2P).w	; ditto for player 2
 	move.l	d0,(Timer_2P).w
 	move.b	d0,(Extra_life_flags_2P).w
-; loc_41E4:
-Level_FromCheckpoint:
 	move.b	d0,(Time_Over_flag).w
 	move.b	d0,(Time_Over_flag_2P).w
 	move.b	d0,(SlotMachine_Routine).w
@@ -14579,8 +14576,6 @@ StartLocations: zoneOrderedTable 2,4	; WrdArr_StartLoc
 
 ;sub_C258:
 InitCameraValues:
-	tst.b	(Last_star_pole_hit).w	; was a star pole hit yet?
-	bne.s	+			; if yes, branch
 	move.w	d0,(Camera_BG_Y_pos).w
 	move.w	d0,(Camera_BG2_Y_pos).w
 	move.w	d1,(Camera_BG_X_pos).w
@@ -14591,7 +14586,6 @@ InitCameraValues:
 	move.w	d1,(Camera_BG_X_pos_P2).w
 	move.w	d1,(Camera_BG2_X_pos_P2).w
 	move.w	d1,(Camera_BG3_X_pos_P2).w
-+
 	moveq	#0,d2
 	move.b	(Current_Zone).w,d2
 	add.w	d2,d2
@@ -34187,9 +34181,9 @@ Obj0D_Main:
 	lea	(MainCharacter).w,a1 ; a1=character
 	move.w	x_pos(a1),d0
 	sub.w	x_pos(a0),d0
-	bcs.s	loc_192D6
+	bcs.w	loc_192D6
 	cmpi.w	#$20,d0
-	bhs.s	loc_192D6
+	bhs.w	loc_192D6
 	move.w	#SndID_Signpost,d0
 	jsr	(PlayMusic).l	; play spinning sound
 	clr.b	(Update_HUD_timer).w
@@ -34199,6 +34193,7 @@ Obj0D_Main:
 	move.w	#0,obj0D_spinframe(a0)
 	move.w	(Camera_Max_X_pos).w,(Camera_Min_X_pos).w	; lock screen
 	move.b	#2,routine_secondary(a0) ; => Obj0D_Main_State2
+	move.l	(Score).w,(Score_Saved).w
 	cmpi.b	#$C,(Loser_Time_Left).w
 	bhi.s	loc_192A0
 	move.w	(Level_Music).w,d0
@@ -38686,7 +38681,7 @@ Obj79_Main:
 	tst.w	(Debug_placement_mode).w
 	bne.w	Obj79_Animate
 	lea	(MainCharacter).w,a3 ; a3=character
-	move.b	(Last_star_pole_hit).w,d1
+;	move.b	(Last_star_pole_hit).w,d1
 	bsr.s	Obj79_CheckActivation
 	tst.w	(Two_player_mode).w
 	beq.w	Obj79_Animate
@@ -38812,10 +38807,10 @@ Obj79_MoveDonglyThing:
 ; hit a starpost / save checkpoint
 ; loc_1F298:
 Obj79_SaveData:
-	cmpa.w	#MainCharacter,a3	; is it player 1?
-	bne.w	Obj79_SaveDataPlayer2	; if not, branch
-	move.b	subtype(a0),(Last_star_pole_hit).w
-	move.b	(Last_star_pole_hit).w,(Saved_Last_star_pole_hit).w
+;	cmpa.w	#MainCharacter,a3	; is it player 1?
+;	bne.w	Obj79_SaveDataPlayer2	; if not, branch
+;	move.b	subtype(a0),(Last_star_pole_hit).w
+;	move.b	(Last_star_pole_hit).w,(Saved_Last_star_pole_hit).w
 	; move.w	x_pos(a0),(Saved_x_pos).w
 	; move.w	y_pos(a0),(Saved_y_pos).w
 	; move.w	(MainCharacter+art_tile).w,(Saved_art_tile).w
@@ -73700,6 +73695,7 @@ ObjB2_Wait_Leader_position:
 	cmpi.w	#$5EC,y_pos(a1)
 	blo.s	+	; rts
 	move.b	#1,(WFZ_Can_Skip).w
+	move.l	(Score).w,(Score_Saved).w		
 	clr.w	(Ctrl_1_Logical).w
 	addq.w	#1,objoff_2E(a0)
 	cmpi.w	#$40,objoff_2E(a0)
@@ -79767,6 +79763,7 @@ loc_3F2B4:
 +
 	move.w	#100,d0
 	jsr		AddPoints
+	move.l	(Score).w,(Score_Saved).w	
 	move.w	#-$400,y_vel(a2)
 	move.w	#$800,x_vel(a2)
 	addq.b	#2,routine_secondary(a2)
@@ -80755,12 +80752,18 @@ KillCharacter:
 	move.w	#SndID_HurtBySpikes,d0
 +
 	jsr	(PlaySound).l
+	clr.b	(Last_star_pole_hit).w
 +
 	cmpa.w	#MainCharacter,a0
-	bne.s	+
-	tst.l	(Score).l
-	bne.s	+
+	bne.s	++
 	clr.b	(Update_HUD_timer).w	
+	tst.b	(Option_PenaltySystem).w
+	beq.s	+
+	sub.l	#500,(Score_Saved).w
+	bgt.s	++
++	
+	clr.l	(Score_Saved).w
+	clr.l	(Score).w
 	move.w	#MusID_HPZ,d0	; HPZ = Silence in S2 Score Rush
 	jsr	(PlaySound2).l
 +	

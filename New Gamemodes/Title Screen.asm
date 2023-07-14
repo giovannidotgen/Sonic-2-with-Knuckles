@@ -269,20 +269,6 @@ TitleScreen_Loop:
 	; ; At this point, the start button has been pressed and it's time to
 	; ; enter one player mode, two player mode, or the options menu.
 
-	move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-
-	move.b	#1,(Life_count).w
-	move.b	#1,(Life_count_2P).w
-
-	moveq	#0,d0
-	move.w	d0,(Ring_count).w
-	move.l	d0,(Timer).w
-	move.l	#500,(Score).w
-	move.w	d0,(Ring_count_2P).w
-	move.l	d0,(Timer_2P).w
-	move.l	#500,(Score_2P).w
-	move.b	d0,(Continue_count).w
-
 	move.b	#MusID_FadeOut,d0 ; prepare to stop music (fade out)
 	bsr.w	PlaySound
 
