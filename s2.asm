@@ -417,7 +417,7 @@ GameMode_SegaScreen:	bra.w	SegaScreen		; SEGA screen mode
 GameMode_TitleScreen:	bra.w	TitleScreen		; Title screen mode
 GameMode_Demo:		bra.w	Level			; Demo mode
 GameMode_Level:		bra.w	Level			; Zone play mode
-GameMode_SpecialStage:	bra.w	SpecialStage		; Special stage play mode
+GameMode_SpecialStage:	bra.w	JmpTo_SpecialStage		; Special stage play mode
 GameMode_ContinueScreen:bra.w	JmpTo_ContinueScreen		; Continue mode
 GameMode_2PResults:	bra.w	JmpTo_TwoPlayerResults	; 2P results mode
 GameMode_2PLevelSelect:	bra.w	LevelSelectMenu2P	; 2P level select mode
@@ -465,6 +465,9 @@ JmpTo_TwoPlayerResults:
 ; ===========================================================================
 JmpTo_ContinueScreen:
 	jmp (ContinueScreen).l	
+; ===========================================================================
+JmpTo_SpecialStage:
+	jmp	(SpecialStage).l
 ; ===========================================================================
 
 InitSRAM:
@@ -8656,7 +8659,7 @@ ssInitTableBuffers:
 ssLdComprsdData:
 	lea	(ArtKos_Special).l,a0
 	lea	(Chunk_Table).l,a1
-	bsr.w	KosDec
+	jsr		KosDec
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_VRAM_Start),VRAM,WRITE),(VDP_control_port).l
 	lea	(VDP_data_port).l,a1
 	movea.l	#Chunk_Table,a0
@@ -8671,13 +8674,13 @@ ssLdComprsdData:
 
 	lea	(MiscKoz_SpecialPerspective).l,a0
 	lea	(SSRAM_MiscKoz_SpecialPerspective).l,a1
-	bsr.w	KosDec
+	jsr		KosDec
 	lea	(MiscKoz_SpecialLevelLayout).l,a0
 	lea	(SSRAM_MiscNem_SpecialLevelLayout).w,a4
-	bsr.w	NemDecToRAM
+	jsr		NemDecToRAM
 	lea	(MiscKoz_SpecialObjectLocations).l,a0
 	lea	(SSRAM_MiscKoz_SpecialObjectLocations).w,a1
-	bsr.w	KosDec
+	jsr		KosDec
 	rts
 ; End of function ssLdComprsdData
 
@@ -8691,31 +8694,31 @@ SSPlaneB_Background:
 	movea.l	#Chunk_Table,a1
 	lea	(MapEng_SpecialBackBottom).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_SpecialBack,0,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	movea.l	#Chunk_Table+$400,a1
 	lea	(MapEng_SpecialBack).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_SpecialBack,0,0),d0
-	bsr.w	EniDec
+	jsr		EniDec
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(VRAM_SS_Plane_B_Name_Table + $0000,VRAM,WRITE),d0
 	moveq	#$1F,d1
 	moveq	#$1F,d2
-	jsrto	PlaneMapToVRAM_H80_SpecialStage, PlaneMapToVRAM_H80_SpecialStage
+	jsr		PlaneMapToVRAM_H80_SpecialStage
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(VRAM_SS_Plane_B_Name_Table + $0040,VRAM,WRITE),d0
 	moveq	#$1F,d1
 	moveq	#$1F,d2
-	jsrto	PlaneMapToVRAM_H80_SpecialStage, PlaneMapToVRAM_H80_SpecialStage
+	jsr		PlaneMapToVRAM_H80_SpecialStage
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(VRAM_SS_Plane_B_Name_Table + $0080,VRAM,WRITE),d0
 	moveq	#$1F,d1
 	moveq	#$1F,d2
-	jsrto	PlaneMapToVRAM_H80_SpecialStage, PlaneMapToVRAM_H80_SpecialStage
+	jsr		PlaneMapToVRAM_H80_SpecialStage
 	lea	(Chunk_Table).l,a1
 	move.l	#vdpComm(VRAM_SS_Plane_B_Name_Table + $00C0,VRAM,WRITE),d0
 	moveq	#$1F,d1
 	moveq	#$1F,d2
-	jsrto	PlaneMapToVRAM_H80_SpecialStage, PlaneMapToVRAM_H80_SpecialStage
+	jsr		PlaneMapToVRAM_H80_SpecialStage
 	move	#$2300,sr
 	rts
 ; End of function SSPlaneB_Background
@@ -8732,7 +8735,7 @@ SSDecompressPlayerArt:
 	lea (ArtNem_SpecialKnuckles).l,a0
 +	
 	lea	(SSRAM_ArtNem_SpecialSonicAndTails & $FFFFFF).l,a4
-	bra.w	NemDecToRAM
+	jmp	NemDecToRAM
 ; End of function SSDecompressPlayerArt
 
 
@@ -9813,7 +9816,7 @@ SSInitPalAndData:
 	bne.s	+					; if not, branch
 	moveq	#PalID_SSK,d0	
 +	
-	bsr.w	PalLoad_ForFade
+	jsr		PalLoad_ForFade
 	lea_	SpecialStage_Palettes,a1
 	moveq	#0,d0
 	move.b	(Current_Special_Stage).w,d0
@@ -9826,7 +9829,7 @@ SSInitPalAndData:
 	addi_.w	#6,d0
 +
 	move.w	(a1,d0.w),d0
-	bsr.w	PalLoad_ForFade
+	jsr		PalLoad_ForFade
 	lea	(SSRAM_MiscKoz_SpecialObjectLocations).w,a0
 	adda.w	(a0,d1.w),a0
 	move.l	a0,(SS_CurrentLevelObjectLocations).w
@@ -9906,7 +9909,7 @@ JmpTo_Hud_Base ; JmpTo
 ; ----------------------------------------------------------------------------
 ; loc_7870:
 ContinueScreen:
-	bsr.w	Pal_FadeToBlack
+	jsr		Pal_FadeToBlack
 	move	#$2700,sr
 	move.w	(VDP_Reg1_val).w,d0
 	andi.b	#$BF,d0
@@ -9946,7 +9949,7 @@ ContinueScreen:
 	moveq	#$A,d1
 	jsr	(ContScrCounter).l
 	moveq	#PalID_SS1,d0
-	bsr.w	PalLoad_ForFade
+	jsr		PalLoad_ForFade
 	move.w	#0,(Target_palette).w
 	move.b	#MusID_Continue,d0
 	jsr		PlayMusic
@@ -9963,11 +9966,11 @@ ContinueScreen:
 	jsr	(RunObjects).l
 	jsr	(BuildSprites).l
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
-	bsr.w	Pal_FadeFromBlack
+	jsr		Pal_FadeFromBlack
 -
 	move.b	#VintID_Menu,(Vint_routine).w
 	bsr.w	WaitForVint
@@ -10292,7 +10295,7 @@ JmpTo_Adjust2PArtPointer ; JmpTo
 ; ===========================================================================
 ; loc_7D50:
 TwoPlayerResults:
-	bsr.w	Pal_FadeToBlack
+	jsr		Pal_FadeToBlack
 	move	#$2700,sr
 	move.w	(VDP_Reg1_val).w,d0
 	andi.b	#$BF,d0
@@ -10350,7 +10353,7 @@ TwoPlayerResults:
 	moveq	#PLCID_Std1,d0
 	jsr		LoadPLC2
 	moveq	#PalID_Menu,d0
-	bsr.w	PalLoad_ForFade
+	jsr		PalLoad_ForFade
 	moveq	#0,d0
 	move.b	#MusID_2PResult,d0
 	cmp.w	(Level_Music).w,d0
@@ -10371,7 +10374,7 @@ TwoPlayerResults:
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
-	bsr.w	Pal_FadeFromBlack
+	jsr		Pal_FadeFromBlack
 
 -	move.b	#VintID_Menu,(Vint_routine).w
 	bsr.w	WaitForVint
@@ -11412,7 +11415,7 @@ MenuScreen:
 	clr.l	(Camera_X_pos).w
 	clr.l	(Camera_Y_pos).w
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
@@ -11421,7 +11424,7 @@ MenuScreen:
 ;loc_8DA8:
 LevelSelect2P_Main:
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	move	#$2700,sr
 	bsr.w	ClearOld2PLevSelSelection
 	bsr.w	LevelSelect2P_Controls
@@ -11678,7 +11681,7 @@ MenuScreen_Options:
 	clr.w	(Correct_cheat_entries).w
 	clr.w	(Correct_cheat_entries_2).w
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
@@ -11686,7 +11689,7 @@ MenuScreen_Options:
 ; loc_9060:
 OptionScreen_Main:
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	move	#$2700,sr
 	bsr.w	OptionScreen_DrawUnselected
 	bsr.w	OptionScreen_Controls
@@ -12035,7 +12038,7 @@ MenuScreen_LevelSelect:
 	clr.w	(Correct_cheat_entries_2).w
 
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
@@ -12046,7 +12049,7 @@ MenuScreen_LevelSelect:
 ;loc_93AC:
 LevelSelect_Main:	; routine running during level select
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 
 	move	#$2700,sr
 
@@ -86092,6 +86095,8 @@ MapEng_CSelTails:	BINCLUDE	"mappings/misc/Menu - Characters (Tails).bin"
 MapEng_CSelKnuckles:	BINCLUDE	"mappings/misc/Menu - Characters (Knuckles).bin"
 	even
 MapEng_CSelContainer:	BINCLUDE	"mappings/misc/Character container.bin"
+	even
+MapEng_InstContainers:	BINCLUDE	"mappings/misc/Instruction containers.bin"
 ;---------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Sonic/Miles animated background patterns	; ArtUnc_7CD2C:

@@ -61,7 +61,7 @@ ScoreRushMenu:
 	move.l	#vdpComm(VRAM_Plane_B_Name_Table,VRAM,WRITE),d0
 	moveq	#$27,d1
 	moveq	#$1B,d2
-	jsrto	PlaneMapToVRAM_H40, JmpTo_PlaneMapToVRAM_H40	; fullscreen background
+	jsr		PlaneMapToVRAM_H40	; fullscreen background
 
 ; clear a bunch of variables
 	clr.b	(LevSel_HoldTimer).w
@@ -76,7 +76,7 @@ ScoreRushMenu:
 
 ; initialize the Sonic-Miles BG	
 	lea	(Anim_SonicMilesBG).l,a2
-	jsrto	Dynamic_Normal, JmpTo2_Dynamic_Normal
+	jsr	Dynamic_Normal
 
 ; get palette data
 	moveq	#PalID_Menu,d0
@@ -93,7 +93,7 @@ ScoreRushMenu:
 
 ; get music
 	move.b	#MusID_2PResult,d0
-	jsrto	PlayMusic, JmpTo_PlayMusic
+	jsr		PlayMusic
 
 ; initialize text
 	move.w	#4,(Vscroll_Factor_FG).w	; Align text vertically
@@ -127,7 +127,7 @@ Menu_Loop:
 	move.b	#VintID_Menu,(Vint_routine).w
 	bsr.w	WaitForVint
 	lea	(Anim_SonicMilesBG).l,a2
-	jsrto	Dynamic_Normal, JmpTo2_Dynamic_Normal	
+	jsr	Dynamic_Normal
 	bra.w	MainMenu_Controls	; manipulates stack
 	; MainMenu_Controls doubles as the loop's "rts", returning to whatever address is
 	; placed in the stack during execution
@@ -139,9 +139,13 @@ Menu_Loop:
 ; ===========================================================================
 
 MainMenu_InitIndex:
-	dc.w	TextInit_GameSel-MainMenu_InitIndex		; Gamemode selection
-	dc.w	TextInit_Settings-MainMenu_InitIndex	; Settings
-	dc.w	TextInit_CharSel-MainMenu_InitIndex		; Character Select - Score Rush
+	dc.w	TextInit_GameSel-MainMenu_InitIndex			; Gamemode selection
+	dc.w	TextInit_Settings-MainMenu_InitIndex		; Settings
+	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Score Rush
+	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Endless Rush
+	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Quick Rush	
+	dc.w	TextInit_Instructions-MainMenu_InitIndex	; Instructions Manual
+;	dc.w	TextInit_QuickRush-MainMenu_InitIndex		; Level Select - Quick Rush
 
 ; ===========================================================================
 ; Text initialization routines
@@ -160,6 +164,10 @@ TextInit_CharSel:
 	bsr.w	CharSel_Headings
 	bsr.w	CharSel_Difficulties
 	bra.w	CharSel_LoadPlayer
+	
+TextInit_Instructions:
+	bsr.w	Instructions_Headings
+	bra.w	Instructions_PageText
 	
 ; ===========================================================================
 ; Controls subroutine: Main Menu
@@ -183,8 +191,51 @@ MenuCtrls_Index:
 		dc.w	GameSel_Controls-MenuCtrls_Index
 		dc.w	Settings_Controls-MenuCtrls_Index
 		dc.w	CharSel_Controls-MenuCtrls_Index
+		dc.w	CharSel_Controls-MenuCtrls_Index
+		dc.w	CharSel_Controls-MenuCtrls_Index
+		dc.w	Instructions_Controls-MenuCtrls_Index		
 
 ; ===========================================================================
+
+Instructions_GoBack:
+		move.w	#3,(Options_menu_box).w
+		move.l	#Menu_Update,(sp)	; overwrite stack
+		move.l	#"UPDT",d6
+		clr.b	(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Checkpoint,d0
+		jmp		PlaySound	
+	
+Instructions_Controls:
+		btst	#button_B,(Ctrl_1_Press).w
+		bne.w	Instructions_GoBack
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
+		andi.b	#$C,d1		; is left/right pressed and held?
+		bne.s	Instructions_LeftRight	; if yes, branch
+		rts	
+
+Instructions_LeftRight:	
+		move.w  (Options_menu_box).w,d2        ; load choice number		
+		btst	#2,d1		; is left pressed?
+		beq.s	Instructions_Right	; if not, branch
+		subq.w	#1,d2		; subtract 1 to selection
+		bpl.s	Instructions_Right
+		move.w  #10,d2     
+		
+Instructions_Right:
+		btst	#3,d1		; is right pressed?
+		beq.s	Instructions_Refresh	; if not, branch
+		addq.w	#1,d2	; add 1 selection
+		cmp.w	#10,d2
+		ble.s	Instructions_Refresh
+		move.w	#0,d2	
+		
+Instructions_Refresh:
+		move.w	d2,(Options_menu_box).w
+		bra.w	Instructions_PageText
+		rts
+
+; ===========================================================================
+
 CharSel_GoBack:
 		clr.w	(Options_menu_box).w
 		move.l	#Menu_Update,(sp)	; overwrite stack
@@ -457,7 +508,7 @@ GameSel_StartEvents:
 .StartEvents_Index:	dc.w GameSel_ScoreRush-.StartEvents_Index		; Score Rush
 		dc.w .Start_Null-.StartEvents_Index		; Endless Rush
 		dc.w .Start_Null-.StartEvents_Index	; Quick Rush
-		dc.w .Start_Null-.StartEvents_Index		; Instructions
+		dc.w GameSel_Instructions-.StartEvents_Index		; Instructions
 		dc.w GameSel_Settings-.StartEvents_Index	     	; Settings
 		dc.w .Start_Null-.StartEvents_Index		; Leaderboards
 		dc.w .Start_Null-.StartEvents_Index		; View credits
@@ -465,6 +516,14 @@ GameSel_StartEvents:
 
 .Start_Null:
 		rts
+		
+GameSel_Instructions:
+	clr.w	(Options_menu_box).w
+	move.l	#Menu_Update,(sp)	; overwrite stack
+	move.l	#"UPDT",d6
+	move.b	#5,(MainMenu_Screen).w	; set menu
+	move.w	#SndID_Checkpoint,d0
+	jmp		PlaySound		
 		
 GameSel_Settings:	
 	clr.w	(Options_menu_box).w
@@ -651,7 +710,49 @@ Settings_Values:
 		move.l	d4,4(a6)
 		moveq	#2,d2					; number of characters to be rendered -1
 		bra.w	SingleLineRender		; render one line of text
+
+; ===========================================================================
+
+Instructions_Headings:
+	lea	(Chunk_Table).l,a1
+	lea	(MapEng_InstContainers).l,a0
+	move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,1,0),d0
+	jsr		EniDec
+	
+	lea	(Chunk_Table).l,a1
+	move.l	#$41840003,d0
+	moveq	#36,d1
+	moveq	#22,d2
+	jmp		PlaneMapToVRAM_H40	
 		
+Instructions_PageText:
+	moveq	#0,d1
+	lea	(TextData_PageTitles).l,a1 ; where to fetch the lines from
+	move.w	(Options_menu_box).w,d1
+	mulu.w	#34,d1
+	adda.l	d1,a1
+	move.l	#$42060003,4(a6)	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#33,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
+
+	moveq	#0,d1
+	lea	(TextData_PageBodies).l,a1 ; where to fetch the lines from
+	move.w	(Options_menu_box).w,d1
+	mulu.w	#34*16,d1	
+	adda.l	d1,a1
+	move.l	#$44060003,d4	; (CHANGE) starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#15,d1		; number of lines of text to be displayed -1
+
+-
+	move.l	d4,4(a6)
+	moveq	#33,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
+	addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
+	dbf	d1,-
+	
+	rts
 
 ; ===========================================================================
 
@@ -765,6 +866,221 @@ CharSel_Difficulties:
 ; ===========================================================================
 ; All text data used by this screen.
 ; ===========================================================================	
+
+TextData_PageTitles:
+
+	dc.b	"PAGE 1 - WELCOME!                 "
+	dc.b	"PAGE 2 - CONTROLS                 "
+	dc.b	"PAGE 3 - THE SCORE RUSH GIMMICK   "
+	dc.b	"PAGE 4 - THE SCORE RUSH GAMEMODE  "
+	dc.b	"PAGE 5 - THE ENDLESS RUSH         "
+	dc.b	"PAGE 6 - THE QUICK RUSH           "
+	dc.b	"PAGE 7 - GETTING POINTS           "
+	dc.b	"PAGE 8 - POWER-UPS                "
+	dc.b	"PAGE 9 - PENALTY SYSTEM           "
+	dc.b	"PAGE 10 - SAVE DATA               "
+	dc.b	"PAGE 11 - BUILD INFORMATION       "	
+
+TextData_PageBodies:
+
+; Page 1
+	dc.b	"WELCOME TO THE SONIC 2 - SCORE    "
+	dc.b	"RUSH USER MANUAL!                 "
+	dc.b	"                                  "
+	dc.b	"TO NAVIGATE THROUGH THE MANUAL,   "
+	dc.b	"PRESS LEFT AND RIGHT. ONCE YOU'RE "
+	dc.b	"READY, PRESS THE B BUTTON TO      "
+	dc.b	"RETURN TO THE MAIN MENU.          "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	
+; Page 2
+	dc.b	"ALL MOVES FROM THE OFFICIAL SONIC "
+	dc.b	"GAMES ARE USED THE SAME WAY YOU   "
+	dc.b	"WOULD USE THEM THERE. ADDITIONAL  "
+	dc.b	"MOVES ARE EXPLAINED IN THE        "
+	dc.b	"SETTINGS.                         "
+	dc.b	"                                  "
+	dc.b	"WHILE THE GAME IS PAUSED, PRESS A "
+	dc.b	"TO RETURN TO THE MAIN MENU, AND,  "
+	dc.b	"IF THE PENALTY SYSTEM IS ENABLED, "
+	dc.b	"PRESS C TO RESTART THE LEVEL.     "
+	dc.b	"                                  "
+	dc.b	"PRESS A TO SKIP THE SCORE TALLY IN"
+	dc.b	"QUICK RUSH MODE.                  "
+	dc.b	"                                  "
+	dc.b	"YOU CAN SKIP THE WING FORTRESS    "
+	dc.b	"CUTSCENE BY PRESSING START.       "
+
+; Page 3
+	dc.b	"THE SCORE RUSH IS A CHALLENGE IN  "
+	dc.b	"WHICH YOU MUST GET THE HIGHEST    "
+	dc.b	"POSSIBLE SCORE WHILE IT GOES DOWN."
+	dc.b	"                                  "
+	dc.b	"BASED ON DIFFICULTY, YOUR SCORE   "
+	dc.b	"MAY GO DOWN FASTER.               "
+	dc.b	"                                  "
+	dc.b	"IN GENERAL, IF YOUR SCORE REACHES "
+	dc.b	"ZERO, YOU LOSE.                   "
+	dc.b	"                                  "
+	dc.b	"TO MAKE IT POSSIBLE TO EVEN BEGIN "
+	dc.b	"THE GAME, YOU'RE GIVEN 5000 POINTS"
+	dc.b	"AT THE VERY START.                "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	
+; Page 4
+	dc.b	"THE SCORE RUSH GAMEMODE INVOLVES  "
+	dc.b	"GOING THROUGH THE ENTIRETY OF     "
+	dc.b	"SONIC 2, FROM START TO FINISH.    "
+	dc.b	"                                  "
+	dc.b	"PLACEMENT ON THE LEADERBOARDS     "
+	dc.b	"DEPENDS ON HOW MANY POINTS YOU'VE "
+	dc.b	"GOT BY THE END OF THE GAME, AND   "
+	dc.b	"YOU WILL NEED TO BEAT THE GAME    "
+	dc.b	"TO EVEN HAVE A CHANCE TO GET IN   "
+	dc.b	"THE LEADERBOARDS.                 "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+
+; Page 5
+	dc.b	"THE ENDLESS RUSH GAMEMODE IS, AS  "
+	dc.b	"THE NAME SUGGESTS, ENDLESS. AS    "
+	dc.b	"LONG AS YOU STAY ALIVE.           "
+	dc.b	"                                  "
+	dc.b	"THE LEVEL ORDER IS ENTIRELY       "
+	dc.b	"RANDOMIZED, AND BY GOING FURTHER  "
+	dc.b	"IN THE GAME, THE LEVELS WILL GET  "
+	dc.b	"HARDER, AND THE SCORE WILL GO DOWN"
+	dc.b	"FASTER.                           "
+	dc.b	"                                  "
+	dc.b	"IF YOUR SCORE BECOMES RED, IT     "
+	dc.b	"MEANS YOU HAVE REACHED THE HIGHEST"
+	dc.b	"DIFFICULTY. HOPEFULLY YOU LIKE    "
+	dc.b	"METROPOLIS, BECAUSE THERE WILL BE "
+	dc.b	"A LOT OF IT BY THEN!              "
+	dc.b	"                                  "
+
+; Page 6
+	dc.b	"THE QUICK RUSH IS VERY SIMILAR TO "
+	dc.b	"THE SCORE RUSH. HOWEVER, UNLIKE   "
+	dc.b	"IN THE SCORE RUSH, YOU WILL PLAY  "
+	dc.b	"A SINGULAR LEVEL. THE HIGHEST     "
+	dc.b	"SCORE EVER ACHIEVED WILL BE       "
+	dc.b	"RECORDED.                         "
+	dc.b	"                                  "
+	dc.b	"BECAUSE IT IS SO DISGUSTINGLY     "
+	dc.b	"OVERPOWERED, THE QUICK RUSH IS THE"
+	dc.b	"ONLY GAMEMODE IN WHICH YOU'LL BE  "
+	dc.b	"ABLE TO PLAY SKY CHASE ZONE.      "
+	dc.b	"DON'T BELIEVE IT? TRY DEFEATING   "
+	dc.b	"AS MANY BADNIKS AS POSSIBLE       "
+	dc.b	"WITHOUT JUMPING.                  "
+	dc.b	"                                  "
+	dc.b	"                                  "
+
+; Page 7
+	dc.b	"YOU CAN GET POINTS IN ANY OF THE  "
+	dc.b	"WAYS PROVIDED BY SONIC 2, WITH A  "
+	dc.b	"CAP OF 1000 POINTS PER BADNIK.    "
+	dc.b	"                                  "
+	dc.b	"YOU ALSO GET 50 POINTS PER RING   "
+	dc.b	"COLLECTED. LAMP POSTS, SIGNPOSTS  "
+	dc.b	"AND CAPSULES ALL AWARD YOU 1000   "
+	dc.b	"POINTS EACH. BOSS FIGHTS STILL    "
+	dc.b	"AWARD 1000 POINTS.                "
+	dc.b	"                                  "
+	dc.b	"SCORE DISPENSERS AWARD YOU 800    "
+	dc.b	"POINTS, BUT ONLY ONCE.            "
+	dc.b	"                                  "
+	dc.b	"GETTING HIT WILL COST YOU 1000    "
+	dc.b	"POINTS, BUT YOU CAN RECOVER SOME  "
+	dc.b	"OF THEM THROUGH SCATTERED RINGS.  "
+
+; Page 8
+	dc.b	"RING MONITORS, AS EXPECTED, AWARD "
+	dc.b	"500 POINTS EACH.                  "
+	dc.b	"                                  "
+	dc.b	"THE SHIELD ACTS LIKE IT USUALLY   "
+	dc.b	"DOES, WITH THE ADDED ADVANTAGE    "
+	dc.b	"THAT YOU DON'T LOSE POINTS WHEN   "
+	dc.b	"HIT.                              "
+	dc.b	"                                  "
+	dc.b	"WHILE YOU'RE INVINCIBLE, THE SCORE"
+	dc.b	"GETS HALTED, UNLESS THE SCORE IS  "
+	dc.b	"RED.                              "
+	dc.b	"                                  "
+	dc.b	"1-UP MONITORS NO LONGER AWARD     "
+	dc.b	"LIVES, BUT AWARD 2000 POINTS EACH."
+	dc.b	"KEEP IN MIND THESE ARE THE        "
+	dc.b	"KNUCKLES IN SONIC 2 LAYOUTS!      "
+
+; Page 9
+	dc.b	"THE PENALTY SYSTEM MAKES IT SO    "
+	dc.b	"THAT IF YOU DIE DURING THE SCORE  "
+	dc.b	"RUSH AND THE ENDLESS RUSH, IT'S   "
+	dc.b	"NOT AN IMMEDIATE LEVEL.           "
+	dc.b	"                                  "
+	dc.b	"IF YOU DIE, YOU WILL RESTART FROM "
+	dc.b	"THE BEGINNING OF THE LEVEL (AND   "
+	dc.b	"NOT FROM CHECKPOINTS!) WITH THE   "
+	dc.b	"SCORE YOU HAD THEN, MINUS 5000.   "
+	dc.b	"                                  "
+	dc.b	"IF YOU HAVE THE PENALTY SYSTEM    "
+	dc.b	"TURNED OFF, HAVE LESS THAN 5000   "
+	dc.b	"POINTS, OR ARE PLAYING THE QUICK  "
+	dc.b	"RUSH GAMEMODE, YOU GET ONLY ONE   "
+	dc.b	"LIFE.                             "
+	dc.b	"                                  "
+
+; Page 10
+	dc.b	"THIS GAME SUPPORTS SRAM!          "
+	dc.b	"IT WILL STORE YOUR SETTINGS, AS   "
+	dc.b	"WELL AS LEADERBOARDS, UNLESS YOU  "
+	dc.b	"GOT A WARNING SAYING OTHERWISE.   "
+	dc.b	"                                  "
+	dc.b	"IF YOU WISH TO RESET YOUR SAVE    "
+	dc.b	"DATA, YOU CAN DO IT BY HOLDING A, "
+	dc.b	"B, AND C DURING THE GIOVANNI      "
+	dc.b	"SPLASH SCREEN.                    "
+	dc.b	"                                  "
+	dc.b	"BEWARE THAT RESETTING YOUR SAVE   "
+	dc.b	"DATA IS IRREVERSIBLE, SO DO IT    "
+	dc.b	"ONLY IF YOU REALLY, ABSOLUTELY    "
+	dc.b	"WANT TO!                          "
+	dc.b	"                                  "
+	dc.b	"                                  "
+
+; Page 11
+	dc.b	"SONIC 2 - SCORE RUSH              "
+	dc.b	"                                  "
+	dc.b	"VERSION: ALPHA 2 (PRIVATE)        "
+	dc.b	"                                  "
+	dc.b	"THIS GAME IS NOT A PRODUCT        "
+	dc.b	"PRODUCED BY OR OFFICIALLY LICENSED"
+	dc.b	"FROM SEGA. IF YOU SPOT ANY        "
+	dc.b	"TECHNICAL ISSUES, REPORT THEM TO  "
+	dc.b	"GIOVANNI.GEN ON DISCORD, GIOVANNI "
+	dc.b	"ON SSRG, OR GIOVA ON SONIC RETRO. "
+	dc.b	"                                  "
+	dc.b	"THIS BUILD IS NOT INTENDED FOR    "
+	dc.b	"PUBLIC DISTRIBUTION. IF YOU DID   "
+	dc.b	"NOT RECEIVE THIS BUILD FROM       "
+	dc.b	"GIOVANNI, CONTACT ME THROUGH THE  "
+	dc.b	"MEANS LISTED ABOVE.               "	
+
 TextData_Version:
 	dc.b	"SONIC 2 - SCORE RUSH DEVBUILD"
 	dc.b	"        NOT FOR PUBLIC ACCESS"
