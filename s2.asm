@@ -1523,6 +1523,8 @@ Pause_ChkStart:
 	bra.s	Pause_Resume					; resume game
 	
 Pause_CheckC:
+	tst.b	(Option_PenaltySystem).w
+	beq.s	Pause_Loop
 	btst	#button_C,(Ctrl_1_Press).w	; is C button pressed?
 	beq.s	Pause_Loop					; if not, branch
 	move.b	#1,(Suicide_Flag).w

@@ -1066,7 +1066,7 @@ TextData_PageBodies:
 ; Page 11
 	dc.b	"SONIC 2 - SCORE RUSH              "
 	dc.b	"                                  "
-	dc.b	"VERSION: ALPHA 1.5 (PRIVATE)      "
+	dc.b	"VERSION: ALPHA 0.1.1 (PRIVATE)    "
 	dc.b	"                                  "
 	dc.b	"THIS GAME IS NOT A PRODUCT        "
 	dc.b	"PRODUCED BY OR OFFICIALLY LICENSED"
