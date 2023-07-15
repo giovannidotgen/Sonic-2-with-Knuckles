@@ -1147,9 +1147,9 @@ TextData_Descriptions:
 	dc.b	"TO DEFLECT BULLETS WHILE USING THEIR"
 	dc.b	"MID-AIR ABILITIES, LIKE IN SONIC 3. "
 	
-	dc.b	"THIS SETTING HAS NOT YET BEEN       "
-	dc.b	"IMPLEMENTED IN THIS BUILD. FEEL FREE"
-	dc.b	"TO USE SAVE STATES INSTEAD!         "
+	dc.b	"READ PAGES 2 AND 9 OF THE MANUAL FOR"
+	dc.b	"MORE INFORMATION ABOUT THIS SETTING."
+	dc.b	"                                    "
 	
 	
 TextData_CharSelect:
