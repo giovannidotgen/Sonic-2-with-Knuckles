@@ -578,12 +578,12 @@ Knuckles_Climbing_Wall:				  ; ...
 		move.w	#0,inertia(a0)
 		move.w	#0,x_vel(a0)
 		move.w	#0,y_vel(a0)
-		move.l	#$FFFFD600,($FFFFF796).w
-		cmp.b	#$D,lrb_solid_bit(a0)
-		beq.s	loc_3159F0
-		move.l	#$FFFFD900,($FFFFF796).w
+		move.l	(Primary_Collision).w,(Collision_addr).w
+		cmpi.b	#$D,lrb_solid_bit(a0)
+		beq.s	+
+		move.l	(Secondary_Collision).w,(Collision_addr).w
 
-loc_3159F0:					  ; ...
++					  ; ...
 		move.b	lrb_solid_bit(a0),d5
 		move.b	#$A,y_radius(a0)
 		move.b	#$A,x_radius(a0)
@@ -2187,12 +2187,12 @@ return_316934:					  ; ...
 
 
 Knuckles_DoLevelCollision2:			  ; ...
-		move.l	#$FFFFD600,($FFFFF796).w
-		cmp.b	#$C,top_solid_bit(a0)
-		beq.s	loc_31694E
-		move.l	#$FFFFD900,($FFFFF796).w
+		move.l	(Primary_Collision).w,(Collision_addr).w
+		cmpi.b	#$C,top_solid_bit(a0)
+		beq.s	+
+		move.l	(Secondary_Collision).w,(Collision_addr).w
 
-loc_31694E:					  ; ...
++:					  ; ...
 		move.b	lrb_solid_bit(a0),d5
 		move.w	x_vel(a0),d1
 		move.w	y_vel(a0),d2
@@ -2352,12 +2352,12 @@ return_316ADE:					  ; ...
 
 
 Knuckles_DoLevelCollision:			  ; ...
-		move.l	#$FFFFD600,($FFFFF796).w
-		cmp.b	#$C,top_solid_bit(a0)
-		beq.s	loc_316AF8
-		move.l	#$FFFFD900,($FFFFF796).w
+		move.l	(Primary_Collision).w,(Collision_addr).w
+		cmpi.b	#$C,top_solid_bit(a0)
+		beq.s	+
+		move.l	(Secondary_Collision).w,(Collision_addr).w
 
-loc_316AF8:					  ; ...
++:					  ; ...
 		move.b	lrb_solid_bit(a0),d5
 		move.w	x_vel(a0),d1
 		move.w	y_vel(a0),d2

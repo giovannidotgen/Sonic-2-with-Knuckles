@@ -2482,10 +2482,10 @@ return_1C958:
 
 ; loc_1C95A: Tails_Floor:
 Tails_DoLevelCollision:
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	move.b	lrb_solid_bit(a0),d5
 	move.w	x_vel(a0),d1

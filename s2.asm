@@ -5357,15 +5357,12 @@ LoadCollisionIndexes:
 	moveq	#0,d0
 	move.b	(Current_Zone).w,d0
 	lsl.w	#2,d0
-	move.l	#Primary_Collision,(Collision_addr).w
-	move.w	d0,-(sp)
+	move.l	(Primary_Collision).l,(Collision_addr).w
 	movea.l	Off_ColP(pc,d0.w),a0
-	lea	(Primary_Collision).w,a1
-	bsr.w	KosDec
-	move.w	(sp)+,d0
+	move.l  a0,(Primary_Collision).w
 	movea.l	Off_ColS(pc,d0.w),a0
-	lea	(Secondary_Collision).w,a1
-	bra.w	KosDec
+	move.l	a0,(Secondary_Collision).w
+	rts
 ; End of function LoadCollisionIndexes
 
 ; ===========================================================================
@@ -37062,10 +37059,10 @@ DPLC_InstaShield:include "mappings/spriteDPLC/DPLC - Insta-Shield.asm"
 
 ; loc_1E234: Sonic_AnglePos:
 AnglePos:
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	move.b	top_solid_bit(a0),d5
 	btst	#3,status(a0)
@@ -38002,10 +37999,10 @@ ConvertCollisionArray:
 
 ; loc_1EB84: Sonic_WalkSpeed:
 CalcRoomInFront:
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	move.b	lrb_solid_bit(a0),d5			; Want walls or ceilings
 	move.l	x_pos(a0),d3
@@ -38066,10 +38063,10 @@ loc_1EBE6:
 
 ; sub_1EC0A:
 CalcRoomOverHead:
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	move.b	lrb_solid_bit(a0),d5
 	move.b	d0,(Primary_Angle).w
@@ -38093,10 +38090,10 @@ CalcRoomOverHead:
 
 ; loc_1EC4E: Sonic_HitFloor:
 Sonic_CheckFloor:
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	move.b	top_solid_bit(a0),d5
 	move.w	y_pos(a0),d2
@@ -38182,10 +38179,10 @@ loc_1ECFE:
 	move.w	x_pos(a0),d3 ; a0=character
 	move.w	y_pos(a0),d2
 	subq.w	#4,d2
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$D,lrb_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	lea	(Primary_Angle).w,a4
 	move.b	#0,(a4)
@@ -38211,10 +38208,10 @@ ChkFloorEdge_Part2:
 	move.b	y_radius(a0),d0
 	ext.w	d0
 	add.w	d0,d2
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	lea	(Primary_Angle).w,a4
 	move.b	#0,(a4)
@@ -38238,10 +38235,10 @@ ChkFloorEdge2:
 	move.b	y_radius(a1),d0
 	ext.w	d0
 	add.w	d0,d2
-	move.l	#Primary_Collision,(Collision_addr).w
-	cmpi.b	#$C,top_solid_bit(a1)
+	move.l	(Primary_Collision).w,(Collision_addr).w
+	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	lea	(Primary_Angle).w,a4
 	move.b	#0,(a4)
@@ -85499,63 +85496,63 @@ ColArray2:	BINCLUDE	"collision/Collision array 2.bin"
 	even
 ;---------------------------------------------------------------------------------------
 ; EHZ and HTZ primary 16x16 collision index (Kosinski compression)
-ColP_EHZHTZ:	BINCLUDE	"collision/EHZ and HTZ primary 16x16 collision index.bin"
+ColP_EHZHTZ:	BINCLUDE	"collision/EHZ and HTZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; EHZ and HTZ secondary 16x16 collision index (Kosinski compression)
-ColS_EHZHTZ:	BINCLUDE	"collision/EHZ and HTZ secondary 16x16 collision index.bin"
+ColS_EHZHTZ:	BINCLUDE	"collision/EHZ and HTZ secondary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; MTZ primary 16x16 collision index (Kosinski compression)
-ColP_MTZ:	BINCLUDE	"collision/MTZ primary 16x16 collision index.bin"
+ColP_MTZ:	BINCLUDE	"collision/MTZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; HPZ primary 16x16 collision index (Kosinski compression)
-ColP_HPZ:	;BINCLUDE	"collision/HPZ primary 16x16 collision index.bin"
+ColP_HPZ:	;BINCLUDE	"collision/HPZ primary 16x16 collision index.unc"
 	;even
 ;---------------------------------------------------------------------------------------
 ; HPZ secondary 16x16 collision index (Kosinski compression)
-ColS_HPZ:	;BINCLUDE	"collision/HPZ secondary 16x16 collision index.bin"
+ColS_HPZ:	;BINCLUDE	"collision/HPZ secondary 16x16 collision index.unc"
 	;even
 ;---------------------------------------------------------------------------------------
 ; OOZ primary 16x16 collision index (Kosinski compression)
-ColP_OOZ:	BINCLUDE	"collision/OOZ primary 16x16 collision index.bin"
+ColP_OOZ:	BINCLUDE	"collision/OOZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; MCZ primary 16x16 collision index (Kosinski compression)
-ColP_MCZ:	BINCLUDE	"collision/MCZ primary 16x16 collision index.bin"
+ColP_MCZ:	BINCLUDE	"collision/MCZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; CNZ primary 16x16 collision index (Kosinski compression)
-ColP_CNZ:	BINCLUDE	"collision/CNZ primary 16x16 collision index.bin"
+ColP_CNZ:	BINCLUDE	"collision/CNZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; CNZ secondary 16x16 collision index (Kosinski compression)
-ColS_CNZ:	BINCLUDE	"collision/CNZ secondary 16x16 collision index.bin"
+ColS_CNZ:	BINCLUDE	"collision/CNZ secondary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; CPZ and DEZ primary 16x16 collision index (Kosinski compression)
-ColP_CPZDEZ:	BINCLUDE	"collision/CPZ and DEZ primary 16x16 collision index.bin"
+ColP_CPZDEZ:	BINCLUDE	"collision/CPZ and DEZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; CPZ and DEZ secondary 16x16 collision index (Kosinski compression)
-ColS_CPZDEZ:	BINCLUDE	"collision/CPZ and DEZ secondary 16x16 collision index.bin"
+ColS_CPZDEZ:	BINCLUDE	"collision/CPZ and DEZ secondary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; ARZ primary 16x16 collision index (Kosinski compression)
-ColP_ARZ:	BINCLUDE	"collision/ARZ primary 16x16 collision index.bin"
+ColP_ARZ:	BINCLUDE	"collision/ARZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; ARZ secondary 16x16 collision index (Kosinski compression)
-ColS_ARZ:	BINCLUDE	"collision/ARZ secondary 16x16 collision index.bin"
+ColS_ARZ:	BINCLUDE	"collision/ARZ secondary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; WFZ/SCZ primary 16x16 collision index (Kosinski compression)
-ColP_WFZSCZ:	BINCLUDE	"collision/WFZ and SCZ primary 16x16 collision index.bin"
+ColP_WFZSCZ:	BINCLUDE	"collision/WFZ and SCZ primary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 ; WFZ/SCZ secondary 16x16 collision index (Kosinski compression)
-ColS_WFZSCZ:	BINCLUDE	"collision/WFZ and SCZ secondary 16x16 collision index.bin"
+ColS_WFZSCZ:	BINCLUDE	"collision/WFZ and SCZ secondary 16x16 collision index.unc"
 	even
 ;---------------------------------------------------------------------------------------
 

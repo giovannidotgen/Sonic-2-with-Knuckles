@@ -2022,10 +2022,10 @@ return_1AEA8:
 
 ; loc_1AEAA: Sonic_Floor:
 Sonic_DoLevelCollision:
-	move.l	#Primary_Collision,(Collision_addr).w
+	move.l	(Primary_Collision).w,(Collision_addr).w
 	cmpi.b	#$C,top_solid_bit(a0)
 	beq.s	+
-	move.l	#Secondary_Collision,(Collision_addr).w
+	move.l	(Secondary_Collision).w,(Collision_addr).w
 +
 	move.b	lrb_solid_bit(a0),d5
 	move.w	x_vel(a0),d1

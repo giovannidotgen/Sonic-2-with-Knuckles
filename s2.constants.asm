@@ -1123,8 +1123,10 @@ p_pcyctarget: 	ds.l	1		; longword. points to the target palette cycle data in RO
 
 v_palcycleram:	ds.b	$1E6	; buffer. you can store the palette cycle data in here.
 
-Primary_Collision:		ds.b	$300
-Secondary_Collision:		ds.b	$300
+Primary_Collision:		ds.b	$4
+Secondary_Collision:		ds.b	$4
+
+				ds.b	$5F8	; unused
 
 SS_Shared_RAM_End:
 
