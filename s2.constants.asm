@@ -1744,7 +1744,7 @@ Option_PenaltySystem:	ds.b	1
 Option_Difficulty:		ds.b	1
 Option_SlowDucking:		ds.b	1
 ScoreRush_TimerSpeed:	ds.b	1
-				ds.b	$1	; $FFFFFF1F ; seems unused
+ScoreRush_Gamemode:		ds.b	1	
 
 Results_Data_2P:				; $18 (24) bytes
 EHZ_Results_2P:			ds.b	6	; 6 bytes

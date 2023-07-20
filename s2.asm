@@ -10369,14 +10369,14 @@ TwoPlayerResults:
 	clr.l	(Vscroll_Factor_P2_HInt).w
 	move.b	#ObjID_2PResults,(VSResults_HUD+id).w
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
 	jsr		Pal_FadeFromBlack
 
 -	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	lea	(Anim_SonicMilesBG).l,a2
 	jsrto	Dynamic_Normal, JmpTo_Dynamic_Normal
 	jsr	(RunObjects).l

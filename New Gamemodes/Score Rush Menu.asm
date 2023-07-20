@@ -145,7 +145,7 @@ MainMenu_InitIndex:
 	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Endless Rush
 	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Quick Rush	
 	dc.w	TextInit_Instructions-MainMenu_InitIndex	; Instructions Manual
-;	dc.w	TextInit_QuickRush-MainMenu_InitIndex		; Level Select - Quick Rush
+	dc.w	TextInit_QuickRush-MainMenu_InitIndex		; Level Select - Quick Rush
 
 ; ===========================================================================
 ; Text initialization routines
@@ -153,6 +153,12 @@ MainMenu_InitIndex:
 
 ; Gamemode selection	
 TextInit_GameSel:	
+	if emerald_hill_zone_act_1=0
+	move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
+	else
+	move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
+	endif
+
 	bsr.w	GameSel_Headings
 	bra.w	GameSel_Selections
 
@@ -168,6 +174,10 @@ TextInit_CharSel:
 TextInit_Instructions:
 	bsr.w	Instructions_Headings
 	bra.w	Instructions_PageText
+	
+TextInit_QuickRush:
+	bsr.w	QuickRush_Headings
+	bra.w	QuickRush_LevelName
 	
 ; ===========================================================================
 ; Controls subroutine: Main Menu
@@ -193,12 +203,89 @@ MenuCtrls_Index:
 		dc.w	CharSel_Controls-MenuCtrls_Index
 		dc.w	CharSel_Controls-MenuCtrls_Index
 		dc.w	CharSel_Controls-MenuCtrls_Index
-		dc.w	Instructions_Controls-MenuCtrls_Index		
+		dc.w	Instructions_Controls-MenuCtrls_Index
+		dc.w	QuickRush_Controls-MenuCtrls_Index
 
 ; ===========================================================================
 
+QuickRush_Start:
+		clr.w	(Options_menu_box).w
+		move.l	#Menu_Update,(sp)	; overwrite stack
+		move.l	#"UPDT",d6
+		move.b	#4,(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Checkpoint,d0
+		jmp		PlaySound	
+
+QuickRush_GoBack:
+		move.w	#2,(Options_menu_box).w
+		move.l	#Menu_Update,(sp)	; overwrite stack
+		move.l	#"UPDT",d6
+		clr.b	(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Checkpoint,d0
+		jmp		PlaySound	
+	
+QuickRush_Controls:
+		btst	#button_B,(Ctrl_1_Press).w
+		bne.s	QuickRush_GoBack
+		btst	#button_start,(Ctrl_1_Press).w
+		bne.s	QuickRush_Start
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
+		andi.b	#$C,d1		; is left/right pressed and held?
+		bne.s	QuickRush_LeftRight	; if yes, branch
+		rts	
+
+QuickRush_LeftRight:	
+		move.w  (Options_menu_box).w,d2        ; load choice number		
+		btst	#2,d1		; is left pressed?
+		beq.s	QuickRush_Right	; if not, branch
+		subq.w	#1,d2		; subtract 1 to selection
+		bpl.s	QuickRush_Right
+		move.w  #19,d2     
+		
+QuickRush_Right:
+		btst	#3,d1		; is right pressed?
+		beq.s	QuickRush_Refresh	; if not, branch
+		addq.w	#1,d2	; add 1 selection
+		cmp.w	#19,d2
+		ble.s	QuickRush_Refresh
+		move.w	#0,d2	
+		
+QuickRush_Refresh:
+		move.w	d2,(Options_menu_box).w
+		add.w	d2,d2
+		move.w	QuickRush_LevelList(pc,d2.w),(Current_ZoneAndAct).w
+		bra.w	QuickRush_LevelName
+		
+; ===========================================================================
+QuickRush_LevelList:
+		dc.w	emerald_hill_zone_act_1
+		dc.w	emerald_hill_zone_act_2
+		dc.w	chemical_plant_zone_act_1
+		dc.w	chemical_plant_zone_act_2
+		dc.w	aquatic_ruin_zone_act_1
+		dc.w	aquatic_ruin_zone_act_2
+		dc.w	casino_night_zone_act_1
+		dc.w	casino_night_zone_act_2
+		dc.w	hill_top_zone_act_1
+		dc.w	hill_top_zone_act_2
+		dc.w	mystic_cave_zone_act_1
+		dc.w	mystic_cave_zone_act_2
+		dc.w	oil_ocean_zone_act_1
+		dc.w	oil_ocean_zone_act_2
+		dc.w	metropolis_zone_act_1
+		dc.w	metropolis_zone_act_2
+		dc.w	metropolis_zone_act_3
+		dc.w	sky_chase_zone_act_1
+		dc.w	wing_fortress_zone_act_1
+		dc.w	death_egg_zone_act_1
+		
+; ===========================================================================
+
 Instructions_GoBack:
-		move.w	#3,(Options_menu_box).w
+		moveq	#0,d0
+		move.b	(MainMenu_Screen).w,d0
+		sub.b	#2,d0
+		move.w	d0,(Options_menu_box).w
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
 		clr.b	(MainMenu_Screen).w	; set menu
@@ -254,11 +341,6 @@ CharSel_BeginGame:
 		move.b	d0,(Continue_count).w		
 		move.w	d0,(Two_player_mode).w
 		move.w	d0,(Two_player_mode_copy).w
-		if emerald_hill_zone_act_1=0
-		move.w	d0,(Current_ZoneAndAct).w ; emerald_hill_zone_act_1
-		else
-		move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
-		endif
 
 		move.w	d0,(Current_Special_StageAndAct).w
 		move.w	d0,(Got_Emerald).w
@@ -507,7 +589,7 @@ GameSel_StartEvents:
 ; ===========================================================================
 .StartEvents_Index:	dc.w GameSel_ScoreRush-.StartEvents_Index		; Score Rush
 		dc.w .Start_Null-.StartEvents_Index		; Endless Rush
-		dc.w .Start_Null-.StartEvents_Index	; Quick Rush
+		dc.w GameSel_QuickRush-.StartEvents_Index	; Quick Rush
 		dc.w GameSel_Instructions-.StartEvents_Index		; Instructions
 		dc.w GameSel_Settings-.StartEvents_Index	     	; Settings
 		dc.w .Start_Null-.StartEvents_Index		; Leaderboards
@@ -534,12 +616,22 @@ GameSel_Settings:
 	jmp		PlaySound
 		
 GameSel_ScoreRush:	
+	clr.b	(ScoreRush_Gamemode).w	; set gamemode to "SCORE RUSH"
 	clr.w	(Options_menu_box).w
 	move.l	#Menu_Update,(sp)	; overwrite stack
 	move.l	#"UPDT",d6
 	move.b	#2,(MainMenu_Screen).w	; set menu
 	move.w	#SndID_Checkpoint,d0
 	jmp		PlaySound
+	
+GameSel_QuickRush:	
+	move.b	#2,(ScoreRush_Gamemode).w	; set gamemode to "QUICK RUSH"
+	clr.w	(Options_menu_box).w
+	move.l	#Menu_Update,(sp)	; overwrite stack
+	move.l	#"UPDT",d6
+	move.b	#6,(MainMenu_Screen).w	; set menu
+	move.w	#SndID_Checkpoint,d0
+	jmp		PlaySound	
 
 ; ===========================================================================
 ; Subroutine to render the Main menu's headings.
@@ -616,7 +708,7 @@ Settings_Init:
 
 Settings_Selections:
 		lea	(TextData_SettingsMenu).l,a1 ; where to fetch the lines from
-		move.l	#$41880003,d4	; (CHANGE) starting screen position 
+		move.l	#$418A0003,d4	; (CHANGE) starting screen position 
 		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
 		moveq	#9,d1		; number of lines of text to be displayed -1
 
@@ -631,7 +723,7 @@ Settings_Selections:
 	; calculate where the line to be yellowed out is
 		move.w	(Options_menu_box).w,d0		; move the currently selected line to d0
 		move.w	d0,d1					; store d0 in d1 for future use
-		move.l	#$41880003,d4			; where does the text begin on the screen
+		move.l	#$418A0003,d4			; where does the text begin on the screen
 		lsl.w	#8,d0					; logical shift by 8 bits (multiply by 8)
 		swap	d0						; swap the two words that compose d0
 		add.l	d0,d4					; add that to d4, effectively determining where the correct line is
@@ -864,9 +956,94 @@ CharSel_Difficulties:
 		rts				
 
 ; ===========================================================================
+
+QuickRush_Headings:
+	lea	(TextData_LevelSelect).l,a1 ; where to fetch the lines from
+	move.l	#$43040003,4(a6)	; starting screen position 
+	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#12,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender		
+	
+	lea	(TextData_TopScores).l,a1 ; where to fetch the lines from
+	move.l	#$461E0003,4(a6)	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#9,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender	
+	
+	lea	(TextData_Difficulties).l,a1
+	move.l	#$481E0003,d4	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#1,d1
+
+-	
+	move.l	d4,4(a6)
+	moveq	#5,d2		; number of characters to be rendered in a line -1	
+	bsr.w	SingleLineRender
+	addi.l	#(15*$20000),d4	; tiles to the right
+	dbf		d1,-
+
+	lea	(TextData_CharNames).l,a1 ; where to fetch the lines from
+	move.l	#$49040003,d4	; (CHANGE) starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#2,d1		; number of lines of text to be displayed -1
+
+-
+	move.l	d4,4(a6)
+	moveq	#7,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
+	addi.l	#(2*$800000),d4  ; replace number to the left with desired distance between each line
+	dbf	d1,-	
+	
+	rts
+	
+QuickRush_LevelName:
+	moveq	#0,d1
+	lea	(TextData_LevelNames).l,a1 ; where to fetch the lines from
+	move.w	(Options_menu_box).w,d1
+	mulu.w	#16,d1
+	adda.l	d1,a1
+	move.l	#$432C0003,4(a6)	; starting screen position 
+	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#15,d2		; number of characters to be rendered in a line -1
+	bra.w	SingleLineRender	
+
+; ===========================================================================
 ; All text data used by this screen.
 ; ===========================================================================	
 
+TextData_LevelSelect:
+	dc.b	"SELECT LEVEL:"
+
+TextData_TopScores:
+	dc.b	"TOP SCORES"
+	
+TextData_CharNames:
+	dc.b	"SONIC   "
+	dc.b	"TAILS   "
+	dc.b	"KNUCKLES"
+
+TextData_LevelNames:
+	dc.b	"  EMERALD HILL 1"
+	dc.b	"  EMERALD HILL 2"
+	dc.b	"CHEMICAL PLANT 1"
+	dc.b	"CHEMICAL PLANT 2"
+	dc.b	"  AQUATIC RUIN 1"
+	dc.b	"  AQUATIC RUIN 2"
+	dc.b	"  CASINO NIGHT 1"
+	dc.b	"  CASINO NIGHT 2"
+	dc.b	"      HILL TOP 1"
+	dc.b	"      HILL TOP 2"
+	dc.b	"   MYSTIC CAVE 1"
+	dc.b	"   MYSTIC CAVE 2"
+	dc.b	"     OIL OCEAN 1"
+	dc.b	"     OIL OCEAN 2"
+	dc.b	"    METROPOLIS 1"
+	dc.b	"    METROPOLIS 2"
+	dc.b	"    METROPOLIS 3"
+	dc.b	"       SKY CHASE"
+	dc.b	"   WING FORTRESS"
+	dc.b	"       DEATH EGG"
+	
 TextData_PageTitles:
 
 	dc.b	"PAGE 1 - WELCOME!                 "
