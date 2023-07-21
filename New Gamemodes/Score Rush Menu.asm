@@ -958,8 +958,19 @@ CharSel_Difficulties:
 ; ===========================================================================
 
 QuickRush_Headings:
+	lea	(Chunk_Table).l,a1
+	lea	(MapEng_QuickContainers).l,a0
+	move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,1,0),d0
+	jsr		EniDec
+	
+	lea	(Chunk_Table).l,a1
+	move.l	#$41840003,d0
+	moveq	#36,d1
+	moveq	#22,d2
+	jsr		PlaneMapToVRAM_H40
+
 	lea	(TextData_LevelSelect).l,a1 ; where to fetch the lines from
-	move.l	#$43040003,4(a6)	; starting screen position 
+	move.l	#$43080003,4(a6)	; starting screen position 
 	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
 	moveq	#12,d2		; number of characters to be rendered in a line -1
 	bsr.w	SingleLineRender		
@@ -971,7 +982,7 @@ QuickRush_Headings:
 	bsr.w	SingleLineRender	
 	
 	lea	(TextData_Difficulties).l,a1
-	move.l	#$481E0003,d4	; starting screen position 
+	move.l	#$48220003,d4	; starting screen position 
 	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
 	moveq	#1,d1
 
@@ -979,11 +990,11 @@ QuickRush_Headings:
 	move.l	d4,4(a6)
 	moveq	#5,d2		; number of characters to be rendered in a line -1	
 	bsr.w	SingleLineRender
-	addi.l	#(18*$20000),d4	; tiles to the right
+	addi.l	#(14*$20000),d4	; tiles to the right
 	dbf		d1,-
 
 	lea	(TextData_CharNames).l,a1 ; where to fetch the lines from
-	move.l	#$49040003,d4	; (CHANGE) starting screen position 
+	move.l	#$49080003,d4	; (CHANGE) starting screen position 
 	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
 	moveq	#2,d1		; number of lines of text to be displayed -1
 
@@ -1003,7 +1014,7 @@ QuickRush_LevelName:
 	move.w	(Options_menu_box).w,d1
 	mulu.w	#16,d1
 	adda.l	d1,a1
-	move.l	#$432C0003,4(a6)	; starting screen position 
+	move.l	#$43280003,4(a6)	; starting screen position 
 	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
 	moveq	#15,d2		; number of characters to be rendered in a line -1
 	bsr.w	SingleLineRender	
@@ -1019,7 +1030,7 @@ QuickRush_LevelName:
 	mulu.w	#24,d0						; by 2 for difficulties, by 3 for characters, by 4 for alignment
 	adda.l	d0,a1						; align to correct set of leaderboards entries
 	
-	move.l	#$49140003,d4				; (CHANGE) starting screen position 
+	move.l	#$49180003,d4				; (CHANGE) starting screen position 
 	move.w	#$A68F,d3					; which palette the font should use and where it is in VRAM	
 	moveq	#2,d6						; number of lines to render - 1
 	
@@ -1039,15 +1050,14 @@ QuickRush_LevelName:
 ; wanna see me write SHIT CODE!?!?!?!?	
 	
 	move.w	#$A68F,(a6)					; 0
+	tst		d5
+	beq.s	.skip
 	move.w	#0,(a6)						; whitespace
 	move.w	#0,(a6)						; whitespace
-	move.w	#0,(a6)						; whitespace	
-	move.w	#0,(a6)						; whitespace
-	move.w	#0,(a6)						; whitespace	
-	move.w	#0,(a6)						; whitespace	
-		
+				
 	dbf		d5,.subloop
-	
+
+.skip:	
 	addi.l	#(2*$800000),d4
 	dbf		d6,.loop
 	

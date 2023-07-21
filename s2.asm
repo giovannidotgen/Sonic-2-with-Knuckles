@@ -86111,6 +86111,8 @@ MapEng_CSelKnuckles:	BINCLUDE	"mappings/misc/Menu - Characters (Knuckles).bin"
 MapEng_CSelContainer:	BINCLUDE	"mappings/misc/Character container.bin"
 	even
 MapEng_InstContainers:	BINCLUDE	"mappings/misc/Instruction containers.bin"
+	even
+MapEng_QuickContainers:	BINCLUDE	"mappings/misc/Quick Rush containers.bin"
 ;---------------------------------------------------------------------------------------
 ; Uncompressed art
 ; Sonic/Miles animated background patterns	; ArtUnc_7CD2C:
