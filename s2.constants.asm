@@ -1934,7 +1934,7 @@ Leaderboards_EndlessRush:
 				; Math: same as above.
 
     if * > Leaderboards_RAM_End
-	fatal "Leaderboards take up too much RAM."
+	fatal "Leaderboards exceed size of leaderboards RAM buffer."
     endif				
 	dephase
 

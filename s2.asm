@@ -485,6 +485,17 @@ InitSRAM:
 	bra.s	-
 	
 +
+
+; Test values for the Quick Rush
+	moveq	#1,d0
+	lea		(Leaderboards_QuickRush).w,a1
+
+-	
+	move.l	d0,(a1)+
+	addq.l	#1,d0
+	cmpa.l	#Leaderboards_ScoreRush,a1
+	blt.s	-
+
 	rts
 
 ; ===========================================================================
@@ -83471,12 +83482,16 @@ loc_411CE:
 ; for HUD counter
 ; ---------------------------------------------------------------------------
 				; byte_411FC:
-Hud_100000:	dc.l 100000	; byte_41200: ; Hud_10000:
-		dc.l 10000	; byte_41204:
-Hud_1000:	dc.l 1000	; byte_41208:
-Hud_100:	dc.l 100	; byte_4120C:
-Hud_10:		dc.l 10		; byte_41210:
-Hud_1:		dc.l 1
+Hud_1000000000: dc.l 1000000000				
+				dc.l 100000000
+				dc.l 10000000
+				dc.l 1000000
+Hud_100000:		dc.l 100000	; byte_41200: ; Hud_10000:
+				dc.l 10000	; byte_41204:
+Hud_1000:		dc.l 1000	; byte_41208:
+Hud_100:		dc.l 100	; byte_4120C:
+Hud_10:			dc.l 10		; byte_41210:
+Hud_1:			dc.l 1
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to load time numbers patterns

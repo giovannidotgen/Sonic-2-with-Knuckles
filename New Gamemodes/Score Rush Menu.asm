@@ -979,7 +979,7 @@ QuickRush_Headings:
 	move.l	d4,4(a6)
 	moveq	#5,d2		; number of characters to be rendered in a line -1	
 	bsr.w	SingleLineRender
-	addi.l	#(15*$20000),d4	; tiles to the right
+	addi.l	#(18*$20000),d4	; tiles to the right
 	dbf		d1,-
 
 	lea	(TextData_CharNames).l,a1 ; where to fetch the lines from
@@ -997,6 +997,7 @@ QuickRush_Headings:
 	rts
 	
 QuickRush_LevelName:
+	movem.l	d6,-(sp)
 	moveq	#0,d1
 	lea	(TextData_LevelNames).l,a1 ; where to fetch the lines from
 	move.w	(Options_menu_box).w,d1
@@ -1005,7 +1006,53 @@ QuickRush_LevelName:
 	move.l	#$432C0003,4(a6)	; starting screen position 
 	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
 	moveq	#15,d2		; number of characters to be rendered in a line -1
-	bra.w	SingleLineRender	
+	bsr.w	SingleLineRender	
+	
+;QuickRush_GetValues:
+	moveq	#0,d1
+	lea	(Leaderboards_QuickRush).l,a1	; where to get the numbers from
+	
+	moveq	#0,d0
+	move.b	(Current_Zone).w,d0			; get zone
+	add.w	d0,d0						; multiply by 2
+	add.b	(Current_Act).w,d0			; get individual level
+	mulu.w	#24,d0						; by 2 for difficulties, by 3 for characters, by 4 for alignment
+	adda.l	d0,a1						; align to correct set of leaderboards entries
+	
+	move.l	#$49140003,d4				; (CHANGE) starting screen position 
+	move.w	#$A68F,d3					; which palette the font should use and where it is in VRAM	
+	moveq	#2,d6						; number of lines to render - 1
+	
+	
+.loop:
+	move.l	d4,4(a6)
+	moveq	#1,d5						; number of times to repeat this subloop
+	
+.subloop:
+	lea	(Hud_1000000000).l,a2 			; get the number of digits
+	moveq	#9,d0             			; repeat X-1 times
+	move.l	(a1)+,d1					; get value to render
+	movem.l	d0-d6,-(sp)
+	bsr.w	DecimalNumberRender2
+	movem.l	(sp)+,d0-d6
+
+; wanna see me write SHIT CODE!?!?!?!?	
+	
+	move.w	#$A68F,(a6)					; 0
+	move.w	#0,(a6)						; whitespace
+	move.w	#0,(a6)						; whitespace
+	move.w	#0,(a6)						; whitespace	
+	move.w	#0,(a6)						; whitespace
+	move.w	#0,(a6)						; whitespace	
+	move.w	#0,(a6)						; whitespace	
+		
+	dbf		d5,.subloop
+	
+	addi.l	#(2*$800000),d4
+	dbf		d6,.loop
+	
+	movem.l	(sp)+,d6
+	rts
 
 ; ===========================================================================
 ; All text data used by this screen.

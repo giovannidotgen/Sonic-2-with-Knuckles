@@ -80,6 +80,9 @@ WipeTextLine:
 ; d3: position of digit 0 in VRAM + palette (order of digits must match ASCII)
 ; a2: how many digits you want to display (in the form of Hud_100000 variants)
 ; d0: the actual number of digits you want to display
+
+; Uses:
+; d2, d6
 ; ===========================================================================	
 
 DecimalNumberRender:				; XREF: HudUpdate
@@ -95,18 +98,51 @@ DecimalNumberRender:				; XREF: HudUpdate
 
 .done:
 		add.l	d6,d1            ; add back d6 to d1 only once
-		; enabling the below code disables leading zeroes
-;		tst.w	d2               ; check if the digit is zero
-;		beq.s	.zero        ; if it is, branch
-;		move.w	#1,d5
-
-;.zero:
-;		tst.w	d5
-;		beq.s	.skip
 		add.w	d3,d2				; add VRAM setting to d2
-;.skip:
 		move.w	d2,(a6)				; send d2 to a6, therefore executing the instruction
  	    dbf     d0,DecimalNumberRender
+ 	    rts		
+
+; ===========================================================================
+; Subroutine that renders a decimal number, without leading zeroes.
+; Input:
+; a6: VDP
+; d1: number to render
+; d3: position of digit 0 in VRAM + palette (order of digits must match ASCII)
+; a2: how many digits you want to display (in the form of Hud_100000 variants)
+; d0: the actual number of digits you want to display
+
+; Uses:
+; d2, d5, d6,
+; ===========================================================================	
+
+DecimalNumberRender2:				; XREF: HudUpdate
+		moveq	#0,d5			 ; d5 is the flag that determines if a zero digit was rendered.
+
+.loop:
+		moveq	#0,d2            ; d2 is the digit I want to render, and it is cleared here
+      	move.l	(a2)+,d6         ; set d5 to the current position in the array, and increment it too
+		
+.count:		
+		sub.l	d6,d1            ; subtract d6 from d1
+		bcs.s	.done       ; if lower than zero, go to the next step
+		addq.w	#1,d2            ; increment d2
+		bra.s	.count        ; repeat this step continuously
+; ===========================================================================
+
+.done:
+		add.l	d6,d1            ; add back d6 to d1 only once
+		tst.w	d2               ; check if the digit is zero
+		beq.s	.zero        ; if it is, branch
+		move.w	#1,d5
+
+.zero:
+		tst.w	d5
+		beq.s	.skip
+		add.w	d3,d2				; add VRAM setting to d2
+.skip:
+		move.w	d2,(a6)				; send d2 to a6, therefore executing the instruction
+ 	    dbf     d0,.loop
  	    rts		
 
 ; ===========================================================================
