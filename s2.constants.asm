@@ -1126,11 +1126,14 @@ v_palcycleram:	ds.b	$1E6	; buffer. you can store the palette cycle data in here.
 Primary_Collision:		ds.b	$4
 Secondary_Collision:		ds.b	$4
 
-				ds.b	$5F8	; unused
+Leaderboards_RAM_Start:
+				ds.b	$5F8	; RAM configuration is not here, see Leaderboards_QuickRush onwards
 
 SS_Shared_RAM_End:
 
-				ds.b	$500	; $FFFFDC00-$FFFFE0FF ; unused, used to be the Sonic 1 sound driver left over RAM, but was moved here
+				ds.b	$500	; $FFFFDC00-$FFFFE0FF ; used to be the Sonic 1 sound driver left over RAM. Now partially used by the leaderboards
+
+Leaderboards_RAM_End:
 
 VDP_Command_Buffer:		ds.w	7*$12	; stores 18 ($12) VDP commands to issue the next time ProcessDMAQueue is called
 VDP_Command_Buffer_Slot:	ds.l	1	; stores the address of the next open slot for a queued VDP command
@@ -1909,6 +1912,30 @@ IntroFallingStar:
     if * > Object_RAM_End
 	fatal "Title screen objects exceed size of object RAM buffer."
     endif
+	dephase
+
+; RAM Variables - Leaderboards
+
+	phase	Leaderboards_RAM_Start	; Move to leaderboards RAM
+
+Leaderboards_QuickRush:
+				ds.b	$330
+				; Math:
+				; 4 score bytes * 34 individual level slots (including the unused ones) * 2 difficulties * 3 characters
+				; 4 * 34 * 2 * 3 = 816 = $330
+Leaderboards_ScoreRush:
+				ds.b	$180
+				; Math:
+				; 8 score + name bytes * 8 leaderboards entries * 2 difficulties * 3 characters
+				; 8 * 8 * 2 * 3 = $180
+				
+Leaderboards_EndlessRush:
+				ds.b	$180
+				; Math: same as above.
+
+    if * > Leaderboards_RAM_End
+	fatal "Leaderboards take up too much RAM."
+    endif				
 	dephase
 
 ; RAM variables - Special stage
