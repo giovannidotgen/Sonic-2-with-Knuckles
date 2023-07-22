@@ -68206,27 +68206,27 @@ loc_36B34:
 	bge.s	loc_36B5C
 	add.w	d1,y_pos(a0)
 	lea	(Ani_obj8D_a).l,a1
-	jsrto	AnimateSprite, JmpTo25_AnimateSprite
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jsr	AnimateSprite
+	jmp	MarkObjGone
 ; ===========================================================================
 
 loc_36B5C:
 	addq.b	#2,routine(a0)
 	move.b	#$3B,objoff_2A(a0)
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 
 loc_36B6A:
 	subq.b	#1,objoff_2A(a0)
 	bmi.s	loc_36B74
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 
 loc_36B74:
 	move.b	#8,routine(a0)
 	neg.w	x_vel(a0)
 	bchg	#0,status(a0)
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
 ; Object 8F - Wall behind which Grounder hides, from ARZ
@@ -73526,6 +73526,7 @@ ObjB2_Index:	offsetTable
 		offsetTableEntry.w loc_3AD0C	; $A
 		offsetTableEntry.w loc_3AD2A	; $C
 		offsetTableEntry.w loc_3AD42	; $E
+		offsetTableEntry.w ObjB2_SCZ_After_Finished	; $10
 ; ===========================================================================
 ; loc_3A7AE:
 ObjB2_Init:
@@ -73603,9 +73604,15 @@ ObjB2_animate:
 ; ===========================================================================
 ; loc_3A88E:
 ObjB2_SCZ_Finished:
-	bsr.w	ObjB2_Deactivate_level
-	move.w	#wing_fortress_zone_act_1,(Current_ZoneAndAct).w
-	bra.s	ObjB2_animate
+	move.b	#$10,routine(a0)
+	jsr		Load_EndOfAct
+	move.b	#1,(MainCharacter+obj_control).w
+	
+ObjB2_SCZ_After_Finished:
+	add.w	#$6,x_pos(a0)
+	btst	#7,render_flags(a0)
+	bne.s	ObjB2_animate
+	jmp	DeleteObject
 ; ===========================================================================
 ; loc_3A89A:
 ObjB2_Main_WFZ_Start:
@@ -76298,14 +76305,23 @@ ObjC5_CaseDefeated:
 ; ===========================================================================
 
 ObjC5_End:	; play music and change camera speed
+	cmp.b	#2,(ScoreRush_Gamemode).w
+	beq.s	.alternate
 	moveq	#signextendB(MusID_WFZ),d0
 	jsrto	PlayMusic, JmpTo5_PlayMusic
 	move.w	#$720,d0
 	move.w	d0,(Camera_Max_Y_pos_now).w
 	move.w	d0,(Camera_Max_Y_pos).w
 	bsr.w	JmpTo65_DeleteObject
+-
 	addq.w	#4,sp
 	rts
+	
+.alternate:
+	cmpi.w	#-30,objoff_30(a0)
+	bne.s	-
+	jsr		Load_EndOfAct
+	jmp		DeleteObject
 ; ===========================================================================
 
 ObjC5_LaserWall:
@@ -76335,9 +76351,12 @@ ObjC5_LaserWallMappings:
 ; ===========================================================================
 
 ObjC5_LaserWallWaitDelete:
+	cmpi.b	#2,(ScoreRush_Gamemode).w
+	beq.s	+
 	movea.w	objoff_2C(a0),a1 ; a1=object
 	btst	#5,status(a1)
 	bne.s	ObjC5_LaserWallTimerSet
++	
 	bchg	#0,objoff_2F(a0)	; makes it "flash" if set it won't flash
 	bne.w	return_37A48
 	jmpto	DisplaySprite, JmpTo45_DisplaySprite
@@ -76457,6 +76476,12 @@ ObjC5_PlatformReleaserDelete:
 	movea.w	objoff_2C(a0),a1 ; a1=object
 	cmpi.b	#ObjID_WFZBoss,id(a1)
 	bne.w	JmpTo65_DeleteObject
+	cmpi.b	#$1E,routine_secondary(a1)
+	bne.s	+
+	tst.w	objoff_30(a1)
+	bpl.s	+
+	jmp		DeleteObject
++	
 	jsrto	Boss_LoadExplosion, JmpTo_Boss_LoadExplosion
 	jmpto	DisplaySprite, JmpTo45_DisplaySprite
 ; ===========================================================================
@@ -77815,16 +77840,37 @@ loc_3D922:
 	jmpto	Boss_LoadExplosion, JmpTo_Boss_LoadExplosion
 ; ---------------------------------------------------------------------------
 +
+
+	cmp.b	#2,(ScoreRush_Gamemode).w
+	beq.s	.alternate
+-	
 	addq.b	#2,anim(a0)
+	cmp.b	#2,(ScoreRush_Gamemode).w
+	beq.s	.alternate2	
 	st.b	(Control_Locked).w
 	move.w	#$1000,(Camera_Max_X_pos).w
+-
 	rts
+
+.alternate:	
+	cmpi.b	#-30,anim_frame_duration(a0)
+	bne.s	-
+	bra.s	--
+	
+.alternate2:	
+	jmp		Load_EndOfAct
+	
 ; ===========================================================================
 
 loc_3D93C:
+	cmp.b	#2,(ScoreRush_Gamemode).w
+	beq.s	.alternate
 	move.w	#(button_right_mask<<8)|button_right_mask,(Ctrl_1_Logical).w
 	cmpi.w	#$840,(Camera_X_pos).w
 	bhs.s	+
+	rts
+	
+.alternate:
 	rts
 ; ---------------------------------------------------------------------------
 +
