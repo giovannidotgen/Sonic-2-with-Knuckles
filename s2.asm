@@ -27314,9 +27314,14 @@ Obj39_Display:
 ; ----------------------------------------------------------------------------
 ; Sprite_14086:
 Obj3A: ; (screen-space obj)
-;	moveq	#0,d0
-;	move.b	routine(a0),d0
-	moveq	#$10,d0
+	moveq	#0,d0
+	move.b	routine(a0),d0
+	cmpi.b	#2,(ScoreRush_Gamemode).w	; check for Quick Rush
+	beq.s	+
+	moveq	#$10,d0						; force next level routine
+
++	
+
 	move.w	Obj3A_Index(pc,d0.w),d1
 	jmp	Obj3A_Index(pc,d1.w)
 ; ===========================================================================
@@ -34315,9 +34320,12 @@ Obj0D_RingSparklePositions:
 ; ===========================================================================
 ; loc_19418:
 Obj0D_Main_State3:
+	cmpi.b	#2,(ScoreRush_Gamemode).w
+	beq.s	+
 	clr.b	routine_secondary(a0)
 	bra.w	Load_EndOfAct
 
++
 	tst.w	(Debug_placement_mode).w
 	bne.w	return_194D0
     if fixBugs
@@ -34392,8 +34400,12 @@ Load_EndOfAct:
 	bne.s	+
 	move.w	#5000,(Bonus_Countdown_3).w
 +
-;	move.w	#MusID_EndLevel,d0
-;	jsr	(PlayMusic).l
+
+	cmpi.b	#2,(ScoreRush_Gamemode).w
+	bne.s	return_194D0
+	
+	move.w	#MusID_EndLevel,d0
+	jsr	(PlayMusic).l
 
 return_194D0:
 	rts
@@ -83327,7 +83339,7 @@ loc_410BC:
 
 ; byte_410D4:
 Hud_TilesBase:
-	dc.b " 0005000"
+	dc.b "E0005000"
 Hud_TilesBase_HUD_End:
 	dc.b "    "
 ; byte_410E0:
