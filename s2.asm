@@ -28382,16 +28382,16 @@ word_14DF4:	dc.w 5
 	dc.w $D, $8520,	$8290, $38
 	dc.w 1,	$86F0, $8378, $58
 word_14E1E:	dc.w 6
-	dc.w $D, $A6DA,	$A36D, $FFA4
-	dc.w $D, $A5DE,	$A2EF, $FFCC
-	dc.w 1,	$A6CA, $A365, $FFEC
+	dc.w $D, $A6D2,	$A369, $FFA4
+	dc.w $D, $A6CA,	$A369, $FFCC
+	dc.w 1,	$A6E2, $A36D, $FFEC
 	dc.w 5,	$85F0, $82F8, $FFE8
 	dc.w $D, $8528,	$8294, $38
 	dc.w 1,	$86F0, $8378, $58
 word_14E50:	dc.w 6
-	dc.w $D, $A6D2,	$A369, $FFA4
-	dc.w $D, $A5DE,	$A2EF, $FFCC
-	dc.w 1,	$A6CA, $A365, $FFEC
+	dc.w $D, $A6DA,	$A36D, $FFA4
+	dc.w $D, $A6CA,	$A369, $FFCC
+	dc.w 1,	$A6E2, $A36D, $FFEC
 	dc.w 5,	$85F0, $82F8, $FFE8
 	dc.w $D, $8530,	$8298, $38
 	dc.w 1,	$86F0, $8378, $58

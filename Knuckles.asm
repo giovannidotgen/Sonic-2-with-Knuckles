@@ -55,7 +55,7 @@ Obj4C_Init_Continued:				  ; ...
 		move.b	#$1E,air_left(a0)
 		sub.w	#$20,x_pos(a0)
 		add.w	#4,y_pos(a0)
-		move.w	#0,($FFFFEED2).w
+		move.w	#0,(Sonic_Pos_Record_Index).w
 		move.w	#$3F,d2
 
 loc_3153EC:					  ; ...
@@ -96,7 +96,7 @@ loc_31543E:					  ; ...
 		jsr	Obj4C_Modes(pc,d1.w)
 
 loc_315450:					  ; ...
-		cmp.w	#$FF00,($FFFFEECC).w
+		cmp.w	#$FF00,(Camera_Min_Y_pos).w
 		bne.s	loc_31545E
 		and.w	#$7FF,y_pos(a0)
 
@@ -182,13 +182,13 @@ Obj4C_ExitCheck:				  ; ...
 
 
 Knuckles_RecordPositions:			  ; ...
-		move.w	($FFFFEED2).w,d0
-		lea	($FFFFE500).w,a1
+		move.w	(Sonic_Pos_Record_Index).w,d0
+		lea	(Sonic_Pos_Record_Buf).w,a1
 		lea	(a1,d0.w),a1
 		move.w	x_pos(a0),(a1)+
 		move.w	y_pos(a0),(a1)+
-		addq.b	#4,($FFFFEED3).w
-		lea	($FFFFE400).w,a1
+		addq.b	#4,(Sonic_Pos_Record_Index+1).w
+		lea	(Sonic_Stat_Record_Buf).w,a1
 		lea	(a1,d0.w),a1
 		move.w	($FFFFF602).w,(a1)+
 		move.w	status(a0),(a1)+
@@ -617,7 +617,7 @@ loc_315A46:					  ; ...
 
 loc_315A54:					  ; ...
 		moveq	#1,d1
-		move.w	($FFFFEECC).w,d0
+		move.w	(Camera_Min_Y_pos).w,d0
 		cmp.w	#-$100,d0
 		beq.w	loc_315B04
 		add.w	#$10,d0
@@ -916,7 +916,7 @@ loc_315D62:					  ; ...
 		add.w	#$20,y_vel(a0)
 
 loc_315D68:					  ; ...
-		move.w	($FFFFEECC).w,d0
+		move.w	(Camera_Min_Y_pos).w,d0
 		cmp.w	#$FF00,d0
 		beq.w	loc_315D88
 		add.w	#$10,d0
@@ -926,13 +926,13 @@ loc_315D68:					  ; ...
 		asr	inertia(a0)
 
 loc_315D88:					  ; ...
-		cmp.w	#$60,($FFFFEED8).w
+		cmp.w	#$60,(Camera_Y_pos_bias).w
 		beq.s	return_315D9A
 		bcc.s	loc_315D96
-		addq.w	#4,($FFFFEED8).w
+		addq.w	#4,(Camera_Y_pos_bias).w
 
 loc_315D96:					  ; ...
-		subq.w	#2,($FFFFEED8).w
+		subq.w	#2,(Camera_Y_pos_bias).w
 
 return_315D9A:					  ; ...
 		rts
@@ -1096,9 +1096,9 @@ Knuckles_LookUp:				  ; ...
 		cmp.w	#$78,($FFFFF66C).w
 		bcs.s	Obj4C_ResetScreen_Part2
 		move.w	#$78,($FFFFF66C).w
-		cmp.w	#$C8,($FFFFEED8).w
+		cmp.w	#$C8,(Camera_Y_pos_bias).w
 		beq.s	Obj4C_UpdateSpeedOnGround
-		addq.w	#2,($FFFFEED8).w
+		addq.w	#2,(Camera_Y_pos_bias).w
 		bra.s	Obj4C_UpdateSpeedOnGround
 ; ---------------------------------------------------------------------------
 
@@ -1110,9 +1110,9 @@ Knuckles_Duck:					  ; ...
 		cmp.w	#$78,($FFFFF66C).w
 		bcs.s	Obj4C_ResetScreen_Part2
 		move.w	#$78,($FFFFF66C).w
-		cmp.w	#8,($FFFFEED8).w
+		cmp.w	#8,(Camera_Y_pos_bias).w
 		beq.s	Obj4C_UpdateSpeedOnGround
-		subq.w	#2,($FFFFEED8).w
+		subq.w	#2,(Camera_Y_pos_bias).w
 		bra.s	Obj4C_UpdateSpeedOnGround
 ; ---------------------------------------------------------------------------
 
@@ -1120,13 +1120,13 @@ Obj4C_ResetScreen:				  ; ...
 		move.w	#0,($FFFFF66C).w
 
 Obj4C_ResetScreen_Part2:			  ; ...
-		cmp.w	#$60,($FFFFEED8).w
+		cmp.w	#$60,(Camera_Y_pos_bias).w
 		beq.s	Obj4C_UpdateSpeedOnGround
 		bcc.s	loc_315FCE
-		addq.w	#4,($FFFFEED8).w
+		addq.w	#4,(Camera_Y_pos_bias).w
 
 loc_315FCE:					  ; ...
-		subq.w	#2,($FFFFEED8).w
+		subq.w	#2,(Camera_Y_pos_bias).w
 
 Obj4C_UpdateSpeedOnGround:			  ; ...
 		tst.b	($FFFFFE19).w
@@ -1401,13 +1401,13 @@ Knuckles_KeepRolling:				  ; ...
 		neg.w	inertia(a0)
 
 Obj4C_Roll_ResetScreen:				  ; ...
-		cmp.w	#$60,($FFFFEED8).w
+		cmp.w	#$60,(Camera_Y_pos_bias).w
 		beq.s	Knuckles_SetRollSpeeds
 		bcc.s	loc_316250
-		addq.w	#4,($FFFFEED8).w
+		addq.w	#4,(Camera_Y_pos_bias).w
 
 loc_316250:					  ; ...
-		subq.w	#2,($FFFFEED8).w
+		subq.w	#2,(Camera_Y_pos_bias).w
 
 Knuckles_SetRollSpeeds:				  ; ...
 		move.b	angle(a0),d0
@@ -1529,13 +1529,13 @@ loc_316332:					  ; ...
 		move.w	d0,x_vel(a0)
 
 Obj4C_Jump_ResetScreen:				  ; ...
-		cmp.w	#$60,($FFFFEED8).w
+		cmp.w	#$60,(Camera_Y_pos_bias).w
 		beq.s	Knuckles_JumpPeakDecelerate
 		bcc.s	loc_316344
-		addq.w	#4,($FFFFEED8).w
+		addq.w	#4,(Camera_Y_pos_bias).w
 
 loc_316344:					  ; ...
-		subq.w	#2,($FFFFEED8).w
+		subq.w	#2,(Camera_Y_pos_bias).w
 
 Knuckles_JumpPeakDecelerate:			  ; ...
 		cmp.w	#-$400,y_vel(a0)
@@ -1577,11 +1577,11 @@ Knuckles_LevelBoundaries:			  ; ...
 		asl.l	#8,d0
 		add.l	d0,d1
 		swap	d1
-		move.w	($FFFFEEC8).w,d0
+		move.w	(Camera_Min_X_pos).w,d0
 		add.w	#$10,d0
 		cmp.w	d1,d0
 		bhi.s	Knuckles_Boundary_Sides
-		move.w	($FFFFEECA).w,d0
+		move.w	(Camera_Max_X_pos).w,d0
 		add.w	#$128,d0
 		tst.b	($FFFFF7AA).w
 		bne.s	loc_3163A6
@@ -1592,7 +1592,7 @@ loc_3163A6:					  ; ...
 		bls.s	Knuckles_Boundary_Sides
 
 Knuckles_Boundary_CheckBottom:			  ; ...
-		move.w	($FFFFEECE).w,d0
+		move.w	(Camera_Max_Y_pos_now).w,d0
 		add.w	#$E0,d0
 		cmp.w	y_pos(a0),d0
 		blt.s	Knuckles_Boundary_Bottom
@@ -1956,7 +1956,7 @@ loc_31675C:					  ; ...
 		and.w	#$1F00,d0
 		neg.w	d0
 		add.w	#$2000,d0
-		move.w	d0,($FFFFEED0).w	  ; Lock camera	for a certain number of	frames
+		move.w	d0,(Horiz_scroll_delay_val).w	  ; Lock camera	for a certain number of	frames
 		btst	#0,status(a0)
 		beq.s	loc_316780
 		neg.w	inertia(a0)
@@ -2006,13 +2006,13 @@ loc_3167D4:					  ; ...
 
 Obj4C_Spindash_ResetScreen:			  ; ...
 		addq.l	#4,sp
-		cmp.w	#$60,($FFFFEED8).w
+		cmp.w	#$60,(Camera_Y_pos_bias).w
 		beq.s	loc_316818
 		bcc.s	loc_316814
-		addq.w	#4,($FFFFEED8).w
+		addq.w	#4,(Camera_Y_pos_bias).w
 
 loc_316814:					  ; ...
-		subq.w	#2,($FFFFEED8).w
+		subq.w	#2,(Camera_Y_pos_bias).w
 
 loc_316818:					  ; ...
 		bsr.w	Knuckles_LevelBoundaries
@@ -2658,7 +2658,7 @@ Obj4C_Hurt_Normal:				  ; ...
 		sub.w	#$20,y_vel(a0)
 
 loc_316DA0:					  ; ...
-		cmp.w	#$FF00,($FFFFEECC).w
+		cmp.w	#$FF00,(Camera_Min_Y_pos).w
 		bne.s	loc_316DAE
 		and.w	#$7FF,y_pos(a0)
 
@@ -2676,7 +2676,7 @@ loc_316DAE:					  ; ...
 
 
 Knuckles_HurtStop:				  ; ...
-		move.w	($FFFFEECE).w,d0
+		move.w	(Camera_Max_Y_pos_now).w,d0
 		add.w	#$E0,d0
 		cmp.w	y_pos(a0),d0
 		blt.w	JmpToK_KillCharacter
@@ -2740,9 +2740,9 @@ loc_316E4A:					  ; ...
 
 
 Obj4C_CheckGameOver:					  ; ...
-		move.b	#1,($FFFFEEBE).w
+		move.b	#1,(Scroll_lock).w
 		move.b	#0,spindash_flag(a0)
-		move.w	($FFFFEECE).w,d0
+		move.w	(Camera_Max_Y_pos_now).w,d0
 		add.w	#$100,d0
 		cmp.w	y_pos(a0),d0
 		bge.w	return_316F64
@@ -2783,7 +2783,7 @@ Obj4C_ResetLevel:				  ; ...
 Obj4C_ResetLevel_Part2:				  ; ...
 		tst.w	(Two_player_mode).w
 		beq.s	return_316F64
-		move.b	#0,($FFFFEEBE).w
+		move.b	#0,(Scroll_lock).w
 		move.b	#$A,routine(a0)
 		move.w	($FFFFFE32).w,x_pos(a0)
 		move.w	($FFFFFE34).w,y_pos(a0)
@@ -2824,9 +2824,9 @@ return_316F78:					  ; ...
 ; ---------------------------------------------------------------------------
 
 Obj4C_Respawning:				  ; ...
-		tst.w	($FFFFEEB0).w
+		tst.w	(Camera_X_pos_diff).w
 		bne.s	loc_316F8C
-		tst.w	($FFFFEEB2).w
+		tst.w	(Camera_Y_pos_diff).w
 		bne.s	loc_316F8C
 		move.b	#2,routine(a0)
 
