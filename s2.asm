@@ -27464,53 +27464,60 @@ loc_141AA:
 	bsr.w	DisplaySprite
 	move.b	#1,(Update_Bonus_score).w
 	moveq	#0,d0
-	tst.w	(Bonus_Countdown_1).w
-	beq.s	loc_141C6
-	addi.w	#10,d0
-	subi.w	#10,(Bonus_Countdown_1).w
+	move.l	(Score).w,d1
+	move.l	(Bonus_Countdown_1).w,d2
+	cmp.l	d1,d2
+	bge.s	QuickRush_NoBonus
+	not		d0
+	addi.l	#10,d2
+	cmp.l	d1,d2
+	ble.s	loc_141C6
+	move.l	d1,d2
 
 loc_141C6:
-	tst.w	(Bonus_Countdown_2).w
-	beq.s	loc_141D6
-	addi.w	#10,d0
-	subi.w	#10,(Bonus_Countdown_2).w
+;	tst.w	(Bonus_Countdown_2).w
+;	beq.s	loc_141D6
+;	addi.w	#10,d0
+;	subi.w	#10,(Bonus_Countdown_2).w
 
 loc_141D6:
-	tst.w	(Bonus_Countdown_3).w
-	beq.s	loc_141E6
-	addi.w	#10,d0
-	subi.w	#10,(Bonus_Countdown_3).w
+;	tst.w	(Bonus_Countdown_3).w
+;	beq.s	loc_141E6
+;	addi.w	#10,d0
+;	subi.w	#10,(Bonus_Countdown_3).w
 
 loc_141E6:
-	add.w	d0,(Total_Bonus_Countdown).w
-	tst.w	d0
+;	add.w	d0,(Total_Bonus_Countdown).w
+	move.l	d2,(Bonus_Countdown_1).w
+	cmp.l	d1,d2
 	bne.s	loc_14256
 	move.w	#SndID_TallyEnd,d0
 	jsr	(PlaySound).l
+QuickRush_NoBonus:	
 	addq.b	#2,routine(a0)
 	move.w	#$B4,anim_frame_duration(a0)
-	cmpi.w	#1000,(Total_Bonus_Countdown).w
-	blo.s	return_14254
-	move.w	#$12C,anim_frame_duration(a0)
-	lea	next_object(a0),a1 ; a1=object
+;	cmpi.w	#1000,(Total_Bonus_Countdown).w
+;	blo.s	return_14254
+;	move.w	#$12C,anim_frame_duration(a0)
+;	lea	next_object(a0),a1 ; a1=object
 
-loc_14214:
-	_tst.b	id(a1)
-	beq.s	loc_14220
-	lea	next_object(a1),a1 ; a1=object
-	bra.s	loc_14214
+;loc_14214:
+;	_tst.b	id(a1)
+;	beq.s	loc_14220
+;	lea	next_object(a1),a1 ; a1=object
+;	bra.s	loc_14214
 ; ===========================================================================
 
-loc_14220:
-	_move.b	#ObjID_Results,id(a1) ; load obj3A (uses screen-space)
-	move.b	#$12,routine(a1)
-	move.w	#$188,x_pixel(a1)
-	move.w	#$118,y_pixel(a1)
-	move.l	#Obj3A_MapUnc_14CBC,mappings(a1)
-	bsr.w	Adjust2PArtPointer2
-	move.b	#0,render_flags(a1)
-	move.w	#$3C,anim_frame_duration(a1)
-	addq.b	#1,(Continue_count).w
+;loc_14220:
+;	_move.b	#ObjID_Results,id(a1) ; load obj3A (uses screen-space)
+;	move.b	#$12,routine(a1)
+;	move.w	#$188,x_pixel(a1)
+;	move.w	#$118,y_pixel(a1)
+;	move.l	#Obj3A_MapUnc_14CBC,mappings(a1)
+;	bsr.w	Adjust2PArtPointer2
+;	move.b	#0,render_flags(a1)
+;	move.w	#$3C,anim_frame_duration(a1)
+;	addq.b	#1,(Continue_count).w
 
 return_14254:
 
@@ -27518,7 +27525,7 @@ return_14254:
 ; ===========================================================================
 
 loc_14256:
-	jsr	(AddPoints).l
+;	jsr	(AddPoints).l
 	move.b	(Vint_runcount+3).w,d0
 	andi.b	#3,d0
 	bne.s	return_14254
@@ -28386,14 +28393,15 @@ word_14E1E:	dc.w 6
 	dc.w $D, $A6CA,	$A369, $FFCC
 	dc.w 1,	$A6E2, $A36D, $FFEC
 	dc.w 5,	$85F0, $82F8, $FFE8
-	dc.w $D, $8528,	$8294, $38
-	dc.w 1,	$86F0, $8378, $58
-word_14E50:	dc.w 6
+	dc.w $9, $86E4,	$8294, $28
+	dc.w $D, $86EA, $8378, $40
+word_14E50:	dc.w 7
 	dc.w $D, $A6DA,	$A36D, $FFA4
 	dc.w $D, $A6CA,	$A369, $FFCC
 	dc.w 1,	$A6E2, $A36D, $FFEC
 	dc.w 5,	$85F0, $82F8, $FFE8
-	dc.w $D, $8530,	$8298, $38
+	dc.w $5, $8524,	$8298, $28
+	dc.w $D, $8528,	$8298, $38
 	dc.w 1,	$86F0, $8378, $58
 word_14E82:	dc.w 1
 	dc.w 6,	$85F4, $82FA, 0
@@ -34376,33 +34384,35 @@ Load_EndOfAct:
 	moveq	#PLCID_ResultsKnuckles,d0
 +
 	jsr	(LoadPLC2).l
-	move.b	#1,(Update_Bonus_score).w
-	moveq	#0,d0
-	move.b	(Timer_minute).w,d0
-	mulu.w	#$3C,d0
-	moveq	#0,d1
-	move.b	(Timer_second).w,d1
-	add.w	d1,d0
-	divu.w	#$F,d0
-	moveq	#$14,d1
-	cmp.w	d1,d0
-	blo.s	+
-	move.w	d1,d0
-+
-	add.w	d0,d0
-	move.w	TimeBonuses(pc,d0.w),(Bonus_Countdown_1).w
-	move.w	(Ring_count).w,d0
-	mulu.w	#$A,d0
-	move.w	d0,(Bonus_Countdown_2).w
-	clr.w	(Total_Bonus_Countdown).w
-	clr.w	(Bonus_Countdown_3).w
-	tst.w	(Perfect_rings_left).w
-	bne.s	+
-	move.w	#5000,(Bonus_Countdown_3).w
-+
+	; moveq	#0,d0
+	; move.b	(Timer_minute).w,d0
+	; mulu.w	#$3C,d0
+	; moveq	#0,d1
+	; move.b	(Timer_second).w,d1
+	; add.w	d1,d0
+	; divu.w	#$F,d0
+	; moveq	#$14,d1
+	; cmp.w	d1,d0
+	; blo.s	+
+	; move.w	d1,d0
+; +
+	; add.w	d0,d0
+	; move.w	TimeBonuses(pc,d0.w),(Bonus_Countdown_1).w
+	; move.w	(Ring_count).w,d0
+	; mulu.w	#$A,d0
+	; move.w	d0,(Bonus_Countdown_2).w
+	; clr.w	(Total_Bonus_Countdown).w
+	; clr.w	(Bonus_Countdown_3).w
+	; tst.w	(Perfect_rings_left).w
+	; bne.s	+
+	; move.w	#5000,(Bonus_Countdown_3).w
+; +
 
 	cmpi.b	#2,(ScoreRush_Gamemode).w
 	bne.s	return_194D0
+
+	move.b	#1,(Update_Bonus_score).w	
+	move.l	#100,(Bonus_Countdown_1).w	
 	
 	move.w	#MusID_EndLevel,d0
 	jsr	(PlayMusic).l
@@ -83097,19 +83107,19 @@ Hud_ChkBonus:
 	tst.b	(Update_Bonus_score).w	; do time/ring bonus counters need updating?
 	beq.s	Hud_End	; if not, branch
 	clr.b	(Update_Bonus_score).w
-	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Bonus_Score),VRAM,WRITE),(VDP_control_port).l
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Bonus_Score+4),VRAM,WRITE),(VDP_control_port).l
+;	moveq	#0,d1
+;	move.w	(Total_Bonus_Countdown).w,d1
+;	bsr.w	Hud_TimeRingBonus
 	moveq	#0,d1
-	move.w	(Total_Bonus_Countdown).w,d1
+	move.l	(Bonus_Countdown_1).w,d1	 ; load time bonus
 	bsr.w	Hud_TimeRingBonus
-	moveq	#0,d1
-	move.w	(Bonus_Countdown_1).w,d1	 ; load time bonus
-	bsr.w	Hud_TimeRingBonus
-	moveq	#0,d1
-	move.w	(Bonus_Countdown_2).w,d1	 ; load ring bonus
-	bsr.w	Hud_TimeRingBonus
-	moveq	#0,d1
-	move.w	(Bonus_Countdown_3).w,d1	 ; load perfect bonus
-	bsr.w	Hud_TimeRingBonus
+	; moveq	#0,d1
+	; move.w	(Bonus_Countdown_2).w,d1	 ; load ring bonus
+	; bsr.w	Hud_TimeRingBonus
+	; moveq	#0,d1
+	; move.w	(Bonus_Countdown_3).w,d1	 ; load perfect bonus
+	; bsr.w	Hud_TimeRingBonus
 ; return_40E82:
 Hud_End:
 	rts
@@ -83608,8 +83618,8 @@ loc_4123E:
 ; ===========================================================================
 ; loc_41274:
 Hud_TimeRingBonus:
-	lea_	Hud_1000,a2
-	moveq	#3,d6
+	lea_	Hud_100000,a2
+	moveq	#5,d6
 	moveq	#0,d4
 	lea	Art_Hud(pc),a1
 ; loc_41280:
@@ -83626,13 +83636,13 @@ loc_41284:
 
 loc_4128C:
 	add.l	d3,d1
-	tst.w	d2
-	beq.s	loc_41296
-	move.w	#1,d4
+;	tst.w	d2
+;	beq.s	loc_41296
+;	move.w	#1,d4
 
 loc_41296:
-	tst.w	d4
-	beq.s	Hud_ClrBonus
+;	tst.w	d4
+;	beq.s	Hud_ClrBonus
 	lsl.w	#6,d2
 	lea	(a1,d2.w),a3
     rept 8*hud_letter_num_tiles
@@ -83640,7 +83650,7 @@ loc_41296:
     endm
 
 loc_412C0:
-	dbf	d6,Hud_BonusLoop ; repeat 3 more times
+	dbf	d6,Hud_BonusLoop ; repeat 5 more times
 	rts
 ; ===========================================================================
 ; loc_412C6:
