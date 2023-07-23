@@ -27353,7 +27353,7 @@ loc_140AC:
 	bne.s	+
 	lea	byte_14380_K(pc),a2
 +	
-	moveq	#7,d1
+	moveq	#5,d1
 
 loc_140BC:
 	_move.b	id(a1),d0
@@ -27704,20 +27704,20 @@ results_screen_object macro startx, targetx, y, routine, frame
 	results_screen_object  $200, $100,  $CA,   4,  3
 	results_screen_object  $240, $140,  $CA,   6,  4
 	results_screen_object  $278, $178,  $BE,   8,  6
-	results_screen_object  $350, $120, $120,   4,  9
-	results_screen_object  $320, $120,  $F0,   4, $A
-	results_screen_object  $330, $120, $100,   4, $B
-	results_screen_object  $340, $120, $110, $16, $E
+;	results_screen_object  $350, $120, $120,   4,  9
+	results_screen_object  $320, $120, $100,   4, $A
+	results_screen_object  $330, $120, $110,   4, $B
+;	results_screen_object  $340, $120, $110, $16, $E
 	
 byte_14380_K:
 	results_screen_object   $28, $138,  $B8,   2,  0
 	results_screen_object  $200, $100,  $CA,   4,  3
 	results_screen_object  $240, $140,  $CA,   6,  4
 	results_screen_object  $278, $178,  $BE,   8,  6
-	results_screen_object  $350, $120, $120,   4,  9
-	results_screen_object  $320, $120,  $F0,   4, $A
-	results_screen_object  $330, $120, $100,   4, $B
-	results_screen_object  $340, $120, $110, $16, $E
+;	results_screen_object  $350, $120, $120,   4,  9
+	results_screen_object  $320, $120, $100,   4, $A
+	results_screen_object  $330, $120, $110,   4, $B
+;	results_screen_object  $340, $120, $110, $16, $E
 	
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
