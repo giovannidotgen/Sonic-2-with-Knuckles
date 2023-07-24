@@ -88138,7 +88138,7 @@ SndPtr_Ring:
 SndPtr_RingRight:	rom_ptr_z80	Sound35	; ring sound
 SndPtr_SpikesMove:	rom_ptr_z80	Sound36
 SndPtr_Rumbling:	rom_ptr_z80	Sound37	; rumbling
-			rom_ptr_z80	Sound38	; (unused)
+SndPtr_Back:		rom_ptr_z80	Sound38	; (unused)
 SndPtr_Smash:		rom_ptr_z80	Sound39	; smash/breaking
 SndPtr_Dropdash:		rom_ptr_z80	Sound3A	; Drop Dash (TomatoWave_0)
 SndPtr_DoorSlam:	rom_ptr_z80	Sound3B	; door slamming shut
@@ -88228,7 +88228,7 @@ Sound34:	include "sound/sfx/B4 - Bumper.asm"
 Sound35:	include "sound/sfx/B5 - Ring.asm"
 Sound36:	include "sound/sfx/B6 - Spikes Move.asm"
 Sound37:	include "sound/sfx/B7 - Rumbling.asm"
-Sound38:	include "sound/sfx/B8 - Unknown (Unused).asm"
+Sound38:	include "sound/sfx/B8 - Back (Score Rush Menu).asm"
 Sound39:	include "sound/sfx/B9 - Smash.asm"
 Sound3A:	include "sound/sfx/BA - Drop Dash.asm"
 Sound3B:	include "sound/sfx/BB - Door Slam.asm"

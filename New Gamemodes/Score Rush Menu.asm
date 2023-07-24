@@ -223,7 +223,7 @@ QuickRush_GoBack:
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
 		clr.b	(MainMenu_Screen).w	; set menu
-		move.w	#SndID_Checkpoint,d0
+		move.w	#SndID_Back,d0
 		jmp		PlaySound	
 	
 QuickRush_Controls:
@@ -257,7 +257,9 @@ QuickRush_Refresh:
 		move.w	(Options_menu_box).w,(QuickRush_MemOption).w
 		add.w	d2,d2
 		move.w	QuickRush_LevelList(pc,d2.w),(Current_ZoneAndAct).w
-		bra.w	QuickRush_LevelName
+		bsr.w	QuickRush_LevelName
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l		
 		
 ; ===========================================================================
 QuickRush_LevelList:
@@ -292,7 +294,7 @@ Instructions_GoBack:
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
 		clr.b	(MainMenu_Screen).w	; set menu
-		move.w	#SndID_Checkpoint,d0
+		move.w	#SndID_Back,d0
 		jmp		PlaySound	
 	
 Instructions_Controls:
@@ -321,8 +323,9 @@ Instructions_Right:
 		
 Instructions_Refresh:
 		move.w	d2,(Options_menu_box).w
-		bra.w	Instructions_PageText
-		rts
+		bsr.w	Instructions_PageText
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l		
 
 ; ===========================================================================
 
@@ -330,9 +333,16 @@ CharSel_GoBack:
 		clr.w	(Options_menu_box).w
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
+		cmp.b	#2,(ScoreRush_Gamemode).w
+		beq.s	CharSel_GotoQuickRush
 		clr.b	(MainMenu_Screen).w	; set menu
-		move.w	#SndID_Checkpoint,d0
+		move.w	#SndID_Back,d0
 		jmp		PlaySound	
+		
+CharSel_GotoQuickRush:
+		move.b	#6,(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Back,d0
+		jmp		PlaySound		
 
 CharSel_BeginGame:
 		moveq	#0,d0
@@ -399,10 +409,14 @@ CharSel_Down:
 		
 CharSel_RefreshDiff:
 		move.b	d0,(Option_Difficulty).w
-		bra.w	CharSel_Difficulties
+		bsr.w	CharSel_Difficulties
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l				
 CharSel_RefreshChar:
 		move.w	d2,(Options_menu_box).w ; set new selection
-		bra.w	CharSel_LoadPlayer 		; refresh option names
+		bsr.w	CharSel_LoadPlayer 		; refresh option names
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l				
 ;		move.b  d5,(a2)		
 ;		bra.w	CharSel_Values
 		; move.w	#$CD,d0
@@ -435,7 +449,7 @@ Settings_GoBack:
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
 		clr.b	(MainMenu_Screen).w	; set menu
-		move.w	#SndID_Checkpoint,d0
+		move.w	#SndID_Back,d0
 		jmp		PlaySound	
 
 Settings_Controls:
@@ -473,12 +487,14 @@ Settings_Down:
 		
 Settings_FullRefresh:
 		move.w	d0,(Options_menu_box).w ; set new selection
-		bra.w	Settings_Init			; refresh option names
+		bsr.w	Settings_Init			; refresh option names
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l				
 Settings_PartialRefresh:
 		move.b  d5,(a2)		
-		bra.w	Settings_Values
-		; move.w	#$CD,d0
-		; jsr	(PlaySound_Special).l ;	play "blip" sound		
+		bsr.w	Settings_Values
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l						
 	
 Settings_NoInput:
 		rts	
@@ -576,8 +592,8 @@ GameSel_Down:
 GameSel_Refresh:
 		move.w	d0,(Options_menu_box).w ; set new selection
 		bsr.w	GameSel_Selections ; refresh option names
-		; move.w	#$CD,d0
-		; jsr	(PlaySound_Special).l ;	play "blip" sound		
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l			
 	
 GameSel_NoInput:
 		rts	
@@ -601,7 +617,8 @@ GameSel_StartEvents:
 ; ===========================================================================		
 
 .Start_Null:
-		rts
+		move.w	#SndID_Error,d0
+		jmp		PlaySound
 		
 GameSel_Instructions:
 	clr.w	(Options_menu_box).w
@@ -1304,7 +1321,7 @@ TextData_PageBodies:
 ; Page 11
 	dc.b	"SONIC 2 - SCORE RUSH              "
 	dc.b	"                                  "
-	dc.b	"VERSION: ALPHA 0.1.1 (PRIVATE)    "
+	dc.b	"VERSION: ALPHA 0.2 (PRIVATE)      "
 	dc.b	"                                  "
 	dc.b	"THIS GAME IS NOT A PRODUCT        "
 	dc.b	"PRODUCED BY OR OFFICIALLY LICENSED"
