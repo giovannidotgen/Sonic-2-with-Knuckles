@@ -1536,6 +1536,8 @@ Pause_ChkStart:
 Pause_CheckC:
 	tst.b	(Option_PenaltySystem).w
 	beq.s	Pause_Loop
+	cmpi.b	#2,(ScoreRush_Gamemode).w
+	beq.s	Pause_Loop
 	btst	#button_C,(Ctrl_1_Press).w	; is C button pressed?
 	beq.s	Pause_Loop					; if not, branch
 	move.b	#1,(Suicide_Flag).w
@@ -27493,6 +27495,7 @@ loc_141E6:
 	bne.s	loc_14256
 	move.w	#SndID_TallyEnd,d0
 	jsr	(PlaySound).l
+	bsr.w	QuickRush_NewRecord	
 QuickRush_NoBonus:	
 	addq.b	#2,routine(a0)
 	move.w	#$B4,anim_frame_duration(a0)
@@ -27522,6 +27525,15 @@ QuickRush_NoBonus:
 return_14254:
 
 	rts
+
+; ===========================================================================
+
+QuickRush_NewRecord:
+	movea.l	(QuickRush_UpdAddress).w,a2
+	move.l	(Score).w,(a2)
+	rts
+	
+	
 ; ===========================================================================
 
 loc_14256:
@@ -27534,6 +27546,8 @@ loc_14256:
 ; ===========================================================================
 
 loc_14270:
+	cmp.b	#2,(ScoreRush_Gamemode).w
+	beq.s	Level_GoToQuickRush
 	moveq	#0,d0
 	move.b	(Current_Zone).w,d0
 	add.w	d0,d0
@@ -27550,6 +27564,19 @@ loc_1428C:
 	bpl.s	loc_1429C
 	move.b	#GameModeID_SegaScreen,(Game_Mode).w ; => SegaScreen
 	rts
+	
+Level_GoToQuickRush:
+	moveq	#0,d0
+	move.w	d0,(Options_menu_box).w
+	move.w	d0,(Two_player_mode_copy).w
+	move.w	d0,(Two_player_mode).w
+	move.b	#6,(MainMenu_Screen).w
+	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; => LevelSelectMenu
+	move.w	d0,(Current_Special_StageAndAct).w
+	move.w	d0,(Got_Emerald).w
+	move.l	d0,(Got_Emeralds_array).w
+	move.l	d0,(Got_Emeralds_array+4).w	
+	rts	
 ; ===========================================================================
 
 loc_1429C:
@@ -34412,13 +34439,37 @@ Load_EndOfAct:
 	bne.s	return_194D0
 
 	move.b	#1,(Update_Bonus_score).w	
-	move.l	#100,(Bonus_Countdown_1).w	
+	moveq	#0,d1
+	lea	(Leaderboards_QuickRush).l,a2	; where to get the numbers from
 	
+	moveq	#0,d0
+	move.b	(Current_Zone).w,d0			; get zone
+	add.w	d0,d0						; multiply by 2
+	add.b	(Current_Act).w,d0			; get individual level
+	mulu.w	#24,d0						; by 2 for difficulties, by 3 for characters, by 4 for alignment
+	adda.l	d0,a2						; align to correct set of leaderboards entries	
+	
+	moveq	#0,d0
+	move.w	(Player_mode).w,d0			; get character
+	sub.b	#1,d0						; -1 
+	bmi.s	Deliberate_crash			; if Sonic and Tails, crash the game
+	lsl.l	#3,d0						; multiply character option by 8					
+	adda.l	d0,a2						; get correct character's entries
+	tst.b	(Option_Difficulty).w		; is player playing in hard mode?
+	beq.s	+							; if not, skip
+	adda.l	#4,a2						; get hard mode value
+	
++	
+	move.l	(a2),(Bonus_Countdown_1).w	; move obtained score here
+	move.l	a2,(QuickRush_UpdAddress).w	; store address of score to update, in case of new record
 	move.w	#MusID_EndLevel,d0
 	jsr	(PlayMusic).l
 
 return_194D0:
-	rts
+	rts	
+	
+Deliberate_crash:
+	illegal
 ; ===========================================================================
 ; word_194D2:
 TimeBonuses:

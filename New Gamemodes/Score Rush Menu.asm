@@ -158,6 +158,7 @@ TextInit_GameSel:
 	else
 	move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
 	endif
+	clr.w	(QuickRush_MemOption).w
 
 	bsr.w	GameSel_Headings
 	bra.w	GameSel_Selections
@@ -176,6 +177,7 @@ TextInit_Instructions:
 	bra.w	Instructions_PageText
 	
 TextInit_QuickRush:
+	move.w	(QuickRush_MemOption).w,(Options_menu_box).w
 	bsr.w	QuickRush_Headings
 	bra.w	QuickRush_LevelName
 	
@@ -252,6 +254,7 @@ QuickRush_Right:
 		
 QuickRush_Refresh:
 		move.w	d2,(Options_menu_box).w
+		move.w	(Options_menu_box).w,(QuickRush_MemOption).w
 		add.w	d2,d2
 		move.w	QuickRush_LevelList(pc,d2.w),(Current_ZoneAndAct).w
 		bra.w	QuickRush_LevelName

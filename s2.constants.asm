@@ -1608,7 +1608,7 @@ SS_2p_Flag:			ds.w	1	; $FFFFFE00-$FFFFFE01 ; seems unused
 Level_Inactive_flag:		ds.w	1	; (2 bytes)
 Timer_frames:			ds.w	1	; (2 bytes)
 Debug_object:			ds.b	1
-				ds.b	1	; $FFFFFE07 ; seems unused
+				ds.b	1	; $FFFFFE07 
 Debug_placement_mode:		ds.b	1
 				ds.b	1	; the whole word is tested, but the debug mode code uses only the low byte
 Debug_Accel_Timer:		ds.b	1
@@ -1646,7 +1646,7 @@ Timer_frame:			ds.b	1	; 1 byte
 
 Score:				ds.l	1	; 4 bytes
 Score_Saved:		ds.l	1
-				ds.b	2	; $FFFFFE2E-$FFFFFE2F ; seems unused
+QuickRush_MemOption:	ds.w	1
 Last_star_pole_hit:		ds.b	1	; 1 byte -- max activated starpole ID in this act
 Saved_Last_star_pole_hit:	ds.b	1
 Saved_x_pos:			ds.w	1
@@ -1671,7 +1671,8 @@ Saved_Extra_life_flags_2P:	ds.b	1	; stored, but never restored
 Saved_Camera_Max_Y_pos:		ds.w	1
 Saved_Dynamic_Resize_Routine:	ds.b	1
 
-				ds.b	5	; $FFFFFE59-$FFFFFE5D ; seems unused
+				ds.b	1	; $FFFFFE59 ; seems unused
+QuickRush_UpdAddress:	ds.l	1				
 Oscillating_Numbers:
 Oscillation_Control:		ds.w	1
 Oscillating_variables:
