@@ -65,6 +65,7 @@ ScoreRushMenu:
 
 ; clear a bunch of variables
 	clr.b	(LevSel_HoldTimer).w
+	clr.b	(Water_fullscreen_flag).w
 	clr.b	(Options_menu_box).w
 	clr.b	(Level_started_flag).w
 	clr.w	(Anim_Counters).w
@@ -160,7 +161,6 @@ TextInit_GameSel:
 	endif
 	clr.w	(QuickRush_MemOption).w
 
-	bsr.w	GameSel_Headings
 	bra.w	GameSel_Selections
 
 ; Settings menu
@@ -655,30 +655,6 @@ GameSel_QuickRush:
 	jmp		PlaySound	
 
 ; ===========================================================================
-; Subroutine to render the Main menu's headings.
-; ===========================================================================
-
-GameSel_Headings:
-;	lea	(VDP_data_port).l,a6
-	
-	lea	(TextData_Version).l,a1 ; where to fetch the lines from
-	lea	($C00000).l,a6
-	move.l	#$4C120003,d4	; starting screen position
-	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
-	moveq	#2,d1		; number of lines of text to be displayed -1
-
--:		
-	move.l	d4,4(a6)
-	moveq	#28,d2		; number of characters to be rendered in a line -1	
-	bsr.w	SingleLineRender
-	addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
-	dbf	d1,-
-
-	rts
-
-; End of function GameSel_Headings.
-
-; ===========================================================================
 ; Subroutine to render the Score Rush's main menu.
 ; ===========================================================================
 
@@ -716,6 +692,24 @@ GameSel_Selections:
 		move.l	d4,4(a6)
 		moveq	#11,d2		
 		bsr.w	SingleLineRender	
+
+;Settings_Description:					
+		lea	(TextData_GMDescriptions).l,a1 ; where to fetch the lines from
+		moveq	#0,d1
+		move.w	(Options_menu_box).w,d1
+		mulu.w	#108,d1
+		adda.w	d1,a1					; set address		
+		move.l	#$4C040003,d4	; (CHANGE) starting screen position 
+		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+		moveq	#2,d1		; number of lines of text to be displayed -1
+
+-
+		move.l	d4,4(a6)
+		moveq	#35,d2		; number of characters to be rendered in a line -1
+		bsr.w	SingleLineRender
+		addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
+		dbf	d1,-		
+		
 		rts					
 
 ; End of function GameSel_Selections.
@@ -1221,12 +1215,12 @@ TextData_PageBodies:
 	dc.b	"HARDER, AND THE SCORE WILL GO DOWN"
 	dc.b	"FASTER.                           "
 	dc.b	"                                  "
-	dc.b	"IF YOUR SCORE BECOMES RED, IT     "
-	dc.b	"MEANS YOU HAVE REACHED THE HIGHEST"
-	dc.b	"DIFFICULTY. HOPEFULLY YOU LIKE    "
-	dc.b	"METROPOLIS, BECAUSE THERE WILL BE "
-	dc.b	"A LOT OF IT BY THEN!              "
-	dc.b	"                                  "
+	dc.b	"YOUR OBJECTIVE IS STAYING ALIVE   "
+	dc.b	"AND BEATING AS MANY LEVELS AS     "
+	dc.b	"POSSIBLE. LOSING ALL OF YOUR      "
+	dc.b	"POINTS, OR MANUALLY QUITTING, WILL"
+	dc.b	"LEAD YOU STRAIGHT TO THE RESULTS  "
+	dc.b	"SCREEN.                           "
 
 ; Page 6
 	dc.b	"THE QUICK RUSH IS VERY SIMILAR TO "
@@ -1252,7 +1246,7 @@ TextData_PageBodies:
 	dc.b	"CAP OF 1000 POINTS PER BADNIK.    "
 	dc.b	"                                  "
 	dc.b	"YOU ALSO GET 50 POINTS PER RING   "
-	dc.b	"COLLECTED. LAMP POSTS, SIGNPOSTS  "
+	dc.b	"COLLECTED. STARPOSTS, SIGNPOSTS   "
 	dc.b	"AND CAPSULES ALL AWARD YOU 1000   "
 	dc.b	"POINTS EACH. BOSS FIGHTS STILL    "
 	dc.b	"AWARD 1000 POINTS.                "
@@ -1273,9 +1267,9 @@ TextData_PageBodies:
 	dc.b	"THAT YOU DON'T LOSE POINTS WHEN   "
 	dc.b	"HIT.                              "
 	dc.b	"                                  "
-	dc.b	"WHILE YOU'RE INVINCIBLE, THE SCORE"
-	dc.b	"GETS HALTED, UNLESS THE SCORE IS  "
-	dc.b	"RED.                              "
+	dc.b	"THE SCORE WILL COMPLETELY STOP    "
+	dc.b	"DRAINING WHILE YOU'RE INVINCIBLE, "
+	dc.b	"OR IN OTHER PARTICULAR SCENARIOS. "
 	dc.b	"                                  "
 	dc.b	"1-UP MONITORS NO LONGER AWARD     "
 	dc.b	"LIVES, BUT AWARD 2000 POINTS EACH."
@@ -1286,18 +1280,18 @@ TextData_PageBodies:
 	dc.b	"THE PENALTY SYSTEM MAKES IT SO    "
 	dc.b	"THAT IF YOU DIE DURING THE SCORE  "
 	dc.b	"RUSH AND THE ENDLESS RUSH, IT'S   "
-	dc.b	"NOT AN IMMEDIATE LEVEL.           "
+	dc.b	"NOT AN IMMEDIATE GAME OVER.       "
 	dc.b	"                                  "
 	dc.b	"IF YOU DIE, YOU WILL RESTART FROM "
 	dc.b	"THE BEGINNING OF THE LEVEL (AND   "
-	dc.b	"NOT FROM CHECKPOINTS!) WITH THE   "
+	dc.b	"NOT FROM THE STARPOSTS!) WITH THE "
 	dc.b	"SCORE YOU HAD THEN, MINUS 5000.   "
 	dc.b	"                                  "
 	dc.b	"IF YOU HAVE THE PENALTY SYSTEM    "
-	dc.b	"TURNED OFF, HAVE LESS THAN 5000   "
-	dc.b	"POINTS, OR ARE PLAYING THE QUICK  "
-	dc.b	"RUSH GAMEMODE, YOU GET ONLY ONE   "
-	dc.b	"LIFE.                             "
+	dc.b	"TURNED OFF, START A LEVEL WITH    "
+	dc.b	"LESS THAN 5000 POINTS, OR ARE     "
+	dc.b	"PLAYING THE QUICK RUSH GAMEMODE,  "
+	dc.b	"YOU ONLY GET ONE LIFE.            "
 	dc.b	"                                  "
 
 ; Page 10
@@ -1364,6 +1358,35 @@ TextData_SettingsMenu:
 	dc.b	"BULLET DEFLECTION   "
 	dc.b	"PENALTY SYSTEM      "
 	even
+	
+TextData_GMDescriptions:
+	dc.b	"PLAY THROUGH THE ENTIRETY OF SONIC 2"
+	dc.b	"WITH THE SCORE RUSH TWIST! CAN YOU  "
+	dc.b	"BEAT THE GAME?                      "
+	
+	dc.b	"A NEVER ENDING BARRAGE OF LEVELS    "
+	dc.b	"COMES YOUR WAY! HOW MANY OF THEM CAN"
+	dc.b	"YOU BEAT BEFORE THE SCORE REACHES 0?"
+	
+	dc.b	"PLAY THROUGH ANY OF YOUR FAVORITE   "
+	dc.b	"LEVELS WITH THE SCORE RUSH GIMMICK! "
+	dc.b	"CAN YOU FILL OUT THE SCOREBOARD?    "
+	
+	dc.b	"NEED HELP? LEARN EVERYTHING YOU NEED"
+	dc.b	"ABOUT SONIC 2 - SCORE RUSH HERE!    "
+	dc.b	"                                    "
+	
+	dc.b	"SET UP YOUR GENERAL EXPERIENCE, AS  "
+	dc.b	"WELL AS YOUR CHARACTERS' MOVESETS,  "
+	dc.b	"TO MATCH YOUR GAMEPLAY TASTE!       "
+	
+	dc.b	"VIEW THE GREATEST ACHIEVEMENTS EVER "
+	dc.b	"PERFORMED IN THIS SAVE FILE OF SONIC"
+	dc.b	"2 - SCORE RUSH!                     "
+	
+	dc.b	"CHECK OUT THE NAMES OF THOSE WHO    "
+	dc.b	"HELPED MAKE THIS HACK AS GREAT AS IT"
+	dc.b	"IS!                                 "
 	
 TextData_Descriptions:
 	dc.b	"AFFECTS ALL CHARACTERS. APPLIES A   "

@@ -2534,6 +2534,8 @@ CheckGameOver:
 	bge.w	return_1B31A
 	move.b	#8,routine(a0)	; => Obj01_Gone
 	move.w	#60,restart_countdown(a0)
+	cmpi.b	#2,(ScoreRush_Gamemode).w
+	beq.w	Level_GoToQuickRush
 	tst.b	(Option_PenaltySystem).w
 	beq.s	+
 	tst.l	(Score_Saved).w
@@ -2558,6 +2560,11 @@ Obj01_Finished:
 	moveq	#PLCID_GameOver,d0
 	jmp	(LoadPLC).l
 ; End of function CheckGameOver
+
+; ===========================================================================
+
+Obj01_ResetQuickRush:
+
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------

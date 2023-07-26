@@ -487,12 +487,11 @@ InitSRAM:
 +
 
 ; Test values for the Quick Rush
-	moveq	#1,d0
+	moveq	#0,d0
 	lea		(Leaderboards_QuickRush).w,a1
 
 -	
 	move.l	d0,(a1)+
-	addq.l	#1,d0
 	cmpa.l	#Leaderboards_ScoreRush,a1
 	blt.s	-
 
@@ -1498,6 +1497,19 @@ Unpause_Skip_WFZ:
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
+Pause_GotoQuickRush:
+	moveq	#0,d0
+	move.w	d0,(Options_menu_box).w
+	move.w	d0,(Two_player_mode_copy).w
+	move.w	d0,(Two_player_mode).w
+	move.b	#6,(MainMenu_Screen).w
+	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; => LevelSelectMenu
+	move.w	d0,(Current_Special_StageAndAct).w
+	move.w	d0,(Got_Emerald).w
+	move.l	d0,(Got_Emeralds_array).w
+	move.l	d0,(Got_Emeralds_array+4).w	
+	bra.w	Pause_Resume
+
 ; sub_1388:
 PauseGame:
 	nop
@@ -1521,6 +1533,8 @@ Pause_Loop:
 	bsr.w	WaitForVint
 	btst	#button_A,(Ctrl_1_Press).w	; is button A pressed?
 	beq.s	Pause_ChkStart		; if not, branch
+	cmpi.b	#2,(ScoreRush_Gamemode).w
+	beq.s	Pause_GotoQuickRush
 	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; set game mode to 4 (title screen)
 	clr.w	(Options_menu_box).w
 	clr.b	(MainMenu_Screen).w	; set menu
@@ -6290,7 +6304,7 @@ SpecialStage:
 	move.w	#$8400|(VRAM_Menu_Plane_B_Name_Table/$2000),(a6)	; PNT B base: $E000
 	move.w	#$9001,(a6)		; Scroll table size: 64x32
 	move.w	#$8C81,(a6)		; H res 40 cells, no interlace, S/H disabled
-	bsr.w	ClearScreen
+	jsr		ClearScreen
 	jsrto	Hud_Base, JmpTo_Hud_Base
     if ~~fixBugs
 	; By fixing the 'clearRAM' earlier in this code, these two instructions are made redundant.
@@ -9985,7 +9999,7 @@ ContinueScreen:
 	jsr		Pal_FadeFromBlack
 -
 	move.b	#VintID_Menu,(Vint_routine).w
-	bsr.w	WaitForVint
+	jsr		WaitForVint
 	cmpi.b	#4,(MainCharacter+routine).w
 	bhs.s	+
 	move	#$2700,sr
