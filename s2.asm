@@ -142,16 +142,11 @@ Vectors:
 ; byte_100:
 Header:
 	dc.b "SEGA GENESIS    " ; Console name
-	dc.b "(C)SEGA 1992.SEP" ; Copyright holder and release date (generally year)
-	dc.b "SONIC THE             HEDGEHOG 2                " ; Domestic name
-	dc.b "SONIC THE             HEDGEHOG 2                " ; International name
-    if gameRevision=0
-	dc.b "GM 00001051-00"   ; Version (REV00)
-    elseif gameRevision=1
-	dc.b "GM 00001051-01"   ; Version (REV01)
-    elseif gameRevision=2
-	dc.b "GM 00001051-02"   ; Version (REV02)
-    endif
+	dc.b "2023, GIOVANNI  " ; Copyright holder and release date (generally year)
+	dc.b "SONIC THE HEDGEHOG 2 - SCORE RUSH               " ; Domestic name
+	dc.b "SONIC THE HEDGEHOG 2 - SCORE RUSH               " ; International name
+	dc.b "S2SR-ALPHA-021"   ; Version
+
 ; word_18E
 Checksum:
 	dc.w $D951		; Checksum (patched later if incorrect)
