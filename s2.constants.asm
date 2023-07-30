@@ -1934,6 +1934,8 @@ Leaderboards_ScoreRush:
 Leaderboards_EndlessRush:
 				ds.b	$180
 				; Math: same as above.
+				
+Leaderboards_End:				
 
     if * > Leaderboards_RAM_End
 	fatal "Leaderboards exceed size of leaderboards RAM buffer."

@@ -147,6 +147,8 @@ MainMenu_InitIndex:
 	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Quick Rush	
 	dc.w	TextInit_Instructions-MainMenu_InitIndex	; Instructions Manual
 	dc.w	TextInit_QuickRush-MainMenu_InitIndex		; Level Select - Quick Rush
+	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Leaderboards
+	dc.w	TextInit_Leaderboards-MainMenu_InitIndex	; Leaderboards
 
 ; ===========================================================================
 ; Text initialization routines
@@ -181,6 +183,9 @@ TextInit_QuickRush:
 	bsr.w	QuickRush_Headings
 	bra.w	QuickRush_LevelName
 	
+TextInit_Leaderboards:
+	bsr.w	Leaderboards_Headings
+	bra.w	Leaderboards_Values
 ; ===========================================================================
 ; Controls subroutine: Main Menu
 ; ===========================================================================
@@ -207,6 +212,32 @@ MenuCtrls_Index:
 		dc.w	CharSel_Controls-MenuCtrls_Index
 		dc.w	Instructions_Controls-MenuCtrls_Index
 		dc.w	QuickRush_Controls-MenuCtrls_Index
+		dc.w	CharSel_Controls-MenuCtrls_Index
+		dc.w	Leaderboards_Controls-MenuCtrls_Index
+
+; ===========================================================================
+
+Leaderboards_GoBack:
+		move.w	(Player_option).w,(Options_menu_box).w			; get selected character
+		move.l	#Menu_Update,(sp)	; overwrite stack
+		move.l	#"UPDT",d6
+		move.b	#7,(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Back,d0
+		jmp		PlaySound	
+
+Leaderboards_Controls:
+		btst	#button_B,(Ctrl_1_Press).w
+		bne.w	Leaderboards_GoBack
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
+		andi.b	#$C,d1		; is left/right pressed and held?
+		bne.s	Leaderboards_LeftRight	; if yes, branch
+		rts	
+		
+Leaderboards_LeftRight:
+		bchg	#0,(Options_menu_box+1).w
+		bsr.w	Leaderboards_Values
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l			
 
 ; ===========================================================================
 
@@ -344,7 +375,18 @@ CharSel_GotoQuickRush:
 		move.w	#SndID_Back,d0
 		jmp		PlaySound		
 
+CharSel_GotoLeaderboards:
+		move.w	(Options_menu_box).w,(Player_option).w			; get selected character
+		clr.w	(Options_menu_box).w
+		move.l	#Menu_Update,(sp)	; overwrite stack
+		move.l	#"UPDT",d6
+		move.b	#8,(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Checkpoint,d0
+		jmp		PlaySound		
+
 CharSel_BeginGame:
+		cmp.b	#6,(MainMenu_Screen).w
+		bgt.s	CharSel_GotoLeaderboards
 		moveq	#0,d0
 		move.b	#1,(Life_count).w
 		move.w	d0,(Ring_count).w
@@ -612,13 +654,21 @@ GameSel_StartEvents:
 		dc.w GameSel_QuickRush-.StartEvents_Index	; Quick Rush
 		dc.w GameSel_Instructions-.StartEvents_Index		; Instructions
 		dc.w GameSel_Settings-.StartEvents_Index	     	; Settings
-		dc.w .Start_Null-.StartEvents_Index		; Leaderboards
+		dc.w GameSel_Leaderboards-.StartEvents_Index		; Leaderboards
 		dc.w .Start_Null-.StartEvents_Index		; View credits
 ; ===========================================================================		
 
 .Start_Null:
 		move.w	#SndID_Error,d0
 		jmp		PlaySound
+		
+GameSel_Leaderboards:
+	clr.w	(Options_menu_box).w
+	move.l	#Menu_Update,(sp)	; overwrite stack
+	move.l	#"UPDT",d6
+	move.b	#7,(MainMenu_Screen).w	; set menu
+	move.w	#SndID_Checkpoint,d0
+	jmp		PlaySound		
 		
 GameSel_Instructions:
 	clr.w	(Options_menu_box).w
@@ -1080,8 +1130,100 @@ QuickRush_LevelName:
 	rts
 
 ; ===========================================================================
+
+Leaderboards_Headings:
+		move.l	#$43840003,d4
+		move.w	#$A690,d3		; get number 1 in font
+		moveq	#7,d1			
+
+-
+		move.l	d4,4(a6)
+		move.w	d3,(a6)
+		addi.l	#(2*$800000),d4  ; replace number to the left with desired distance between each line
+		addq.w	#1,d3
+		dbf	d1,-	
+
+				
+Leaderboards_Values:		
+		lea	(TextData_LeaderHeadings).l,a1 ; where to fetch the lines from
+		tst.w	(Options_menu_box).w		
+		beq.s	+
+		lea	(TextData_LeaderHeadings2).l,a1
++		
+		move.l	#$41960003,d4	; (CHANGE) starting screen position 
+		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+		moveq	#1,d1		; number of lines of text to be displayed -1
+
+-
+		move.l	d4,4(a6)
+		moveq	#17,d2		; number of characters to be rendered in a line -1
+		bsr.w	SingleLineRender
+		addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
+		dbf	d1,-	
+
+
+		lea	(Leaderboards_ScoreRush).l,a1 ; where to fetch the lines from
+		tst.w	(Options_menu_box).w		
+		beq.s	+
+		lea	(Leaderboards_EndlessRush).l,a1	
+		
++	
+		tst.b	(Option_Difficulty).w
+		beq.s	+
+		adda.l	#64,a1						; add 64 bytes
+		
++		
+		moveq	#0,d0
+		move.w	(Player_option).w,d0
+		lsl.w	#7,d0						; times 128
+		adda.l	d0,a1
+
+		move.l	#$43880003,d4	; (CHANGE) starting screen position 
+		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+		moveq	#7,d1		; number of lines of text to be displayed -1
+
+-
+		move.l	d4,4(a6)
+		moveq	#2,d2		; number of characters to be rendered in a line -1
+		bsr.w	SingleLineRender
+		adda.l	#1,a1			 ; get associated number
+		move.w	#$0,(a6)		 ; blank space
+		tst.w	(Options_menu_box).w
+		beq.s	+				 ; if score rush, skip
+		move.w	#$0,(a6)		 ; extra blank space
+		
++
+		movem.l	d0-d6,-(sp)
+		lea	(Hud_1000000000).l,a2 			; get the number of digits
+		moveq	#9,d0             			; repeat X-1 times
+		move.l	(a1)+,d1					; get value to render
+		move.w	#$A68F,d3					; get 0 from font
+		bsr.w	DecimalNumberRender2
+		movem.l	(sp)+,d0-d6
+		
+		tst.w	(Options_menu_box).w
+		bne.s	+							; if endless rush, skip
+		move.w	#$A68F,(a6)					; render additional 0
++
+		addi.l	#(2*$800000),d4  ; replace number to the left with desired distance between each line	
+	
+
+		dbf	d1,-			
+
+		rts
+
+; ===========================================================================
 ; All text data used by this screen.
 ; ===========================================================================	
+
+TextData_LeaderHeadings:
+	dc.b	"    SCORE RUSH    "
+	dc.b	"  HIGHEST SCORES  "
+	
+	
+TextData_LeaderHeadings2:	
+	dc.b	"   ENDLESS RUSH   "
+	dc.b	"MOST LEVELS BEATEN"
 
 TextData_LevelSelect:
 	dc.b	"SELECT LEVEL:"
@@ -1315,7 +1457,7 @@ TextData_PageBodies:
 ; Page 11
 	dc.b	"SONIC 2 - SCORE RUSH              "
 	dc.b	"                                  "
-	dc.b	"VERSION: ALPHA 0.2 (PRIVATE)      "
+	dc.b	"VERSION: ALPHA 0.2.1 (PRIVATE)    "
 	dc.b	"                                  "
 	dc.b	"THIS GAME IS NOT A PRODUCT        "
 	dc.b	"PRODUCED BY OR OFFICIALLY LICENSED"

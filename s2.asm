@@ -481,7 +481,7 @@ InitSRAM:
 	
 +
 
-; Test values for the Quick Rush
+; Initialize Quick Rush
 	moveq	#0,d0
 	lea		(Leaderboards_QuickRush).w,a1
 
@@ -490,6 +490,15 @@ InitSRAM:
 	cmpa.l	#Leaderboards_ScoreRush,a1
 	blt.s	-
 
+; Initialize Score Rush and Endless Rush
+	lea		(Default_ScoreRush).w,a0
+	lea		(Leaderboards_ScoreRush).w,a1
+	
+-
+	move.l	(a0)+,(a1)+
+	cmpa.l	#Leaderboards_End,a1
+	blt.s	-	
+
 	rts
 
 ; ===========================================================================
@@ -497,7 +506,224 @@ InitSRAM:
 DefaultOptions:
 	dc.b	0,0,1,1,1,1,1,1,1,1,$FF
 	even
+	
+Default_ScoreRush:
+	; Score Rush - Normal - Sonic
+	dc.b	"BIG "
+	dc.l	0
+	dc.b	"VEC "
+	dc.l	1
+	dc.b	"ESP "
+	dc.l	2
+	dc.b	"CHA "
+	dc.l	3
+	dc.b	"CRM "
+	dc.l	4
+	dc.b	"CHE "
+	dc.l	5
+	dc.b	"BRK "
+	dc.l	6
+	dc.b	"BIN "
+	dc.l	7
 
+	; Score Rush - Hard - Sonic
+	dc.b	"SON "
+	dc.l	8
+	dc.b	"EGG "
+	dc.l	9
+	dc.b	"MTP "
+	dc.l	10
+	dc.b	"KTE "
+	dc.l	11
+	dc.b	"AMY "
+	dc.l	12
+	dc.b	"MTY "
+	dc.l	13
+	dc.b	"RAY "
+	dc.l	14
+	dc.b	"FNG "
+	dc.l	15
+
+	; Score Rush - Normal - Tails
+	dc.b	"ADD "
+	dc.l	16
+	dc.b	"EXG "
+	dc.l	17
+	dc.b	"NOT "
+	dc.l	18
+	dc.b	"EOR "
+	dc.l	19
+	dc.b	"EXT "
+	dc.l	20
+	dc.b	"LSR "
+	dc.l	21
+	dc.b	"ASR "
+	dc.l	22
+	dc.b	"ROR "
+	dc.l	23
+	
+	; Score Rush - Hard - Tails
+	dc.b	"JSR "
+	dc.l	24
+	dc.b	"BSR "
+	dc.l	25
+	dc.b	"BEQ "
+	dc.l	26
+	dc.b	"BPL "
+	dc.l	27
+	dc.b	"BGE "
+	dc.l	28
+	dc.b	"BLE "
+	dc.l	29
+	dc.b	"BCC "
+	dc.l	30
+	dc.b	"BLS "
+	dc.l	31
+
+	; Score Rush - Normal - Knuckles
+	dc.b	"MBM "
+	dc.l	32
+	dc.b	"YU2 "
+	dc.l	33
+	dc.b	"SHC "
+	dc.l	34
+	dc.b	"IDW "
+	dc.l	35
+	dc.b	"SMB "
+	dc.l	36
+	dc.b	"ARC "
+	dc.l	37
+	dc.b	"JOE "
+	dc.l	38
+	dc.b	"ANG "
+	dc.l	39
+
+	; Score Rush - Hard - Knuckles
+	dc.b	"SMD "
+	dc.l	40
+	dc.b	"GEN "
+	dc.l	41
+	dc.b	"BIN "
+	dc.l	42
+	dc.b	"ASM "
+	dc.l	43
+	dc.b	"BAT "
+	dc.l	44
+	dc.b	"SMS "
+	dc.l	45
+	dc.b	"SGG "
+	dc.l	46
+	dc.b	"SAT "
+	dc.l	47
+		
+	; Endless Rush - Normal - Sonic
+	dc.b	"SHA "
+	dc.l	48
+	dc.b	"ROU "
+	dc.l	49
+	dc.b	"BLZ "
+	dc.l	50
+	dc.b	"SIL "
+	dc.l	51
+	dc.b	"JET "
+	dc.l	52
+	dc.b	"WAV "
+	dc.l	53
+	dc.b	"STO "
+	dc.l	54
+	dc.b	"ORB "
+	dc.l	55
+
+	; Endless Rush - Hard - Sonic
+	dc.b	"YAK "
+	dc.l	56
+	dc.b	"CUB "
+	dc.l	57
+	dc.b	"ZAV "
+	dc.l	58
+	dc.b	"ZAZ "
+	dc.l	59
+	dc.b	"ZIK "
+	dc.l	60
+	dc.b	"ZEE "
+	dc.l	61
+	dc.b	"ZOM "
+	dc.l	62
+	dc.b	"ZOR "
+	dc.l	63
+
+	; Endless Rush - Normal - Tails
+	dc.b	"SUB "
+	dc.l	64
+	dc.b	"CLR "
+	dc.l	65
+	dc.b	"AND "
+	dc.l	66
+	dc.b	"NEG "
+	dc.l	67
+	dc.b	"JMP "
+	dc.l	68
+	dc.b	"LSL "
+	dc.l	69
+	dc.b	"ASL "
+	dc.l	70
+	dc.b	"ROL "
+	dc.l	71
+
+	; Endless Rush - Hard - Tails
+	dc.b	"BRA "
+	dc.l	72
+	dc.b	"RTS "
+	dc.l	73
+	dc.b	"BNE "
+	dc.l	74
+	dc.b	"BMI "
+	dc.l	75
+	dc.b	"BGT "
+	dc.l	76
+	dc.b	"BLT "
+	dc.l	77
+	dc.b	"BHI "
+	dc.l	78
+	dc.b	"BCS "
+	dc.l	79
+
+	; Endless Rush - Normal - Knuckles
+	dc.b	"KGL "
+	dc.l	80
+	dc.b	"WSI "
+	dc.l	81
+	dc.b	"DAX "
+	dc.l	82
+	dc.b	"MDT "
+	dc.l	83
+	dc.b	"DWO "
+	dc.l	84
+	dc.b	"SRA "
+	dc.l	85
+	dc.b	"DSK "
+	dc.l	86
+	dc.b	"DSH "
+	dc.l	87
+
+	; Endless Rush - Hard - Knuckles
+	dc.b	"GIO "
+	dc.l	88
+	dc.b	"MON "
+	dc.l	89
+	dc.b	"FZY "
+	dc.l	90
+	dc.b	"TRS "
+	dc.l	91
+	dc.b	"OTA "
+	dc.l	92
+	dc.b	"YOG "
+	dc.l	93
+	dc.b	"GIA "
+	dc.l	94
+	dc.b	"JAC "
+	dc.l	95
+	
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; vertical and horizontal interrupt handlers
 ; VERTICAL INTERRUPT HANDLER:
@@ -6357,7 +6583,7 @@ SpecialStage:
 	tst.l	(Plc_Buffer).w
 	bne.s	-
 	move.w	#SndID_SpecStageEntry,d0
-	bsr.w	PlaySound
+	jsr		PlaySound
 	bsr.w	Pal_FadeToWhite
 	tst.w	(Two_player_mode_copy).w
 	bne.s	loc_540C
