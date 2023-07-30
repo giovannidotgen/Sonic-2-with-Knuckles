@@ -1132,7 +1132,19 @@ QuickRush_LevelName:
 ; ===========================================================================
 
 Leaderboards_Headings:
-		move.l	#$43840003,d4
+
+		lea	(Chunk_Table).l,a1
+		lea	(MapEng_LeadContainers).l,a0
+		move.w	#make_art_tile(ArtTile_ArtNem_MenuBox,1,0),d0
+		jsr		EniDec
+		
+		lea	(Chunk_Table).l,a1
+		move.l	#$41040003,d0
+		moveq	#36,d1
+		moveq	#24,d2
+		jsr		PlaneMapToVRAM_H40
+
+		move.l	#$45080003,d4
 		move.w	#$A690,d3		; get number 1 in font
 		moveq	#7,d1			
 
@@ -1150,7 +1162,7 @@ Leaderboards_Values:
 		beq.s	+
 		lea	(TextData_LeaderHeadings2).l,a1
 +		
-		move.l	#$41960003,d4	; (CHANGE) starting screen position 
+		move.l	#$42160003,d4	; (CHANGE) starting screen position 
 		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
 		moveq	#1,d1		; number of lines of text to be displayed -1
 
@@ -1158,7 +1170,7 @@ Leaderboards_Values:
 		move.l	d4,4(a6)
 		moveq	#17,d2		; number of characters to be rendered in a line -1
 		bsr.w	SingleLineRender
-		addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
+		addi.l	#(2*$800000),d4  ; replace number to the left with desired distance between each line
 		dbf	d1,-	
 
 
@@ -1178,7 +1190,7 @@ Leaderboards_Values:
 		lsl.w	#7,d0						; times 128
 		adda.l	d0,a1
 
-		move.l	#$43880003,d4	; (CHANGE) starting screen position 
+		move.l	#$45140003,d4	; (CHANGE) starting screen position 
 		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
 		moveq	#7,d1		; number of lines of text to be displayed -1
 
@@ -1187,7 +1199,8 @@ Leaderboards_Values:
 		moveq	#2,d2		; number of characters to be rendered in a line -1
 		bsr.w	SingleLineRender
 		adda.l	#1,a1			 ; get associated number
-		move.w	#$0,(a6)		 ; blank space
+		moveq	#11,d2
+		bsr.w	MakeBlankTiles
 		tst.w	(Options_menu_box).w
 		beq.s	+				 ; if score rush, skip
 		move.w	#$0,(a6)		 ; extra blank space

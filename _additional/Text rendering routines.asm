@@ -61,15 +61,17 @@ RenderLineToEnd:
 ; End of function RenderLineToEnd
 
 ; ===========================================================================
-; Subroutine that wipes one line of text of predetermined length.
+; Subroutine that generates a number of blank tiles.
 ; Input:
 ; a6: VDP
 ; d2: Number of characters to blank out
+
+; It is assumed tile 0 is left blank.
 ; ===========================================================================	
 
-WipeTextLine:
+MakeBlankTiles:
 		move.w	#0,(a6)
-		dbf		d2,WipeTextLine
+		dbf		d2,MakeBlankTiles
 		rts
 
 ; ===========================================================================
