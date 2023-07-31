@@ -366,10 +366,17 @@ CharSel_GoBack:
 		move.l	#"UPDT",d6
 		cmp.b	#2,(ScoreRush_Gamemode).w
 		beq.s	CharSel_GotoQuickRush
+		bgt.s	CharSel_BackFromLB
 		clr.b	(MainMenu_Screen).w	; set menu
 		move.w	#SndID_Back,d0
 		jmp		PlaySound	
-		
+
+CharSel_BackFromLB:
+		clr.b	(MainMenu_Screen).w	; set menu
+		move.w	#5,(Options_menu_box).w
+		move.w	#SndID_Back,d0
+		jmp		PlaySound			
+
 CharSel_GotoQuickRush:
 		move.b	#6,(MainMenu_Screen).w	; set menu
 		move.w	#SndID_Back,d0
@@ -1035,9 +1042,9 @@ QuickRush_Headings:
 	jsr		PlaneMapToVRAM_H40
 
 	lea	(TextData_LevelSelect).l,a1 ; where to fetch the lines from
-	move.l	#$43080003,4(a6)	; starting screen position 
+	move.l	#$430C0003,4(a6)	; starting screen position 
 	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
-	moveq	#12,d2		; number of characters to be rendered in a line -1
+	moveq	#5,d2		; number of characters to be rendered in a line -1
 	bsr.w	SingleLineRender		
 	
 	lea	(TextData_TopScores).l,a1 ; where to fetch the lines from
@@ -1079,7 +1086,7 @@ QuickRush_LevelName:
 	move.w	(Options_menu_box).w,d1
 	mulu.w	#16,d1
 	adda.l	d1,a1
-	move.l	#$43280003,4(a6)	; starting screen position 
+	move.l	#$43240003,4(a6)	; starting screen position 
 	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
 	moveq	#15,d2		; number of characters to be rendered in a line -1
 	bsr.w	SingleLineRender	
@@ -1239,7 +1246,7 @@ TextData_LeaderHeadings2:
 	dc.b	"MOST LEVELS BEATEN"
 
 TextData_LevelSelect:
-	dc.b	"SELECT LEVEL:"
+	dc.b	"LEVEL:"
 
 TextData_TopScores:
 	dc.b	"TOP SCORES"
