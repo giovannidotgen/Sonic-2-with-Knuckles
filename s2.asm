@@ -6436,13 +6436,13 @@ SpecialStage:
 	move.b	#VintID_CtrlDMA,(Vint_routine).w
 	bsr.w	WaitForVint
 	move.w	#MusID_SpecStage,d0
-	bsr.w	PlayMusic
+	jsr		PlayMusic
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
 	bsr.w	Pal_FadeFromWhite
 
--	bsr.w	PauseGame
+-	jsr		PauseGame
 	move.w	(Ctrl_1).w,(Ctrl_1_Logical).w
 	move.w	(Ctrl_2).w,(Ctrl_2_Logical).w
 	cmpi.b	#GameModeID_SpecialStage,(Game_Mode).w ; special stage mode?
@@ -6463,7 +6463,7 @@ SpecialStage:
 	moveq	#PLCID_SpecStageBombs,d0
 	bsr.w	LoadPLC
 
--	bsr.w	PauseGame
+-	jsr		PauseGame
 	cmpi.b	#GameModeID_SpecialStage,(Game_Mode).w ; special stage mode?
 	bne.w	SpecialStage_Unpause		; if not, branch
 	move.b	#VintID_S2SS,(Vint_routine).w
@@ -12995,6 +12995,7 @@ EndingSequence:
 EndgameCredits:
 	tst.b	(Credits_Trigger).w
 	beq.w	.return
+	st.b	(Credits_Watched).w
 	jsr		Pal_FadeToBlack
 	lea	(VDP_control_port).l,a6
 	move.w	#$8004,(a6)		; H-INT disabled
@@ -13068,6 +13069,8 @@ EndgameCredits:
 
 /	move.b	#VintID_Ending,(Vint_routine).w
 	jsr		WaitForVint
+	btst	#button_start,(Ctrl_1_Press).w
+	bne.w	+	
 	dbf	d0,-
 
 	jsr		Pal_FadeToBlack
@@ -68551,14 +68554,14 @@ loc_36BA6:
 	movea.w	objoff_2C(a0),a1 ; a1=object
 	tst.b	objoff_2B(a1)
 	bne.s	+
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 +
 	addq.b	#2,routine(a0)
 	move.w	objoff_2E(a0),d0
 	move.b	Obj8F_Directions(pc,d0.w),x_vel(a0)
 	move.b	Obj8F_Directions+1(pc,d0.w),y_vel(a0)
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 ; byte_36BCC:
 Obj8F_Directions:
@@ -68591,7 +68594,7 @@ Obj90_Init:
 	move.b	Obj90_Directions+1(pc,d0.w),y_vel(a0)
 	lsr.w	#1,d0
 	move.b	Obj90_Frames(pc,d0.w),mapping_frame(a0)
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jmp		MarkObjGone
 ; ===========================================================================
 ; byte_36C0C:
 Obj90_Frames:
@@ -68616,8 +68619,8 @@ Obj8F_Move:
 Obj90_Move:
 	tst.b	render_flags(a0)
 	bpl.w	JmpTo65_DeleteObject
-	jsrto	ObjectMoveAndFall, JmpTo8_ObjectMoveAndFall
-	jmpto	MarkObjGone, JmpTo39_MarkObjGone
+	jsr		ObjectMoveAndFall
+	jmp		MarkObjGone
 ; ===========================================================================
 
 loc_36C2C:
@@ -78240,7 +78243,18 @@ loc_3D9D6:
 
 	moveq	#signextendB(MusID_FadeOut),d0
 	jsrto	PlaySound, JmpTo12_PlaySound
-	move.b	#GameModeID_EndingSequence,(Game_Mode).w ; => EndingSequence
+
+	moveq	#0,d0
+	move.w	d0,(Options_menu_box).w
+	move.w	d0,(Two_player_mode_copy).w
+	move.w	d0,(Two_player_mode).w
+	move.b	#9,(MainMenu_Screen).w
+	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; => LevelSelectMenu
+	move.w	d0,(Current_Special_StageAndAct).w
+	move.w	d0,(Got_Emerald).w
+	move.l	d0,(Got_Emeralds_array).w
+	move.l	d0,(Got_Emeralds_array+4).w	
+	
 	bra.w	JmpTo65_DeleteObject
 ; ===========================================================================
 

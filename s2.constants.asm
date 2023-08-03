@@ -1734,7 +1734,8 @@ Loser_Time_Left:				; 2 bytes
 				ds.b	1	; seconds
 				ds.b	1	; frames
 
-				ds.b	$16	; $FFFFFEFA-$FFFFFF0F ; seems unused
+				ds.b	$15	; $FFFFFEFA-$FFFFFF0E ; seems unused
+Credits_Watched:		ds.b	1
 Results_Screen_2P:		ds.w	1	; 0 = act, 1 = zone, 2 = game, 3 = SS, 4 = SS all
 MainMenu_Screen:		ds.b    1
 Option_AirSpeedCap:		ds.b	1

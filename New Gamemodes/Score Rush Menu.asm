@@ -21,6 +21,7 @@ ScoreRushMenu:
 
 	clearRAM Sprite_Table_Input,Sprite_Table_Input_End
 	clearRAM Object_RAM,Object_RAM_End
+	clearRAM Misc_Variables,Misc_Variables_End	
 
 	clr.w	(VDP_Command_Buffer).w								; Initialize DMA Queue RAM
 	move.l	#VDP_Command_Buffer,(VDP_Command_Buffer_Slot).w		
@@ -149,6 +150,7 @@ MainMenu_InitIndex:
 	dc.w	TextInit_QuickRush-MainMenu_InitIndex		; Level Select - Quick Rush
 	dc.w	TextInit_CharSel-MainMenu_InitIndex			; Character Select - Leaderboards
 	dc.w	TextInit_Leaderboards-MainMenu_InitIndex	; Leaderboards
+	dc.w	TextInit_ResultsScreen-MainMenu_InitIndex	; Results screen - Score Rush
 
 ; ===========================================================================
 ; Text initialization routines
@@ -186,6 +188,9 @@ TextInit_QuickRush:
 TextInit_Leaderboards:
 	bsr.w	Leaderboards_Headings
 	bra.w	Leaderboards_Values
+	
+TextInit_ResultsScreen:
+	rts
 ; ===========================================================================
 ; Controls subroutine: Main Menu
 ; ===========================================================================
@@ -214,6 +219,43 @@ MenuCtrls_Index:
 		dc.w	QuickRush_Controls-MenuCtrls_Index
 		dc.w	CharSel_Controls-MenuCtrls_Index
 		dc.w	Leaderboards_Controls-MenuCtrls_Index
+		dc.w	ResultsScreen_Controls-MenuCtrls_Index
+
+; ===========================================================================
+
+ResultsScreen_SaveChanges:
+		tst.b	(Credits_Watched).w				; has the player watched the credits before?
+		beq.s	Menu_GotoCredits
+		clr.w	(Options_menu_box).w			; get selected character
+		move.l	#Menu_Update,(sp)	; overwrite stack
+		move.l	#"UPDT",d6
+		clr.b	(MainMenu_Screen).w	; set menu
+		move.w	#SndID_Checkpoint,d0
+		jmp		PlaySound	
+
+; GIO: Interestingly, the credits are not tied to any gamemode in particular. You can really just call them like this.
+Menu_GotoCredits:
+		st.b	(Credits_Trigger).w
+		bsr.w	Pal_FadeToBlack					; this masks graphical corruption during the vertical interrupt mode change
+
+
+MenuCredits_MainLoop:
+		move.b	#VintID_Ending,(Vint_routine).w
+		jsr		WaitForVint		
+		jsr		EndgameCredits
+		tst.w	(Level_Inactive_flag).w
+		beq.s	MenuCredits_MainLoop
+		
+		addq.l	#4,sp							; leave menu
+		rts
+
+ResultsScreen_Controls:
+		btst	#button_start,(Ctrl_1_Press).w
+		bne.w	ResultsScreen_SaveChanges
+;		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
+;		andi.b	#$C,d1		; is left/right pressed and held?
+;		bne.s	Leaderboards_LeftRight	; if yes, branch
+		rts	
 
 ; ===========================================================================
 
@@ -662,7 +704,7 @@ GameSel_StartEvents:
 		dc.w GameSel_Instructions-.StartEvents_Index		; Instructions
 		dc.w GameSel_Settings-.StartEvents_Index	     	; Settings
 		dc.w GameSel_Leaderboards-.StartEvents_Index		; Leaderboards
-		dc.w .Start_Null-.StartEvents_Index		; View credits
+		dc.w Menu_GotoCredits-.StartEvents_Index		; View credits
 ; ===========================================================================		
 
 .Start_Null:
