@@ -190,6 +190,7 @@ TextInit_Leaderboards:
 	bra.w	Leaderboards_Values
 	
 TextInit_ResultsScreen:
+	bsr.w	Results_UpdateLeaderboards
 	rts
 ; ===========================================================================
 ; Controls subroutine: Main Menu
@@ -1273,6 +1274,84 @@ Leaderboards_Values:
 		dbf	d1,-			
 
 		rts
+
+; ===========================================================================
+; Subroutine to check if a specific value belongs in the leaderboards.
+; ===========================================================================	
+
+Results_UpdateLeaderboards:		
+		bsr.w	Leaderboards_Find						; Find correct leaderboards based on character
+		tst.l	(Leaderboards_EntryUpdate).w			; check if the above returned a valid pointer
+		beq.s	.return									; if not, return
+
+		move.l	#"AAA ",(a2)							; reinitialize name in leaderboards
+		
+.return:
+		rts
+		
+; ===========================================================================
+; Subroutine to seek the leaderboards data
+; Input:
+; a0: achieved score
+; a1: start of leaderboards
+;
+; Output:
+; a2: leaderboards entry that got updated
+; Leaderboards_EntryUpdate: copy of a2
+; ===========================================================================	
+
+Leaderboards_CrashGame:
+		illegal
+		
+Leaderboards_Find:
+		lea		(Score).w,a0							; Input value		
+		lea		(Leaderboards_ScoreRush).w,a1			; Leaderboards
+;		cmp.b	#1,(ScoreRush_Gamemode).w				; Check for Endless Rush
+;		bne.s	.common									
+
+;		lea		(EndlessRush_Levels).w
+;		lea		(Leaderboards_EndlessRush).w,a1
+.common:
+		moveq	#0,d0
+		move.w	(Player_option).w,d0
+		sub.w	#1,d0									; 0 = Sonic, 1 = Tails, 2 = Knuckles
+		bmi.s	Leaderboards_CrashGame
+		cmp.b	#3,d0
+		bhs.s	Leaderboards_CrashGame
+		
+		lsl.l	#7,d0									; times 128
+		tst.b	(Option_Difficulty).w					; check difficulty
+		beq.s	.skip									; if normal, branch
+		add.l	#64,d0									; advance 64 more bytes
+		
+.skip:		
+		add.l	#56,d0									; get last score entry
+		adda.l	d0,a1									; align to last score entry of correct leaderboards
+		
+		moveq	#7,d2									; number of checks to do
+		move.l	(a0),d0									; copy score into data register
+		suba.l	a2,a2									; wipe a2 (address 0 is considered invalid)
+		
+; scan leaderboards entries
+-
+		cmp.l	4(a1),d0								; check the leaderboards score against the input score
+		blt.s	.exit									; if the input score is lower, exit
+		movea.l	a1,a2									; copy leaderboards pointer into a2
+		cmp		#7,d2									; come here often, honey? ;)
+		beq.s	.skip2									; if not, branch
+		move.l	(a1),8(a1)								; copy name into previous entry
+		move.l	4(a1),12(a1)							; copy value into previous entry
+.skip2:		
+		move.l	(a0),4(a1)								; copy score into leaderboards
+		suba.l	#8,a1									; decrement a1
+		dbf		d2,-									; repeat
+		
+.exit:
+		move.l	a2,(Leaderboards_EntryUpdate).w			; copy a2 into RAM
+		rts
+		
+		
+
 
 ; ===========================================================================
 ; All text data used by this screen.

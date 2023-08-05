@@ -1763,7 +1763,8 @@ SS_Total_Won:			ds.b	2	; 2 bytes (player 1 then player 2)
 				ds.b	6	; $FFFFFF3A-$FFFFFF3F ; seems unused
 Perfect_rings_left:		ds.w	1
 Perfect_rings_flag:		ds.w	1
-				ds.b	8	; $FFFFFF44-$FFFFFF4B ; seems unused
+Leaderboards_EntryUpdate:	ds.l	1
+				ds.b	4	; $FFFFFF48-$FFFFFF4B ; seems unused
 
 CreditsScreenIndex:
 SlotMachineInUse:		ds.w	1

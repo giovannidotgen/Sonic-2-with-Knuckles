@@ -510,111 +510,111 @@ DefaultOptions:
 Default_ScoreRush:
 	; Score Rush - Normal - Sonic
 	dc.b	"BIG "
-	dc.l	0
+	dc.l	10000
 	dc.b	"VEC "
-	dc.l	1
+	dc.l	8000
 	dc.b	"ESP "
-	dc.l	2
+	dc.l	6000
 	dc.b	"CHA "
-	dc.l	3
+	dc.l	5000
 	dc.b	"CRM "
-	dc.l	4
+	dc.l	4500
 	dc.b	"CHE "
-	dc.l	5
+	dc.l	4000
 	dc.b	"BRK "
-	dc.l	6
+	dc.l	3500
 	dc.b	"BIN "
-	dc.l	7
+	dc.l	3000
 
 	; Score Rush - Hard - Sonic
 	dc.b	"SON "
-	dc.l	8
+	dc.l	5000
 	dc.b	"EGG "
-	dc.l	9
+	dc.l	4000
 	dc.b	"MTP "
-	dc.l	10
+	dc.l	3500
 	dc.b	"KTE "
-	dc.l	11
+	dc.l	3000
 	dc.b	"AMY "
-	dc.l	12
+	dc.l	2500
 	dc.b	"MTY "
-	dc.l	13
+	dc.l	2000
 	dc.b	"RAY "
-	dc.l	14
+	dc.l	1500
 	dc.b	"FNG "
-	dc.l	15
+	dc.l	1000
 
 	; Score Rush - Normal - Tails
 	dc.b	"ADD "
-	dc.l	16
+	dc.l	10000
 	dc.b	"EXG "
-	dc.l	17
+	dc.l	8000
 	dc.b	"NOT "
-	dc.l	18
+	dc.l	6000
 	dc.b	"EOR "
-	dc.l	19
+	dc.l	5000
 	dc.b	"EXT "
-	dc.l	20
+	dc.l	4500
 	dc.b	"LSR "
-	dc.l	21
+	dc.l	4000
 	dc.b	"ASR "
-	dc.l	22
+	dc.l	3500
 	dc.b	"ROR "
-	dc.l	23
+	dc.l	3000
 	
 	; Score Rush - Hard - Tails
 	dc.b	"JSR "
-	dc.l	24
+	dc.l	5000
 	dc.b	"BSR "
-	dc.l	25
+	dc.l	4000
 	dc.b	"BEQ "
-	dc.l	26
+	dc.l	3500
 	dc.b	"BPL "
-	dc.l	27
+	dc.l	3000
 	dc.b	"BGE "
-	dc.l	28
+	dc.l	2500
 	dc.b	"BLE "
-	dc.l	29
+	dc.l	2000
 	dc.b	"BCC "
-	dc.l	30
+	dc.l	1500
 	dc.b	"BLS "
-	dc.l	31
+	dc.l	1000
 
 	; Score Rush - Normal - Knuckles
 	dc.b	"MBM "
-	dc.l	32
+	dc.l	10000
 	dc.b	"YU2 "
-	dc.l	33
+	dc.l	8000
 	dc.b	"SHC "
-	dc.l	34
+	dc.l	6000
 	dc.b	"IDW "
-	dc.l	35
+	dc.l	5000
 	dc.b	"SMB "
-	dc.l	36
+	dc.l	4500
 	dc.b	"ARC "
-	dc.l	37
+	dc.l	4000
 	dc.b	"JOE "
-	dc.l	38
+	dc.l	3500
 	dc.b	"ANG "
-	dc.l	39
+	dc.l	3000
 
 	; Score Rush - Hard - Knuckles
 	dc.b	"SMD "
-	dc.l	40
+	dc.l	5000
 	dc.b	"GEN "
-	dc.l	41
+	dc.l	4000
 	dc.b	"BIN "
-	dc.l	42
+	dc.l	3500
 	dc.b	"ASM "
-	dc.l	43
+	dc.l	3000
 	dc.b	"BAT "
-	dc.l	44
+	dc.l	2500
 	dc.b	"SMS "
-	dc.l	45
+	dc.l	2000
 	dc.b	"SGG "
-	dc.l	46
+	dc.l	1500
 	dc.b	"SAT "
-	dc.l	47
+	dc.l	1000
 		
 	; Endless Rush - Normal - Sonic
 	dc.b	"SHA "
@@ -6543,7 +6543,7 @@ SpecialStage:
 	jsrto	LoadTitleCardSS, JmpTo_LoadTitleCardSS
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_SpecialStageResults),VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_SpecialStageResults).l,a0
-	bsr.w	NemDec
+	jsr		NemDec
 	move.w	(Player_mode).w,d0
 	beq.s	++
 	subq.w	#1,d0
