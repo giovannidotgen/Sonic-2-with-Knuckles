@@ -191,7 +191,8 @@ TextInit_Leaderboards:
 	
 TextInit_ResultsScreen:
 	bsr.w	Results_UpdateLeaderboards
-	rts
+	bsr.w	Results_Headings
+	bra.w	Results_Name
 ; ===========================================================================
 ; Controls subroutine: Main Menu
 ; ===========================================================================
@@ -253,11 +254,81 @@ MenuCredits_MainLoop:
 ResultsScreen_Controls:
 		btst	#button_start,(Ctrl_1_Press).w
 		bne.w	ResultsScreen_SaveChanges
-;		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
-;		andi.b	#$C,d1		; is left/right pressed and held?
-;		bne.s	Leaderboards_LeftRight	; if yes, branch
-		rts	
+		tst.l	(Leaderboards_EntryUpdate).w
+		beq.w	Results_NoInput
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
+		andi.b	#$C,d1		; is left/right pressed and held?
+		bne.s	Results_LeftRight	; if yes, branch
+		move.b	(Ctrl_1_Press).w,d1
+		andi.b	#3,d1		; is up/down pressed and held?
+		bne.s	Results_UpDown	; if yes, branch
+		subq.w	#1,(LevSel_HoldTimer).w ; subtract 1 from time	to next	move
+		bpl.w	Results_NoInput	; if time remains, branch
 
+Results_UpDown:
+		move.w	#$6,(LevSel_HoldTimer).w ; reset time delay
+		move.b	(Ctrl_1_Held).w,d1
+		andi.b	#3,d1		; is up/down pressed?
+		beq.w	Results_NoInput	; if not, branch
+		movea.l	(Leaderboards_EntryUpdate),a2
+		moveq	#0,d2
+		move.w	(Options_menu_box).w,d2
+		adda.l	d2,a2
+		move.b	(a2),d0
+		btst	#0,d1		; is up	pressed?
+		beq.s	Results_Down	; if not, branch
+		subq.b	#1,d0		; move up 1 selection
+		cmp.b	#("A"-1),d0	; is current value A or higher?
+		bne.s	+
+		move.b	#"9",d0
++		
+		cmp.b	#"0",d0
+		bhs.s	Results_Down
+		move.b	#"Z",d0		; if selection moves below 0, jump to selection
+
+Results_Down:
+		btst	#1,d1		; is down pressed?
+		beq.s	Results_LetterRefresh	; if not, branch
+		addq.b	#1,d0		; move down 1 selection
+		cmp.b	#("9"+1),d0	; is current value A or higher?
+		bne.s	+
+		move.b	#"A",d0
++		
+		cmp.b	#"Z",d0
+		bls.s	Results_LetterRefresh
+		move.b	#"0",d0		
+		bra.s	Results_LetterRefresh
+
+Results_LeftRight:	
+		move.w  (Options_menu_box).w,d2        ; load choice number		
+		btst	#2,d1		; is left pressed?
+		beq.s	Results_Right	; if not, branch
+		subq.w	#1,d2		; subtract 1 to selection
+		bpl.s	Results_Right
+		move.w  #2,d2     
+		
+Results_Right:
+		btst	#3,d1		; is right pressed?
+		beq.s	Results_Refresh	; if not, branch
+		addq.w	#1,d2	; add 1 selection
+		cmp.w	#2,d2
+		ble.s	Results_Refresh
+		move.w	#0,d2	
+		
+Results_Refresh:
+		move.w	d2,(Options_menu_box).w
+		bsr.w	Results_Name
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l	
+		
+Results_LetterRefresh:
+		move.b	d0,(a2)
+		bsr.w	Results_Name
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l
+
+Results_NoInput:
+		rts
 ; ===========================================================================
 
 Leaderboards_GoBack:
@@ -1276,6 +1347,85 @@ Leaderboards_Values:
 		rts
 
 ; ===========================================================================
+
+Results_Headings:
+	lea	(TextData_ResultsTitle).l,a1 ; where to fetch the lines from
+	
+	move.l	#$42180003,4(a6)	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#15,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender			
+
+	lea	(TextData_ResultsBody).l,a1 ; where to fetch the lines from
+
+	move.l	#$45060003,d4	; (CHANGE) starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#3,d1		; number of lines of text to be displayed -1
+
+-
+	move.l	d4,4(a6)
+	moveq	#33,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
+	addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
+	dbf	d1,-		
+	
+	lea	(TextData_Success).l,a1 ; where to fetch the lines from
+	tst.l	(Leaderboards_EntryUpdate).w	; is there an entry to update in the leaderboards?
+	bne.s	+
+	lea	(TextData_Failure).l,a1
+
++
+	move.l	#$48060003,d4	; (CHANGE) starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#3,d1		; number of lines of text to be displayed -1
+
+-
+	move.l	d4,4(a6)
+	moveq	#33,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender
+	addi.l	#(1*$800000),d4  ; replace number to the left with desired distance between each line
+	dbf	d1,-			
+
+	lea		(Score).w,a1
+	move.l	#$46AE0003,4(a6)
+	
+	movem.l	d0-d6,-(sp)
+	lea	(Hud_1000000000).l,a2 			; get the number of digits
+	moveq	#9,d0             			; repeat X-1 times
+	move.l	(a1)+,d1					; get value to render
+	move.w	#$A68F,d3					; get 0 from font
+	bsr.w	DecimalNumberRender2
+	movem.l	(sp)+,d0-d6
+
+	rts
+	
+Results_Name:
+	tst.l	(Leaderboards_EntryUpdate).w
+	beq.s	.quit
+	movea.l	(Leaderboards_EntryUpdate).w,a1
+	
+	move.l	#$48C20003,4(a6)	; starting screen position 
+	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#2,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender	
+	
+	movea.l	(Leaderboards_EntryUpdate).w,a1
+	moveq	#0,d0
+	move.w	(Options_menu_box).w,d0
+	adda.l	d0,a1
+	add		d0,d0		; if d0 = 1, then d0 = 2
+	swap	d0			; if d0 = 2, then d0 = $20000
+	
+	move.l	#$48C20003,d4
+	add.l	d0,d4
+	move.l	d4,4(a6)
+	move.w	#$C680,d3	; which palette the font should use and where it is in VRAM
+	moveq	#0,d2		; number of characters to be rendered in a line -1
+	bsr.w	SingleLineRender		
+	
+.quit:
+	rts
+; ===========================================================================
 ; Subroutine to check if a specific value belongs in the leaderboards.
 ; ===========================================================================	
 
@@ -1290,7 +1440,7 @@ Results_UpdateLeaderboards:
 		rts
 		
 ; ===========================================================================
-; Subroutine to seek the leaderboards data
+; Subroutine to seek the leaderboards data and update it.
 ; Input:
 ; a0: achieved score
 ; a1: start of leaderboards
@@ -1356,6 +1506,35 @@ Leaderboards_Find:
 ; ===========================================================================
 ; All text data used by this screen.
 ; ===========================================================================	
+
+TextData_ResultsTitle:
+	dc.b	"CONGRATULATIONS!"
+TextData_ResultsTitle2:
+	dc.b	"  RUN FINISHED  "
+
+TextData_ResultsBody:
+	dc.b	"   YOU HAVE SUCCESSFULLY BEATEN   "
+	dc.b	"          THE SCORE RUSH          "
+	dc.b	"                                  "
+	dc.b	"   FINAL RESULTS:             0   "
+	
+TextData_ResultsBody2:
+	dc.b	"   YOUR RUN OF THE ENDLESS RUSH   "
+	dc.b	"           HAS FINISHED           "
+	dc.b	"                                  "
+	dc.b	"   LEVELS BEATEN:             0   "
+	
+TextData_Success:
+	dc.b	"  ENTER A NAME TO SAVE YOUR DATA  "
+	dc.b	"IN THE LEADERBOARDS:         *   *"
+	dc.b	"                                  "
+	dc.b	"      PRESS START TO CONFIRM      "	
+	
+TextData_Failure:
+	dc.b	"GET BETTER RESULTS FOR A CHANCE TO"
+	dc.b	"      JOIN THE LEADERBOARDS!      "
+	dc.b	"                                  "
+	dc.b	"      PRESS START TO GO BACK      "	
 
 TextData_LeaderHeadings:
 	dc.b	"    SCORE RUSH    "
@@ -1603,14 +1782,14 @@ TextData_PageBodies:
 	dc.b	"THIS GAME IS NOT A PRODUCT        "
 	dc.b	"PRODUCED BY OR OFFICIALLY LICENSED"
 	dc.b	"FROM SEGA. IF YOU SPOT ANY        "
-	dc.b	"TECHNICAL ISSUES, REPORT THEM TO  "
-	dc.b	"GIOVANNI.GEN ON DISCORD, GIOVANNI "
-	dc.b	"ON SSRG, OR GIOVA ON SONIC RETRO. "
+	dc.b	"TECHNICAL ISSUES, YOU CAN FIND ME "
+	dc.b	"ON DISCORD AS GIOVANNI.GEN, OR AS "
+	dc.b	"GIOVANNI ON SSRG AND SONIC RETRO. "
 	dc.b	"                                  "
 	dc.b	"THIS BUILD IS NOT INTENDED FOR    "
 	dc.b	"PUBLIC DISTRIBUTION. IF YOU DID   "
 	dc.b	"NOT RECEIVE THIS BUILD FROM       "
-	dc.b	"GIOVANNI, CONTACT ME THROUGH THE  "
+	dc.b	"GIOVANNI, REPORT THIS THROUGH THE "
 	dc.b	"MEANS LISTED ABOVE.               "	
 
 TextData_Version:

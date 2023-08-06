@@ -410,8 +410,8 @@ MainGameLoop:
 GameModesArray: ;;
 GameMode_SegaScreen:	bra.w	SegaScreen		; SEGA screen mode
 GameMode_TitleScreen:	bra.w	TitleScreen		; Title screen mode
-GameMode_Demo:		bra.w	Level			; Demo mode
-GameMode_Level:		bra.w	Level			; Zone play mode
+GameMode_Demo:		bra.w	JmpTo_Level			; Demo mode
+GameMode_Level:		bra.w	JmpTo_Level			; Zone play mode
 GameMode_SpecialStage:	bra.w	JmpTo_SpecialStage		; Special stage play mode
 GameMode_ContinueScreen:bra.w	JmpTo_ContinueScreen		; Continue mode
 GameMode_2PResults:	bra.w	JmpTo_TwoPlayerResults	; 2P results mode
@@ -463,6 +463,9 @@ JmpTo_ContinueScreen:
 ; ===========================================================================
 JmpTo_SpecialStage:
 	jmp	(SpecialStage).l
+; ===========================================================================
+JmpTo_Level:
+	jmp	(Level).l
 ; ===========================================================================
 
 InitSRAM:
@@ -6288,9 +6291,9 @@ SpecialStage:
 	move.b	#0,(Current_Special_Stage).w
 +
 	move.w	#SndID_SpecStageEntry,d0 ; play that funky special stage entry sound
-	bsr.w	PlaySound
+	jsr		PlaySound
 	move.b	#MusID_FadeOut,d0 ; fade out the music
-	bsr.w	PlayMusic
+	jsr		PlayMusic
 	bsr.w	Pal_FadeToWhite
 	tst.w	(Two_player_mode).w
 	beq.s	+
@@ -6432,7 +6435,7 @@ SpecialStage:
 	bsr.w	SS_ScrollBG
 	jsr	(RunObjects).l
 	jsr	(BuildSprites).l
-	bsr.w	RunPLC_RAM
+	jsr		RunPLC_RAM
 	move.b	#VintID_CtrlDMA,(Vint_routine).w
 	bsr.w	WaitForVint
 	move.w	#MusID_SpecStage,d0
@@ -6456,12 +6459,12 @@ SpecialStage:
 	bsr.w	SS_ScrollBG
 	jsr	(RunObjects).l
 	jsr	(BuildSprites).l
-	bsr.w	RunPLC_RAM
+	jsr		RunPLC_RAM
 	tst.b	(SpecialStage_Started).w
 	beq.s	-
 
 	moveq	#PLCID_SpecStageBombs,d0
-	bsr.w	LoadPLC
+	jsr		LoadPLC
 
 -	jsr		PauseGame
 	cmpi.b	#GameModeID_SpecialStage,(Game_Mode).w ; special stage mode?
@@ -6492,7 +6495,7 @@ SpecialStage:
 	tst.b	(SS_Check_Rings_flag).w
 	bne.s	+
 	jsr	(BuildSprites).l
-	bsr.w	RunPLC_RAM
+	jsr		RunPLC_RAM
 	bra.s	-
 ; ===========================================================================
 +
@@ -6537,7 +6540,7 @@ SpecialStage:
 	moveq	#PalID_Result,d0
 	bsr.w	PalLoad_Now
 	moveq	#PLCID_Std1,d0
-	bsr.w	LoadPLC2
+	jsr		LoadPLC2
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_VRAM_Start+2),VRAM,WRITE),d0
 	lea	SpecialStage_ResultsLetters(pc),a0
 	jsrto	LoadTitleCardSS, JmpTo_LoadTitleCardSS
@@ -6577,7 +6580,7 @@ SpecialStage:
 	bsr.w	WaitForVint
 	jsr	(RunObjects).l
 	jsr	(BuildSprites).l
-	bsr.w	RunPLC_RAM
+	jsr		RunPLC_RAM
 	tst.w	(Level_Inactive_flag).w
 	beq.s	-
 	tst.l	(Plc_Buffer).w
