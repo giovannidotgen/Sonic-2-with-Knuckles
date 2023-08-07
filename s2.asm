@@ -27789,6 +27789,8 @@ loc_14256:
 loc_14270:
 	cmp.b	#2,(ScoreRush_Gamemode).w
 	beq.s	Level_GoToQuickRush
+	cmp.b	#1,(ScoreRush_Gamemode).w	; Is gamemode Endless Rush?
+	beq.w	Level_EndlessRush
 	moveq	#0,d0
 	move.b	(Current_Zone).w,d0
 	add.w	d0,d0
@@ -27801,10 +27803,16 @@ loc_14270:
 
 loc_1428C:
 	move.w	(a1,d0.w),d0
-	tst.w	d0
-	bpl.s	loc_1429C
-	move.b	#GameModeID_SegaScreen,(Game_Mode).w ; => SegaScreen
-	rts
+	bra.s	loc_1429C
+;	tst.w	d0
+;	bpl.s	loc_1429C
+;	move.b	#GameModeID_SegaScreen,(Game_Mode).w ; => SegaScreen
+;	rts
+
+Level_EndlessRush:
+	bsr.w	LevelRandomizer
+	bra.s	EndlessRush_NextLevel
+	
 	
 Level_GoToQuickRush:
 	moveq	#0,d0
@@ -27818,10 +27826,27 @@ Level_GoToQuickRush:
 	move.l	d0,(Got_Emeralds_array).w
 	move.l	d0,(Got_Emeralds_array+4).w	
 	rts	
+	
+; ===========================================================================
+; Subroutine that feeds Current_ZoneAndAct with a randomly selected level
+; from a lookup table.
+; ===========================================================================
+
+LevelRandomizer:
+	move.l	(Vint_runcount).w,(RNG_seed).w			; put number of frames in randomizer
+	jsr		RandomNumber							; generate random number
+	andi.l	#$F,d0									; accept only numbers from 0-15
+	add.l	d0,d0									; double that
+	lea		(RandomLevelTable).l,a1					; get random level table
+	adda.l	d0,a1									; align to randomly chosen level
+	move.w	(a1),(Current_ZoneAndAct).w				; set level
+	rts
+	
 ; ===========================================================================
 
 loc_1429C:
 	move.w	d0,(Current_ZoneAndAct).w
+EndlessRush_NextLevel:
 	clr.b	(Last_star_pole_hit).w
 	clr.b	(Last_star_pole_hit_2P).w
 	move.w	#1,(Level_Inactive_flag).w
@@ -27993,7 +28018,27 @@ byte_14380_K:
 	results_screen_object  $320, $120, $100,   4, $A
 	results_screen_object  $330, $120, $110,   4, $B
 ;	results_screen_object  $340, $120, $110, $16, $E
-	
+
+; ===========================================================================
+RandomLevelTable:
+; diff 0
+	dc.w	emerald_hill_zone_act_1
+	dc.w	emerald_hill_zone_act_2
+	dc.w	chemical_plant_zone_act_1
+	dc.w	chemical_plant_zone_act_2
+	dc.w	aquatic_ruin_zone_act_1
+	dc.w	aquatic_ruin_zone_act_2
+	dc.w	casino_night_zone_act_1
+	dc.w	casino_night_zone_act_2
+	dc.w	hill_top_zone_act_1
+	dc.w	hill_top_zone_act_2
+	dc.w	mystic_cave_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	oil_ocean_zone_act_2
+	dc.w	metropolis_zone_act_1
+	dc.w	metropolis_zone_act_2
+		
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
 ; Object 6F - End of special stage results screen

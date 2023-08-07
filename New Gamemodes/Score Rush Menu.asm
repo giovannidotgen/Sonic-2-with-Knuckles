@@ -508,6 +508,10 @@ CharSel_GotoLeaderboards:
 CharSel_BeginGame:
 		cmp.b	#6,(MainMenu_Screen).w
 		bgt.s	CharSel_GotoLeaderboards
+		cmp.b	#1,(ScoreRush_Gamemode).w	; Endless Rush?
+		bne.s	+
+		jsr		LevelRandomizer
++		
 		moveq	#0,d0
 		move.b	#1,(Life_count).w
 		move.w	d0,(Ring_count).w
@@ -771,7 +775,7 @@ GameSel_StartEvents:
 		
 ; ===========================================================================
 .StartEvents_Index:	dc.w GameSel_ScoreRush-.StartEvents_Index		; Score Rush
-		dc.w .Start_Null-.StartEvents_Index		; Endless Rush
+		dc.w GameSel_EndlessRush-.StartEvents_Index		; Endless Rush
 		dc.w GameSel_QuickRush-.StartEvents_Index	; Quick Rush
 		dc.w GameSel_Instructions-.StartEvents_Index		; Instructions
 		dc.w GameSel_Settings-.StartEvents_Index	     	; Settings
@@ -782,6 +786,15 @@ GameSel_StartEvents:
 .Start_Null:
 		move.w	#SndID_Error,d0
 		jmp		PlaySound
+
+GameSel_EndlessRush:
+	move.b	#1,(ScoreRush_Gamemode).w	; set gamemode to "ENDLESS RUSH"
+	clr.w	(Options_menu_box).w
+	move.l	#Menu_Update,(sp)	; overwrite stack
+	move.l	#"UPDT",d6
+	move.b	#3,(MainMenu_Screen).w	; set menu
+	move.w	#SndID_Checkpoint,d0
+	jmp		PlaySound
 		
 GameSel_Leaderboards:
 	clr.w	(Options_menu_box).w
