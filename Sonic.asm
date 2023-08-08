@@ -2500,6 +2500,8 @@ Sonic_HurtInstantRecover:
 	jmp	(DisplaySprite).l
 ; ===========================================================================
 
+
+
 ; ---------------------------------------------------------------------------
 ; Sonic when he dies
 ; ...poor Sonic
@@ -2524,6 +2526,19 @@ Obj01_Dead:
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
+Death_GoToResults:
+	moveq	#0,d0
+	move.w	d0,(Options_menu_box).w
+	move.w	d0,(Two_player_mode_copy).w
+	move.w	d0,(Two_player_mode).w
+	move.b	#9,(MainMenu_Screen).w
+	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; => LevelSelectMenu
+	move.w	d0,(Current_Special_StageAndAct).w
+	move.w	d0,(Got_Emerald).w
+	move.l	d0,(Got_Emeralds_array).w
+	move.l	d0,(Got_Emeralds_array+4).w	
+	rts	
+
 ; loc_1B21C:
 CheckGameOver:
 	move.b	#1,(Scroll_lock).w
@@ -2544,6 +2559,8 @@ CheckGameOver:
 ;	subq.b	#1,(Life_count).w	; subtract 1 from number of lives
 ;	bne.s	Obj01_ResetLevel	; if it's not a game over, branch
 +
+	cmpi.b	#1,(ScoreRush_Gamemode).w
+	beq.s	Death_GoToResults
 	move.w	#$0,restart_countdown(a0)
 	move.b	#ObjID_GameOver,(GameOver_GameText+id).w ; load Obj39 (game over text)
 	move.b	#ObjID_GameOver,(GameOver_OverText+id).w ; load Obj39 (game over text)

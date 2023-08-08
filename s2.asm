@@ -621,111 +621,112 @@ Default_ScoreRush:
 		
 	; Endless Rush - Normal - Sonic
 	dc.b	"SHA "
-	dc.l	48
+	dc.l	9
 	dc.b	"ROU "
-	dc.l	49
+	dc.l	8
 	dc.b	"BLZ "
-	dc.l	50
+	dc.l	7
 	dc.b	"SIL "
-	dc.l	51
+	dc.l	6
 	dc.b	"JET "
-	dc.l	52
+	dc.l	5
 	dc.b	"WAV "
-	dc.l	53
+	dc.l	4
 	dc.b	"STO "
-	dc.l	54
+	dc.l	3
 	dc.b	"ORB "
-	dc.l	55
+	dc.l	2
 
 	; Endless Rush - Hard - Sonic
 	dc.b	"YAK "
-	dc.l	56
+	dc.l	9
 	dc.b	"CUB "
-	dc.l	57
+	dc.l	8
 	dc.b	"ZAV "
-	dc.l	58
+	dc.l	7
 	dc.b	"ZAZ "
-	dc.l	59
+	dc.l	6
 	dc.b	"ZIK "
-	dc.l	60
+	dc.l	5
 	dc.b	"ZEE "
-	dc.l	61
+	dc.l	4
 	dc.b	"ZOM "
-	dc.l	62
+	dc.l	3
 	dc.b	"ZOR "
-	dc.l	63
+	dc.l	2
 
 	; Endless Rush - Normal - Tails
 	dc.b	"SUB "
-	dc.l	64
+	dc.l	9
 	dc.b	"CLR "
-	dc.l	65
+	dc.l	8
 	dc.b	"AND "
-	dc.l	66
+	dc.l	7
 	dc.b	"NEG "
-	dc.l	67
+	dc.l	6
 	dc.b	"JMP "
-	dc.l	68
+	dc.l	5
 	dc.b	"LSL "
-	dc.l	69
+	dc.l	4
 	dc.b	"ASL "
-	dc.l	70
+	dc.l	3
 	dc.b	"ROL "
-	dc.l	71
+	dc.l	2
 
 	; Endless Rush - Hard - Tails
 	dc.b	"BRA "
-	dc.l	72
+	dc.l	9
 	dc.b	"RTS "
-	dc.l	73
+	dc.l	8
 	dc.b	"BNE "
-	dc.l	74
+	dc.l	7
 	dc.b	"BMI "
-	dc.l	75
+	dc.l	6
 	dc.b	"BGT "
-	dc.l	76
+	dc.l	5
 	dc.b	"BLT "
-	dc.l	77
+	dc.l	4
 	dc.b	"BHI "
-	dc.l	78
+	dc.l	3
 	dc.b	"BCS "
-	dc.l	79
+	dc.l	2
 
 	; Endless Rush - Normal - Knuckles
 	dc.b	"KGL "
-	dc.l	80
+	dc.l	9
 	dc.b	"WSI "
-	dc.l	81
+	dc.l	8
 	dc.b	"DAX "
-	dc.l	82
+	dc.l	7
 	dc.b	"MDT "
-	dc.l	83
+	dc.l	6
 	dc.b	"DWO "
-	dc.l	84
+	dc.l	5
 	dc.b	"SRA "
-	dc.l	85
+	dc.l	4
 	dc.b	"DSK "
-	dc.l	86
+	dc.l	3
 	dc.b	"DSH "
-	dc.l	87
+	dc.l	2
 
 	; Endless Rush - Hard - Knuckles
 	dc.b	"GIO "
-	dc.l	88
+	dc.l	9
 	dc.b	"MON "
-	dc.l	89
+	dc.l	8
 	dc.b	"FZY "
-	dc.l	90
+	dc.l	7
 	dc.b	"TRS "
-	dc.l	91
+	dc.l	6
 	dc.b	"OTA "
-	dc.l	92
+	dc.l	5
 	dc.b	"YOG "
-	dc.l	93
+	dc.l	4
 	dc.b	"GIA "
-	dc.l	94
+	dc.l	3
 	dc.b	"JAC "
-	dc.l	95
+	dc.l	2
+	
 	
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; vertical and horizontal interrupt handlers
@@ -1733,7 +1734,20 @@ Pause_GotoQuickRush:
 	move.l	d0,(Got_Emeralds_array).w
 	move.l	d0,(Got_Emeralds_array+4).w	
 	bra.w	Pause_Resume
-
+	
+Pause_GotoResults	
+	moveq	#0,d0
+	move.w	d0,(Options_menu_box).w
+	move.w	d0,(Two_player_mode_copy).w
+	move.w	d0,(Two_player_mode).w
+	move.b	#9,(MainMenu_Screen).w
+	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; => LevelSelectMenu
+	move.w	d0,(Current_Special_StageAndAct).w
+	move.w	d0,(Got_Emerald).w
+	move.l	d0,(Got_Emeralds_array).w
+	move.l	d0,(Got_Emeralds_array+4).w	
+	bra.w	Pause_Resume
+	
 ; sub_1388:
 PauseGame:
 	nop
@@ -1748,7 +1762,7 @@ PauseGame:
 	beq.w	Pause_DoNothing	; if not, branch
 +
 	tst.b	(WFZ_Can_Skip).w
-	bne.s	Unpause_Skip_WFZ
+	bne.w	Unpause_Skip_WFZ
 	move.w	#1,(Game_paused).w	; freeze time
 	move.b	#MusID_Pause,(Sound_Queue.Music0).w	; pause music
 ; loc_13B2:
@@ -1756,9 +1770,11 @@ Pause_Loop:
 	move.b	#VintID_Pause,(Vint_routine).w
 	bsr.w	WaitForVint
 	btst	#button_A,(Ctrl_1_Press).w	; is button A pressed?
-	beq.s	Pause_ChkStart		; if not, branch
+	beq.w	Pause_ChkStart		; if not, branch
+	cmpi.b	#1,(ScoreRush_Gamemode).w
+	beq.w	Pause_GotoResults
 	cmpi.b	#2,(ScoreRush_Gamemode).w
-	beq.s	Pause_GotoQuickRush
+	beq.w	Pause_GotoQuickRush
 	move.b	#GameModeID_ScoreRushMenu,(Game_Mode).w ; set game mode to 4 (title screen)
 	clr.w	(Options_menu_box).w
 	clr.b	(MainMenu_Screen).w	; set menu
@@ -9445,7 +9461,7 @@ Obj5F_Index:	offsetTable
 loc_710A:
 	moveq	#0,d0
 	move.b	angle(a0),d0
-	bsr.w	CalcSine
+	jsr		CalcSine
 	muls.w	objoff_14(a0),d0
 	muls.w	objoff_14(a0),d1
 	asr.w	#8,d0
@@ -27811,6 +27827,7 @@ loc_1428C:
 
 Level_EndlessRush:
 	bsr.w	LevelRandomizer
+	add.l	#1,(EndlRush_LevelsBeaten).w
 	bra.s	EndlessRush_NextLevel
 	
 	

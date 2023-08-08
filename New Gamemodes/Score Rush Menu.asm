@@ -511,6 +511,7 @@ CharSel_BeginGame:
 		cmp.b	#1,(ScoreRush_Gamemode).w	; Endless Rush?
 		bne.s	+
 		jsr		LevelRandomizer
+		clr.l	(EndlRush_LevelsBeaten).w
 +		
 		moveq	#0,d0
 		move.b	#1,(Life_count).w
@@ -1363,13 +1364,20 @@ Leaderboards_Values:
 
 Results_Headings:
 	lea	(TextData_ResultsTitle).l,a1 ; where to fetch the lines from
-	
+	cmpi.b	#1,(ScoreRush_Gamemode).w
+	bne.s	+
+	lea	(TextData_ResultsTitle2).l,a1
++	
 	move.l	#$42180003,4(a6)	; starting screen position 
 	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
 	moveq	#15,d2		; number of characters to be rendered in a line -1
 	bsr.w	SingleLineRender			
 
 	lea	(TextData_ResultsBody).l,a1 ; where to fetch the lines from
+	cmpi.b	#1,(ScoreRush_Gamemode).w
+	bne.s	+
+	lea	(TextData_ResultsBody2).l,a1
++	
 
 	move.l	#$45060003,d4	; (CHANGE) starting screen position 
 	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
@@ -1401,7 +1409,14 @@ Results_Headings:
 
 	lea		(Score).w,a1
 	move.l	#$46AE0003,4(a6)
-	
+	cmpi.b	#1,(ScoreRush_Gamemode).w
+	bne.s	+
+	lea		(EndlRush_LevelsBeaten).w,a1
+	move.l	#$46B00003,4(a6)
+	tst.l	(EndlRush_LevelsBeaten).w
+	beq.s	.return
+
++	
 	movem.l	d0-d6,-(sp)
 	lea	(Hud_1000000000).l,a2 			; get the number of digits
 	moveq	#9,d0             			; repeat X-1 times
@@ -1410,6 +1425,7 @@ Results_Headings:
 	bsr.w	DecimalNumberRender2
 	movem.l	(sp)+,d0-d6
 
+.return:
 	rts
 	
 Results_Name:
@@ -1469,11 +1485,11 @@ Leaderboards_CrashGame:
 Leaderboards_Find:
 		lea		(Score).w,a0							; Input value		
 		lea		(Leaderboards_ScoreRush).w,a1			; Leaderboards
-;		cmp.b	#1,(ScoreRush_Gamemode).w				; Check for Endless Rush
-;		bne.s	.common									
+		cmp.b	#1,(ScoreRush_Gamemode).w				; Check for Endless Rush
+		bne.s	.common									
 
-;		lea		(EndlessRush_Levels).w
-;		lea		(Leaderboards_EndlessRush).w,a1
+		lea		(EndlRush_LevelsBeaten).w,a0
+		lea		(Leaderboards_EndlessRush).w,a1
 .common:
 		moveq	#0,d0
 		move.w	(Player_option).w,d0
