@@ -38425,24 +38425,25 @@ loc_1EBDC:
 	addi.b	#$1F,d0
 
 loc_1EBE6:
-        andi.b  #$C0,d0
-        beq.w   CheckFloorDist_Part2            ; Player is going mostly down
-        cmpi.b  #$80,d0
-        beq.w   CheckCeilingDist_Part2          ; Player is going mostly up
-        andi.b  #$38,d1
-        bne.s   ++
-        moveq   #$13,d4                         ; DEV: Default height for Sonic
-        cmpi.b  #ObjID_Tails,id(a0)             ; DEV: Is this object Tails?
-        bne.s   +                               ; DEV: If not, branch
-        moveq   #$F,d4                          ; DEV: If so, get default height for Tails
+    moveq    #$13,d4                ; DEV: Default height for Sonic
+    cmpi.b    #ObjID_Tails,id(a0)        ; DEV: Is this object Tails?
+    bne.s    +                ; DEV: If not, branch
+    moveq    #$F,d4                ; DEV: If so, get default height for Tails
 +
-        sub.b   y_radius(a0),d4                 ; DEV: Get hitbox height difference
-        addq.w  #8,d2                           ; DEV: Move push sensor down
-        sub.w   d4,d2                           ; DEV: Apply hitbox height difference
+    sub.b    y_radius(a0),d4            ; DEV: Get hitbox height difference
+    sub.w    d4,d2                ; DEV: Apply hitbox height difference
+
+    andi.b    #$C0,d0
+    beq.w    CheckFloorDist_Part2        ; Player is going mostly down
+    cmpi.b    #$80,d0
+    beq.w    CheckCeilingDist_Part2        ; Player is going mostly up
+    andi.b    #$38,d1
+    bne.s    +
+    addq.w    #8,d2                ; DEV: Move push sensor down
 +
-        cmpi.b  #$40,d0
-        beq.w   CheckLeftWallDist_Part2         ; Player is going mostly left
-        bra.w   CheckRightWallDist_Part2        ; Player is going mostly right
+    cmpi.b    #$40,d0
+    beq.w    CheckLeftWallDist_Part2        ; Player is going mostly left
+    bra.w    CheckRightWallDist_Part2    ; Player is going mostly right
 
 ; End of function CalcRoomInFront
 
