@@ -83046,7 +83046,7 @@ BuildHUD:
 	moveq	#1,d1						; use mapping 1 if yes
 +
 	move.w	#128+92,d3	; set X pos
-	move.w	#128+138,d2	; set Y pos
+	move.w	#128+136,d2	; set Y pos
 	lea	(HUD_MapUnc_40A9A).l,a1	; no distinction between Sonic HUD and Knuckles HUD is ever needed
 ;	cmpi.w	#3,(Player_mode).w
 ;	bne.s	+
