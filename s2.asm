@@ -621,111 +621,111 @@ Default_ScoreRush:
 		
 	; Endless Rush - Normal - Sonic
 	dc.b	"SHA "
-	dc.l	9
+	dc.l	40
 	dc.b	"ROU "
-	dc.l	8
+	dc.l	36
 	dc.b	"BLZ "
-	dc.l	7
+	dc.l	32
 	dc.b	"SIL "
-	dc.l	6
+	dc.l	28
 	dc.b	"JET "
-	dc.l	5
+	dc.l	26
 	dc.b	"WAV "
-	dc.l	4
+	dc.l	24
 	dc.b	"STO "
-	dc.l	3
+	dc.l	22
 	dc.b	"ORB "
-	dc.l	2
+	dc.l	20
 
 	; Endless Rush - Hard - Sonic
 	dc.b	"YAK "
-	dc.l	9
+	dc.l	20
 	dc.b	"CUB "
-	dc.l	8
+	dc.l	18
 	dc.b	"ZAV "
-	dc.l	7
+	dc.l	16
 	dc.b	"ZAZ "
-	dc.l	6
+	dc.l	14
 	dc.b	"ZIK "
-	dc.l	5
+	dc.l	13
 	dc.b	"ZEE "
-	dc.l	4
+	dc.l	12
 	dc.b	"ZOM "
-	dc.l	3
+	dc.l	11
 	dc.b	"ZOR "
-	dc.l	2
+	dc.l	10
 
 	; Endless Rush - Normal - Tails
 	dc.b	"SUB "
-	dc.l	9
+	dc.l	40
 	dc.b	"CLR "
-	dc.l	8
+	dc.l	36
 	dc.b	"AND "
-	dc.l	7
+	dc.l	32
 	dc.b	"NEG "
-	dc.l	6
+	dc.l	28
 	dc.b	"JMP "
-	dc.l	5
+	dc.l	26
 	dc.b	"LSL "
-	dc.l	4
+	dc.l	24
 	dc.b	"ASL "
-	dc.l	3
+	dc.l	22
 	dc.b	"ROL "
-	dc.l	2
+	dc.l	20
 
 	; Endless Rush - Hard - Tails
 	dc.b	"BRA "
-	dc.l	9
+	dc.l	20
 	dc.b	"RTS "
-	dc.l	8
+	dc.l	18
 	dc.b	"BNE "
-	dc.l	7
+	dc.l	16
 	dc.b	"BMI "
-	dc.l	6
+	dc.l	14
 	dc.b	"BGT "
-	dc.l	5
+	dc.l	13
 	dc.b	"BLT "
-	dc.l	4
+	dc.l	12
 	dc.b	"BHI "
-	dc.l	3
+	dc.l	11
 	dc.b	"BCS "
-	dc.l	2
+	dc.l	10
 
 	; Endless Rush - Normal - Knuckles
 	dc.b	"KGL "
-	dc.l	9
+	dc.l	40
 	dc.b	"WSI "
-	dc.l	8
+	dc.l	36
 	dc.b	"DAX "
-	dc.l	7
+	dc.l	32
 	dc.b	"MDT "
-	dc.l	6
+	dc.l	28
 	dc.b	"DWO "
-	dc.l	5
+	dc.l	26
 	dc.b	"SRA "
-	dc.l	4
+	dc.l	24
 	dc.b	"DSK "
-	dc.l	3
+	dc.l	22
 	dc.b	"DSH "
-	dc.l	2
+	dc.l	20
 
 	; Endless Rush - Hard - Knuckles
 	dc.b	"GIO "
-	dc.l	9
+	dc.l	20
 	dc.b	"MON "
-	dc.l	8
+	dc.l	18
 	dc.b	"FZY "
-	dc.l	7
+	dc.l	16
 	dc.b	"TRS "
-	dc.l	6
+	dc.l	14
 	dc.b	"OTA "
-	dc.l	5
+	dc.l	13
 	dc.b	"YOG "
-	dc.l	4
-	dc.b	"GIA "
-	dc.l	3
-	dc.b	"JAC "
-	dc.l	2
+	dc.l	12
+	dc.b	"RHS "	; placed 7th, just like the first time he's beaten sonic 1 - score rush lolololololololol
+	dc.l	11
+	dc.b	"STB "
+	dc.l	10
 	
 	
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -27809,7 +27809,7 @@ loc_14256:
 
 loc_14270:
 	cmp.b	#2,(ScoreRush_Gamemode).w
-	beq.s	Level_GoToQuickRush
+	beq.w	Level_GoToQuickRush
 	cmp.b	#1,(ScoreRush_Gamemode).w	; Is gamemode Endless Rush?
 	beq.w	Level_EndlessRush
 	moveq	#0,d0
@@ -27824,16 +27824,39 @@ loc_14270:
 
 loc_1428C:
 	move.w	(a1,d0.w),d0
-	bra.s	loc_1429C
+	bra.w	loc_1429C
 ;	tst.w	d0
 ;	bpl.s	loc_1429C
 ;	move.b	#GameModeID_SegaScreen,(Game_Mode).w ; => SegaScreen
 ;	rts
 
 Level_EndlessRush:
-	bsr.w	LevelRandomizer
 	add.l	#1,(EndlRush_LevelsBeaten).w
 	move.b	#1,(Update_HUD_EndlessRush).w
+	add.b	#1,(EndlRush_LevelsBeaten_Difficulty).w
+	cmp.b	#5,(EndlRush_LevelsBeaten_Difficulty).w	; have you beaten 5 levels?
+	bne.s 	.skipall
+	
+	clr.b	(EndlRush_LevelsBeaten_Difficulty).w
+	add.b	#1,(EndlRush_Difficulty).w		; add 1 to the general difficulty counter
+	cmp.b	#1,(Option_Difficulty).w		; check if it's hard mode
+	bne.s	.skip1
+	add.b	#1,(EndlRush_Difficulty).w
+	
+.skip1:
+	cmp.b	#6,(EndlRush_Difficulty).w
+	ble.s	.skip2
+	move.b	#6,(EndlRush_Difficulty).w
+	
+.skip2:	
+	sub.b	#1,(ScoreRush_TimerSpeed).w
+	cmp.b	#3,(ScoreRush_TimerSpeed).w
+	bge.s	.skipall
+	move.b	#3,(ScoreRush_TimerSpeed).w
+
+
+.skipall:
+	bsr.w	LevelRandomizer
 	bra.s	EndlessRush_NextLevel
 	
 	
@@ -27857,12 +27880,25 @@ Level_GoToQuickRush:
 
 LevelRandomizer:
 	move.l	(Vint_runcount).w,(RNG_seed).w			; put number of frames in randomizer
+-
 	jsr		RandomNumber							; generate random number
 	andi.l	#$F,d0									; accept only numbers from 0-15
 	add.l	d0,d0									; double that
 	lea		(RandomLevelTable).l,a1					; get random level table
 	adda.l	d0,a1									; align to randomly chosen level
+	move.b	(EndlRush_Difficulty).w,d0				; get difficulty
+	lsl.w	#5,d0									; times 32
+	adda.l	d0,a1									; add to address further
+	cmp.l	#"IGNR",d6
+	beq.s	+										; if you must, ignore.
+	move.w	(a1),d0									; fetch chosen level
+	cmp.w	(Current_ZoneAndAct).w,d0				; compare selected level with current level
+	bne.s	+
+	add.l	#1,(RNG_seed).w							
+	bra.s	-										; rerandomize if level chosen is the same as level played.
++	
 	move.w	(a1),(Current_ZoneAndAct).w				; set level
+
 	rts
 	
 ; ===========================================================================
@@ -28045,23 +28081,124 @@ byte_14380_K:
 ; ===========================================================================
 RandomLevelTable:
 ; diff 0
-	dc.w	emerald_hill_zone_act_1
+	dc.w	hill_top_zone_act_2
+	dc.w	hill_top_zone_act_1
 	dc.w	emerald_hill_zone_act_2
+	dc.w	wing_fortress_zone_act_1
 	dc.w	chemical_plant_zone_act_1
 	dc.w	chemical_plant_zone_act_2
-	dc.w	aquatic_ruin_zone_act_1
+	dc.w	emerald_hill_zone_act_1
 	dc.w	aquatic_ruin_zone_act_2
-	dc.w	casino_night_zone_act_1
-	dc.w	casino_night_zone_act_2
-	dc.w	hill_top_zone_act_1
 	dc.w	hill_top_zone_act_2
+	dc.w	hill_top_zone_act_1
+	dc.w	emerald_hill_zone_act_2
+	dc.w	wing_fortress_zone_act_1
+	dc.w	chemical_plant_zone_act_1
+	dc.w	chemical_plant_zone_act_2
+	dc.w	emerald_hill_zone_act_1
+	dc.w	aquatic_ruin_zone_act_2
+; diff 1
+	dc.w	hill_top_zone_act_2
+	dc.w	hill_top_zone_act_1
+	dc.w	emerald_hill_zone_act_2
+	dc.w	wing_fortress_zone_act_1
+	dc.w	chemical_plant_zone_act_1
+	dc.w	chemical_plant_zone_act_2
+	dc.w	emerald_hill_zone_act_1
+	dc.w	aquatic_ruin_zone_act_2
+	dc.w	aquatic_ruin_zone_act_1
+	dc.w	casino_night_zone_act_2
 	dc.w	mystic_cave_zone_act_1
+	dc.w	casino_night_zone_act_1
+	dc.w	hill_top_zone_act_2
+	dc.w	emerald_hill_zone_act_2
+	dc.w	casino_night_zone_act_2
+	dc.w	aquatic_ruin_zone_act_2
+; diff 2
+	dc.w	hill_top_zone_act_2
+	dc.w	hill_top_zone_act_1
+	dc.w	emerald_hill_zone_act_2
+	dc.w	wing_fortress_zone_act_1
+	dc.w	chemical_plant_zone_act_1
+	dc.w	chemical_plant_zone_act_2
+	dc.w	emerald_hill_zone_act_1
+	dc.w	aquatic_ruin_zone_act_2
+	dc.w	aquatic_ruin_zone_act_1
+	dc.w	casino_night_zone_act_2
+	dc.w	mystic_cave_zone_act_1
+	dc.w	casino_night_zone_act_1
 	dc.w	mystic_cave_zone_act_2
-	dc.w	oil_ocean_zone_act_1
 	dc.w	oil_ocean_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	death_egg_zone_act_1
+; diff 3
 	dc.w	metropolis_zone_act_1
 	dc.w	metropolis_zone_act_2
-		
+	dc.w	metropolis_zone_act_3
+	dc.w	wing_fortress_zone_act_1
+	dc.w	chemical_plant_zone_act_1
+	dc.w	chemical_plant_zone_act_2
+	dc.w	emerald_hill_zone_act_1
+	dc.w	aquatic_ruin_zone_act_2
+	dc.w	aquatic_ruin_zone_act_1
+	dc.w	casino_night_zone_act_2
+	dc.w	mystic_cave_zone_act_1
+	dc.w	casino_night_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	death_egg_zone_act_1
+; diff 4
+	dc.w	metropolis_zone_act_1
+	dc.w	metropolis_zone_act_2
+	dc.w	metropolis_zone_act_3
+	dc.w	casino_night_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_2
+	dc.w	emerald_hill_zone_act_1
+	dc.w	aquatic_ruin_zone_act_2
+	dc.w	aquatic_ruin_zone_act_1
+	dc.w	casino_night_zone_act_2
+	dc.w	mystic_cave_zone_act_1
+	dc.w	casino_night_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	death_egg_zone_act_1
+; diff 5
+	dc.w	metropolis_zone_act_1
+	dc.w	metropolis_zone_act_2
+	dc.w	metropolis_zone_act_3
+	dc.w	casino_night_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	death_egg_zone_act_1
+	dc.w	aquatic_ruin_zone_act_1
+	dc.w	casino_night_zone_act_2
+	dc.w	mystic_cave_zone_act_1
+	dc.w	casino_night_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	death_egg_zone_act_1
+; diff 6
+	dc.w	metropolis_zone_act_1
+	dc.w	metropolis_zone_act_2
+	dc.w	metropolis_zone_act_3
+	dc.w	casino_night_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	death_egg_zone_act_1
+	dc.w	metropolis_zone_act_1
+	dc.w	metropolis_zone_act_2
+	dc.w	metropolis_zone_act_3
+	dc.w	casino_night_zone_act_1
+	dc.w	mystic_cave_zone_act_2
+	dc.w	oil_ocean_zone_act_2
+	dc.w	oil_ocean_zone_act_1
+	dc.w	death_egg_zone_act_1
 ; ===========================================================================
 ; ----------------------------------------------------------------------------
 ; Object 6F - End of special stage results screen
@@ -28987,7 +29124,7 @@ loc_15758:
 -	movem.l	d4-d6,-(sp)
 	moveq	#-16,d5
 	move.w	d4,d1
-	bsr.w	CalculateVRAMAddressOfBlockForPlayer1
+	jsr		CalculateVRAMAddressOfBlockForPlayer1
 	move.w	d1,d4
 	moveq	#-16,d5
 	moveq	#64/2-1,d6

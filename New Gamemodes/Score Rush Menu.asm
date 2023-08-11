@@ -510,8 +510,11 @@ CharSel_BeginGame:
 		bgt.s	CharSel_GotoLeaderboards
 		cmp.b	#1,(ScoreRush_Gamemode).w	; Endless Rush?
 		bne.s	+
-		jsr		LevelRandomizer
 		clr.l	(EndlRush_LevelsBeaten).w
+		clr.b	(EndlRush_LevelsBeaten_Difficulty).w
+		clr.b	(EndlRush_Difficulty).w		
+		move.l	#"IGNR",d6
+		jsr		LevelRandomizer
 +		
 		moveq	#0,d0
 		move.b	#1,(Life_count).w

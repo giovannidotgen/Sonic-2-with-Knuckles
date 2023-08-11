@@ -2550,7 +2550,7 @@ CheckGameOver:
 	move.b	#8,routine(a0)	; => Obj01_Gone
 	move.w	#60,restart_countdown(a0)
 	cmpi.b	#2,(ScoreRush_Gamemode).w
-	beq.w	Level_GoToQuickRush
+	jeq		Level_GoToQuickRush
 	tst.b	(Option_PenaltySystem).w
 	beq.s	+
 	tst.l	(Score_Saved).w

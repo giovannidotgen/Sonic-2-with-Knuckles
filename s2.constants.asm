@@ -1692,7 +1692,9 @@ Ring_spill_anim_accum:		ds.w	1
 				ds.b	6	; $FFFFFEA9-$FFFFFEAF ; seems unused, but cleared once
 Oscillating_variables_End
 EndlRush_LevelsBeaten:		ds.l	1
-				ds.b	$C	; $FFFFFEB4-$FFFFFEBF ; seems unused
+EndlRush_LevelsBeaten_Difficulty:	ds.b	1	; value that ranges from 0 - 4. if it gets higher than 4, the difficulty is increased.
+EndlRush_Difficulty:				ds.b	1	
+							ds.b	$A	; $FFFFFEB6-$FFFFFEBF ; seems unused
 
 ; values for the second player (some of these only apply to 2-player games)
 Tails_Speeds:
