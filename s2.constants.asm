@@ -1672,7 +1672,7 @@ Saved_Extra_life_flags_2P:	ds.b	1	; stored, but never restored
 Saved_Camera_Max_Y_pos:		ds.w	1
 Saved_Dynamic_Resize_Routine:	ds.b	1
 
-				ds.b	1	; $FFFFFE59 ; seems unused
+Update_HUD_EndlessRush:				ds.b	1	; $FFFFFE59
 QuickRush_UpdAddress:	ds.l	1				
 Oscillating_Numbers:
 Oscillation_Control:		ds.w	1
@@ -1797,7 +1797,7 @@ LevSel_HoldTimer:		ds.w	1
 Level_select_zone:		ds.w	1
 Sound_test_sound:		ds.w	1
 Title_screen_option:		ds.b	1
-				ds.b	1	; $FFFFFF87 ; unused
+HUD_Init:				ds.b	1	; initialize HUD graphics
 Current_Zone_2P:		ds.b	1
 Current_Act_2P:			ds.b	1
 Two_player_mode_copy:		ds.w	1

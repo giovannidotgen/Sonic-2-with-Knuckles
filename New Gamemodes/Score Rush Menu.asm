@@ -519,6 +519,7 @@ CharSel_BeginGame:
 		move.l	d0,(Timer).w
 		move.l	#500,(Score).w
 		move.l	#500,(Score_Saved).w
+		st.b	(HUD_Init).w
 		clr.b	(Suicide_Flag).w
 		move.b	d0,(Continue_count).w		
 		move.w	d0,(Two_player_mode).w

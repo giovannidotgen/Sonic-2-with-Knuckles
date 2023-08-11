@@ -27828,6 +27828,7 @@ loc_1428C:
 Level_EndlessRush:
 	bsr.w	LevelRandomizer
 	add.l	#1,(EndlRush_LevelsBeaten).w
+	move.b	#1,(Update_HUD_EndlessRush).w
 	bra.s	EndlessRush_NextLevel
 	
 	
@@ -83039,11 +83040,14 @@ hud_letter_vdp_delta = vdpCommDelta(tiles_to_bytes(hud_letter_num_tiles))
 
 ; loc_40804:
 BuildHUD:
-	moveq	#0,d1	; always use mapping 0
+	moveq	#0,d1						; use mapping 0
+	cmpi.b	#1,(ScoreRush_Gamemode).w	; is this the Endless Rush?
+	bne.s	+
+	moveq	#1,d1						; use mapping 1 if yes
 +
 	move.w	#128+92,d3	; set X pos
-	move.w	#128+136,d2	; set Y pos
-	lea	(HUD_MapUnc_40A9A).l,a1	; no distinction between Sonic HUD and Knuckles HUD for now
+	move.w	#128+138,d2	; set Y pos
+	lea	(HUD_MapUnc_40A9A).l,a1	; no distinction between Sonic HUD and Knuckles HUD is ever needed
 ;	cmpi.w	#3,(Player_mode).w
 ;	bne.s	+
 ;	lea	(HUD_MapUnc_Knuckles).l,a1
@@ -83411,6 +83415,17 @@ HudUpdate:
 	bsr.w	Hud_Score
 
 +
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Score+14),VRAM,WRITE),d0	; set VRAM address
+	move.l	(EndlRush_LevelsBeaten).w,d1	; load score
+	
+	cmpi.b	#1,(ScoreRush_Gamemode).w
+	bne.s	+
+	tst.b	(Update_HUD_EndlessRush).w
+	beq.s	+
+	clr.b	(Update_HUD_EndlessRush).w
+	bsr.w	Hud_EndlessRush
++
+
 	tst.b	(Update_HUD_timer).w	; does the time need updating?
 	beq.s	Hud_ChkBonus	; if not, branch
 
@@ -83708,8 +83723,9 @@ Hud_Base:
 	bsr.w	Hud_Lives
 	tst.w	(Two_player_mode).w
 	bne.s	loc_410BC
-	cmpi.l	#500,(Score).w
-	bne.s	locret_noscore
+	tst.b	(HUD_Init).w
+	beq.s	locret_noscore
+	clr.b	(HUD_Init).w
 	move.l	#vdpComm(tiles_to_bytes(ArtTile_HUD_Score_E),VRAM,WRITE),(VDP_control_port).l
 	lea	Hud_TilesBase(pc),a2
 	move.w	#(Hud_TilesBase_HUD_End-Hud_TilesBase)-1,d2
@@ -83767,7 +83783,7 @@ loc_410BC:
 
 ; byte_410D4:
 Hud_TilesBase:
-	dc.b "E0005000"
+	dc.b "E00050000000"
 Hud_TilesBase_HUD_End:
 	dc.b "    "
 ; byte_410E0:
@@ -83879,6 +83895,54 @@ loc_41198:
 	dbf	d6,Hud_ScoreLoop
 	rts
 ; End of function Hud_Score
+
+; ---------------------------------------------------------------------------
+; Subroutine to load the Endless Rush's level counter number patterns
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+
+; sub_41146:
+Hud_EndlessRush:
+	lea	(Hud_1000).l,a2
+	moveq	#3,d6
+; loc_4114E:
+.Hud_LoadArt:
+	moveq	#0,d4
+	lea	Art_Hud(pc),a1
+; loc_41154:
+.Hud_EndlLoop:
+	moveq	#0,d2
+	move.l	(a2)+,d3
+
+.loc_41158:
+	sub.l	d3,d1
+	bcs.s	.loc_41160
+	addq.w	#1,d2
+	bra.s	.loc_41158
+; ===========================================================================
+
+.loc_41160:
+	add.l	d3,d1
+;	tst.w	d2
+;	beq.s	.loc_4116A
+;	move.w	#1,d4
+
+.loc_4116A:
+;	tst.w	d4
+;	beq.s	.loc_41198
+	lsl.w	#6,d2
+	move.l	d0,4(a6)
+	lea	(a1,d2.w),a3
+    rept 8*hud_letter_num_tiles
+	move.l	(a3)+,(a6)
+    endm
+
+.loc_41198:
+	addi.l	#hud_letter_vdp_delta,d0
+	dbf	d6,.Hud_EndlLoop
+	rts
+; End of function Hud_EndlessRush
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to load countdown numbers on the continue screen
