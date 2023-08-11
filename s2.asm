@@ -1714,6 +1714,11 @@ PlaySoundLocal:
 ; ---------------------------------------------------------------------------
 
 Unpause_Skip_WFZ:
+	cmp.b	#1,(ScoreRush_Gamemode).w
+	bne.s	+
+	jmp		Level_EndlessRush
+
++	
 	move.w	#death_egg_zone_act_1,(Current_ZoneAndAct).w
 	move.w	#1,(Level_Inactive_flag).w
 	clr.b	(Last_star_pole_hit).w
@@ -74325,7 +74330,16 @@ byte_3AC2A:
 ; ===========================================================================
 ; loc_3AC40:
 ObjB2_Start_DEZ:
+	cmp.b	#1,(ScoreRush_Gamemode).w
+	bne.s	+
+	jsr		Level_EndlessRush
+	addq.l	#8,sp									; leave game mode loop prematurely
+	rts	
+
++	
 	move.w	#death_egg_zone_act_1,(Current_ZoneAndAct).w
+
+.common:
 ; loc_3AC46:
 ObjB2_Deactivate_level:
 	move.w	#1,(Level_Inactive_flag).w
@@ -78317,6 +78331,13 @@ loc_3D9D6:
 	moveq	#signextendB(MusID_FadeOut),d0
 	jsrto	PlaySound, JmpTo12_PlaySound
 
+	cmp.b	#1,(ScoreRush_Gamemode).w
+	bne.s	+
+	jsr		Level_EndlessRush
+	addq.l	#8,sp									; leave game mode loop prematurely
+	rts	
+
++
 	moveq	#0,d0
 	move.w	d0,(Options_menu_box).w
 	move.w	d0,(Two_player_mode_copy).w
@@ -85034,7 +85055,6 @@ plreq macro toVRAMaddr,fromROMaddr
 ;---------------------------------------------------------------------------------------
 PlrList_Std1: plrlistheader
 	plreq ArtTile_ArtNem_HUD, ArtNem_HUD
-	plreq ArtTile_ArtNem_life_counter, ArtNem_Sonic_life_counter
 	plreq ArtTile_ArtNem_Ring, ArtNem_Ring
 	plreq ArtTile_ArtNem_Numbers, ArtNem_Numbers
 PlrList_Std1_End
@@ -85045,6 +85065,7 @@ PlrList_Std1_End
 PlrList_Std2: plrlistheader
 	plreq ArtTile_ArtNem_Checkpoint, ArtNem_Checkpoint
 	plreq ArtTile_ArtNem_Powerups, ArtNem_Powerups
+	plreq ArtTile_ArtNem_life_counter, ArtNem_Sonic_life_counter	
 ;	plreq ArtTile_ArtNem_Shield, ArtNem_Shield
 	plreq ArtTile_ArtNem_Invincible_stars, ArtNem_Invincible_stars
 PlrList_Std2_End
