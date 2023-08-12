@@ -1335,7 +1335,8 @@ Ctrl_2:						; 2 bytes
 Ctrl_2_Held:			ds.b	1	; 1 byte
 Ctrl_2_Press:			ds.b	1	; 1 byte
 Invert_Joypads_Flag:	ds.b	1
-				ds.b	3	; $FFFFF609-$FFFFF60B ; seems unused
+SRAM_ErrorCode:				ds.b	1
+						ds.b	2; $FFFFF60A-$FFFFF60B ; seems unused
 VDP_Reg1_val:			ds.w	1	; normal value of VDP register #1 when display is disabled
 				ds.b	6	; $FFFFF60E-$FFFFF613 ; seems unused
 Demo_Time_left:			ds.w	1	; 2 bytes
@@ -2127,9 +2128,21 @@ CutScene:
     endif
 	dephase		; Stop pretending
 
-	!org	0	; Reset the program counter
+;	!org	0	; Reset the program counter
 
 
+; ---------------------------------------------------------------------------
+; SRAM space
+	phase $200003
+SRAM_CreditsViewed:	ds.w	1
+SRAM_Settings:		ds.w	10
+SRAM_ScoreRushBoards:	ds.w	$180
+SRAM_EndlessRushBoards:	ds.w	$180
+SRAM_QuickRushBoards:	ds.w	$330
+SRAM_Firstrun:		ds.w	4
+	dephase
+	
+	!org	0
 ; ---------------------------------------------------------------------------
 ; VDP addressses
 VDP_data_port =			$C00000 ; (8=r/w, 16=r/w)

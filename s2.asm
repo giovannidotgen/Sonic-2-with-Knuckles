@@ -157,11 +157,11 @@ ROMEndLoc:
 	dc.l EndOfRom-1		; End address of ROM
 	dc.l RAM_Start&$FFFFFF		; Start address of RAM
 	dc.l (RAM_End-1)&$FFFFFF		; End address of RAM
-	dc.b "    "		; Backup RAM ID
-	dc.l $20202020		; Backup RAM start address
-	dc.l $20202020		; Backup RAM end address
+    dc.b "RA",$F8,$20	; Enable SRAM
+	dc.l $200001		; Backup RAM start address
+	dc.l $200FFF		; Backup RAM end address
 	dc.b "            "	; Modem support
-	dc.b "                                        "	; Notes (unused, anything can be put in this space, but it has to be 52 bytes.)
+	dc.b "THIS IS AN UNLICENSED, NON-PROFIT HACK. "	; Notes (unused, anything can be put in this space, but it has to be 52 bytes.)
 	dc.b "JUE             " ; Country code (region)
 EndOfHeader:
 
@@ -469,8 +469,25 @@ JmpTo_Level:
 ; ===========================================================================
 
 InitSRAM:
-; For the time being, not actually SRAM initialization. Just the default options.
-
+	clr.b	(SRAM_ErrorCode).w		; clear the SRAM error code
+	move.b  #1,($A130F1).l    		; Enable SRAM writes (ROM being less than 2MB means I don't have to ever disable SRAM writes! :D)
+	lea 	(SRAM_Firstrun).l,a0    ; Get the firstrun string
+	movep.l 0(a0),d0       			; Put the contents in d0
+	move.l  #"FRUN",d1       		; get the actual word "FRUN"
+	cmp.l   d0,d1          			; was it written already?
+	beq.w   InitSRAM_LoadData  		; If it was, then load the existing SRAM data
+	
+	bsr.w	InitSRAM_PreloadData	; Load all default data if not found
+	lea 	(SRAM_Firstrun).l,a0    ; get firstrun string
+	movep.l 0(a0),d0       			; in d0
+	move.l  #"FRUN",d1       		; get the actual word "FRUN"
+	cmp.l	d0,d1					; was it found?
+	beq.w	InitSRAM_LoadData		; If it was, then put SRAM in RAM
+	
+; If the second SRAM check still fails, set the error code, and load the default data straight into RAM	
+	
+InitSRAM_Failsafe:
+	move.b	#1,(SRAM_ErrorCode).w	; Error code 1: SRAM not found.
 	lea		(Settings_Data).l,a0
 	lea		(DefaultOptions).l,a1
 	
@@ -494,13 +511,99 @@ InitSRAM:
 	blt.s	-
 
 ; Initialize Score Rush and Endless Rush
-	lea		(Default_ScoreRush).w,a0
+	lea		(Default_ScoreRush).l,a0
 	lea		(Leaderboards_ScoreRush).w,a1
 	
 -
 	move.l	(a0)+,(a1)+
 	cmpa.l	#Leaderboards_End,a1
 	blt.s	-	
+
+	rts
+	
+; ===========================================================================
+; Subroutine to preload all default data into SRAM	
+InitSRAM_PreloadData:
+    movep.l d1,0(a0)        ; Write FRUN in SRAM_Firstrun
+
+	clr.b	(SRAM_CreditsViewed).l
+
+; Settings
+
+	lea		(SRAM_Settings).l,a0
+	lea		(DefaultOptions).l,a1
+	
+-
+	tst.b	(a1)
+	bmi.s	+
+	move.b	(a1)+,(a0)
+	adda.l	#2,a0
+	bra.s	-
+	
++
+
+; Score Rush and Endless Rush
+	lea		(Default_ScoreRush).l,a0
+	lea		(SRAM_ScoreRushBoards).l,a1
+	
+-
+	move.l	(a0)+,d0					; place default data in d0
+	movep.l	d0,(a1)						; put it in SRAM
+	adda.l	#8,a1						; advance SRAM pointer
+	cmpa.l	#SRAM_QuickRushBoards,a1	; check if we're past the Endless Rush zone
+	blt.s	-							; if we aren't yet, repeat
+
+; Quick Rush
+	moveq	#0,d0						; get 0
+;	lea		(SRAM_QuickRushBoards).l,a1	; get Quick Rush SRAM data (we're already there)
+
+-	
+	movep.l	d0,(a1)						; put 0 in Quick Rush SRAM
+	adda.l	#8,a1						; advance SRAM pointer
+	cmpa.l	#SRAM_Firstrun,a1			; check if we're past the Quick Rush zone	
+	blt.s	-							; if we aren't yet, repeat
+
+	rts
+; ===========================================================================
+; Function to load all of the SRAM data in RAM
+InitSRAM_LoadData:
+	lea		(Settings_Data).l,a0
+	lea		(SRAM_Settings).l,a1
+
+
+; Settings
+-
+	cmpa.l	#SRAM_ScoreRushBoards,a1	; check for end of settings RAM
+	beq.s	+							; if reached, branch
+	movea.l	(a0),a2						; get address of setting
+	adda.l	#6,a0						; next setting (RAM)
+	move.b	(a1),(a2)					; load the value in SRAM into RAM
+	adda.l	#2,a1						; next setting (SRAM)
+	bra.s	-
+	
++	
+
+; Score Rush and Endless Rush
+	lea		(SRAM_ScoreRushBoards).l,a0
+	lea		(Leaderboards_ScoreRush).l,a1
+	
+-
+	movep.l	(a0),d0						; place SRAM data in d0
+	move.l	d0,(a1)+					; put it in RAM
+	adda.l	#8,a0						; advance SRAM pointer
+	cmpa.l	#SRAM_QuickRushBoards,a0	; check if we're past the Endless Rush zone
+	blt.s	-							; if we aren't yet, repeat
+
+; Quick Rush
+	lea		(SRAM_QuickRushBoards).l,a0
+	lea		(Leaderboards_QuickRush).l,a1
+	
+-
+	movep.l	(a0),d0						; place SRAM data in d0
+	move.l	d0,(a1)+					; put it in RAM
+	adda.l	#8,a0						; advance SRAM pointer
+	cmpa.l	#SRAM_Firstrun,a0			; check if we're past the Quick Rush zone
+	blt.s	-							; if we aren't yet, repeat
 
 	rts
 
