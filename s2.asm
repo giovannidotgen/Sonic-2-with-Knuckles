@@ -27913,6 +27913,8 @@ loc_141AA:
 	bsr.w	DisplaySprite
 	move.b	#1,(Update_Bonus_score).w
 	moveq	#0,d0
+	btst	#button_A,(Ctrl_1_Press).w
+	bne.s	Obj3A_SkipTally
 	move.l	(Score).w,d1
 	move.l	(Bonus_Countdown_1).w,d2
 	cmp.l	d1,d2
@@ -27940,6 +27942,11 @@ loc_141E6:
 	move.l	d2,(Bonus_Countdown_1).w
 	cmp.l	d1,d2
 	bne.s	loc_14256
+	bra.s	Obj3A_Common
+	
+Obj3A_SkipTally:
+	move.l	(Score).w,(Bonus_Countdown_1).w	
+Obj3A_Common:
 	move.w	#SndID_TallyEnd,d0
 	jsr	(PlaySound).l
 	bsr.w	QuickRush_NewRecord	
