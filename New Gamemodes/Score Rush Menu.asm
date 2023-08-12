@@ -615,8 +615,29 @@ CharSel_Right:
 		bra.s   CharSel_RefreshChar
 
 ; ===========================================================================
+Settings_Save:
+		tst.b	(SRAM_ErrorCode).w	; is there SRAM?
+		bne.s	.return				; if not, return
+
+		lea		(Settings_Data).l,a0
+		lea		(SRAM_Settings).l,a1
+
+
+-
+		cmpa.l	#SRAM_ScoreRushBoards,a1	; check for end of settings RAM
+		beq.s	.return						; if reached, branch
+		movea.l	(a0),a2						; get address of setting
+		adda.l	#6,a0						; next setting (RAM)
+		move.b	(a2),(a1)					; load the value in RAM into SRAM
+		adda.l	#2,a1						; next setting (SRAM)
+		bra.s	-		
+
+.return:
+		rts
+; ===========================================================================
 
 Settings_GoBack:
+		bsr.w	Settings_Save
 		move.w	#4,(Options_menu_box).w
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
