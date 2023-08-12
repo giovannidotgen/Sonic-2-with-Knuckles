@@ -13230,8 +13230,8 @@ EndgameCredits:
 	move.w	#0,d0
 	jsrto	EniDec, JmpTo_EniDec
 	lea	(Chunk_Table).l,a1
-	move.l	#vdpComm(VRAM_Plane_A_Name_Table+planeLocH40(12,05),VRAM,WRITE),d0
-	moveq	#$F,d1
+	move.l	#vdpComm(VRAM_Plane_A_Name_Table+planeLocH40(11,05),VRAM,WRITE),d0
+	moveq	#$10,d1
 	moveq	#5,d2
 	jsrto	PlaneMapToVRAM_H40, JmpTo2_PlaneMapToVRAM_H40
 	
