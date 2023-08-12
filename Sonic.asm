@@ -1586,6 +1586,9 @@ Sonic_CheckPeelout:
 	
 	; Push stack pointer back so we don't return to the movement function
 	addq.l	#4,sp
+	
+	bsr.w	Sonic_LevelBound
+	bsr.w	AnglePos	
 
 return_Peelout1:
 	rts
@@ -1669,6 +1672,9 @@ Sonic_PeeloutRight:
 
 Sonic_CopySpeed:
 	move.w	d2,inertia(a0)
+	
+	bsr.w	Sonic_LevelBound
+	bsr.w	AnglePos	
 	rts
 
 ; ---------------------------------------------------------------------------
