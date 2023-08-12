@@ -13199,10 +13199,10 @@ EndgameCredits:
 	; Now that we have the time it should take for the credits to end, we can adjust the calculation to account
 	; for any slides we may have added. For example, if you added a slide, bringing the total to 22,
 	; performing '((154.7*60)/22)-($16+$16)' will give you the new value to put in the 'move.w' instruction below.
-	move.w	#$18E,d0
+	move.w	#$207,d0
 	btst	#6,(Graphics_Flags).w
 	beq.s	+
-	move.w	#$144,d0
+	move.w	#$1AC,d0
 
 /	move.b	#VintID_Ending,(Vint_routine).w
 	jsr		WaitForVint
@@ -13222,17 +13222,40 @@ EndgameCredits:
 	move.l	#vdpComm($0000,VRAM,WRITE),(VDP_control_port).l
 	lea	(ArtNem_EndingTitle).l,a0
 	jsrto	NemDec, JmpTo_NemDec
+	move.l	#vdpComm(tiles_to_bytes(ArtTile_ArtNem_TitleSprites),VRAM,WRITE),(VDP_control_port).l
+	lea	(ArtNem_Title).l,a0
+	jsr		NemDec	
 	lea	(MapEng_EndGameLogo).l,a0
 	lea	(Chunk_Table).l,a1
 	move.w	#0,d0
 	jsrto	EniDec, JmpTo_EniDec
 	lea	(Chunk_Table).l,a1
-	move.l	#vdpComm(VRAM_Plane_A_Name_Table+planeLocH40(12,11),VRAM,WRITE),d0
+	move.l	#vdpComm(VRAM_Plane_A_Name_Table+planeLocH40(12,05),VRAM,WRITE),d0
 	moveq	#$F,d1
 	moveq	#5,d2
 	jsrto	PlaneMapToVRAM_H40, JmpTo2_PlaneMapToVRAM_H40
+	
+	; Decompress the Score Rush banner plane map...
+	lea	(Chunk_Table).l,a1
+	lea	(MapEng_ScoreRushBanner).l,a0
+	move.w	#make_art_tile(ArtTile_ArtNem_TitleSprites,3,0),d0
+	jsr		EniDec
+
+	; ...and send it to VRAM.
+	lea	(Chunk_Table).l,a1
+	move.l	#vdpComm(VRAM_TtlScr_Plane_A_Name_Table+(13*$80)+(10*2),VRAM,WRITE),d0
+	moveq	#20-1,d1 ; Width
+	moveq	#9-1,d2 ; Height
+	jsr		PlaneMapToVRAM_H40
+	
 	clr.w	(CreditsScreenIndex).w
 	bsr.w	EndgameLogoFlash
+
+	lea		Pal_1342C,a1
+	lea		(Normal_palette_line4).w,a2
+	moveq	#bytesToLcnt(palette_line_size),d6
+-	move.l	(a1)+,(a2)+
+	dbf	d6,-
 
 	move.w	#$3B,d0
 -	move.b	#VintID_Ending,(Vint_routine).w
@@ -14521,36 +14544,36 @@ off_B2B0: creditsPtrs	byte_BD1A,textLoc($0F,$09), byte_BCEE,textLoc($11,$0C), \
 
 ; credits screen pointer table
 off_B2CA:
-	dc.l off_B322, off_B336, off_B34A, off_B358	; 3
-	dc.l off_B366, off_B374, off_B388, off_B3A8	; 7
-	dc.l off_B3C2, off_B3DC, off_B3F0, off_B41C	; 11
-	dc.l off_B436, off_B450, off_B45E, off_B490	; 15
-	dc.l off_B4B0, off_B4C4, off_B4F0, off_B51C	; 19
-	dc.l off_B548, -1				; 21
+	dc.l Credits_Scr0, Credits_Scr1, Credits_Scr2, Credits_Scr3	; 3
+	dc.l Credits_Scr4, Credits_Scr5, Credits_Scr6, Credits_Scr7	; 7
+	dc.l Credits_Scr8, Credits_Scr9, Credits_Scr10, Credits_Scr11	; 11
+	dc.l Credits_Scr12, Credits_Scr13, Credits_Scr14, Credits_Scr15 
+	dc.l Credits_Scr16, -1				; 16
 
 ; credits text pointers for each screen of credits
 vram_pnt := VRAM_Plane_A_Name_Table
-off_B322: creditsPtrs	byte_BC46,textLoc($0E,$0B), byte_BC51,textLoc($18,$0B), byte_BC55,textLoc($02,$0F)
-off_B336: creditsPtrs	byte_B55C,textLoc($03,$0B), byte_B56F,textLoc($16,$0B), byte_B581,textLoc($06,$0F)
-off_B34A: creditsPtrs	byte_B56F,textLoc($0C,$0B), byte_B59F,textLoc($07,$0F)
-off_B358: creditsPtrs	byte_B5BC,textLoc($0C,$0B), byte_B5CD,textLoc($06,$0F)
-off_B366: creditsPtrs	byte_B5EB,textLoc($05,$0B), byte_B60C,textLoc($07,$0F)
-off_B374: creditsPtrs	byte_B628,textLoc($08,$0A), byte_B642,textLoc($04,$0E), byte_B665,textLoc($0A,$10)
-off_B388: creditsPtrs	byte_B67B,textLoc($04,$08), byte_B69C,textLoc($11,$0A), byte_B6A4,textLoc($09,$0C), byte_B6BC,textLoc($04,$10), byte_B6DE,textLoc($08,$12)
-off_B3A8: creditsPtrs	byte_B6F8,textLoc($0B,$09), byte_B70B,textLoc($09,$0B), byte_B723,textLoc($0A,$0F), byte_B738,textLoc($03,$11)
-off_B3C2: creditsPtrs	byte_B75C,textLoc($04,$09), byte_B642,textLoc($04,$0D), byte_B77E,textLoc($07,$0F), byte_B799,textLoc($07,$11)
-off_B3DC: creditsPtrs	byte_B7B5,textLoc($08,$0A), byte_B75C,textLoc($04,$0C), byte_B799,textLoc($07,$10)
-off_B3F0: creditsPtrs	byte_B7F2,textLoc($09,$06), byte_B6BC,textLoc($04,$0A), byte_B80B,textLoc($0A,$0C), byte_B821,textLoc($09,$0E), byte_B839,textLoc($07,$10), byte_B855,textLoc($0B,$12), byte_B869,textLoc($0B,$14)
-off_B41C: creditsPtrs	byte_B7B5,textLoc($09,$09), byte_B87D,textLoc($0A,$0B), byte_B893,textLoc($0B,$0F), byte_B8A8,textLoc($07,$11)
-off_B436: creditsPtrs	byte_B8C5,textLoc($06,$09), byte_B8E2,textLoc($05,$0D), byte_B902,textLoc($03,$0F), byte_B90F,textLoc($04,$11)
-off_B450: creditsPtrs	byte_B932,textLoc($04,$0B), byte_B954,textLoc($05,$0F)
-off_B45E: creditsPtrs	byte_B974,textLoc($04,$05), byte_B995,textLoc($0F,$09), byte_B9A1,textLoc($0F,$0B), byte_B9AD,textLoc($0F,$0D), byte_B9B8,textLoc($10,$0F), byte_B9C1,textLoc($11,$11), byte_B9C8,textLoc($11,$13), byte_B9D0,textLoc($0F,$15)
+Credits_Scr0:	creditsPtrs	CText_Sonic2,textLoc($02,$0A),			CText_ScoreRush,textLoc($0B,$0C),		CText_Staff,textLoc($08,$10)
+Credits_Scr1:	creditsPtrs	CText_ProjectLead,textLoc($02,$0B),		CText_Giovanni,textLoc($02,$0F)
+Credits_Scr2:	creditsPtrs	CText_Program,textLoc($02,$0B), 		CText_Giovanni,textLoc($02,$0F)
+Credits_Scr3:	creditsPtrs	CText_Debug,textLoc($02,$0B), 			CText_Giovanni,textLoc($02,$0F)
+Credits_Scr4:	creditsPtrs	CText_Testing,textLoc($02,$05), 		CText_Feedback,textLoc($02,$07),		CText_BladeOfChaos,textLoc($02,$0B), CText_DarkShamilKhan,textLoc($02,$0D),	CText_DashZick,textLoc($02,$0F),	CText_DaxKatter,textLoc($02,$11),		CText_DeltaWooloo,textLoc($02,$13),	CText_Inferno,textLoc($02,$15)
+Credits_Scr5:	creditsPtrs	CText_Testing,textLoc($02,$06), 		CText_Feedback,textLoc($02,$08),		CText_KGL,textLoc($02,$0C),			 CText_MDTravis,textLoc($02,$0E),		CText_Scrap_Sorra,textLoc($02,$10),	CText_TomatoWave_0,textLoc($02,$12),	CText_yami,textLoc($02,$14)
+Credits_Scr6:	creditsPtrs	CText_Art,textLoc($02,$06), 			CText_MDTravis,textLoc($02,$0A),		CText_CKDev,textLoc($02,$0C), 		 CText_MunchJrGames,textLoc($02,$0E),	CText_SlickNick,textLoc($02,$10),	CText_thelilcoin,textLoc($02,$12),		CText_Giovanni,textLoc($02,$14)
+Credits_Scr7:	creditsPtrs	CText_Sound,textLoc($02,$0A),			CText_Giovanni,textLoc($02,$0E), 		CText_DeltaWooloo,textLoc($02,$10)
+Credits_Scr8:	creditsPtrs	CText_Code,textLoc($02,$06), 			CText_heyjoeway,textLoc($02,$0A),		CText_redhotsonic,textLoc($02,$0C),	 CText_MoDule,textLoc($02,$0E),			CText_Neto,textLoc($02,$10),		CText_flamewing,textLoc($02,$12),		CText_MarkeyJester,textLoc($02,$14)
+Credits_Scr9:	creditsPtrs	CText_Code,textLoc($02,$06), 			CText_vladikcomper,textLoc($02,$0A),	CText_Selbi,textLoc($02,$0C),		 CText_Puto,textLoc($02,$0E),			CText_MainMemory,textLoc($02,$10),	CText_Devon,textLoc($02,$12),			CText_Kilo,textLoc($02,$14)
+Credits_Scr10:	creditsPtrs	CText_Tools,textLoc($02,$0A),			CText_MainMemory,textLoc($02,$0E), 		CText_kirjava,textLoc($02,$10)
+Credits_Scr11:	creditsPtrs CText_Promo,textLoc($02,$0B),			CText_Froozex,textLoc($02,$0F)
+Credits_Scr12: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$09),	CText_SHC,textLoc($02,$0D), 			CText_RHSponsors,textLoc($02,$0F),	 CText_RadNex,textLoc($02,$11)
+Credits_Scr13: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$08),	CText_redhotsonic,textLoc($02,$0C), 	CText_Argick,textLoc($02,$0E),		 CText_NicoTB,textLoc($02,$10),			CText_Froozex,textLoc($02,$12)
+Credits_Scr14: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$08),	CText_Monopattino,textLoc($02,$0C), 	CText_fuzzybit,textLoc($02,$0E),	 CText_TomatoWave_0,textLoc($02,$10),	CText_DeltaWooloo,textLoc($02,$12)
+Credits_Scr15: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$0A),	CText_SEGA,textLoc($02,$0E), 			CText_SonicTeam,textLoc($02,$10)
 off_B490: creditsPtrs	byte_B9DB,textLoc($03,$08), byte_BA00,textLoc($08,$0C), byte_BA1B,textLoc($06,$0E), byte_BA3A,textLoc($09,$10), byte_BA52,textLoc($0A,$12)
 off_B4B0: creditsPtrs	byte_BA69,textLoc($09,$0A), byte_BA81,textLoc($05,$0E), byte_B7CE,textLoc($03,$10)
 off_B4C4: creditsPtrs	byte_B55C,textLoc($0B,$06), byte_BAA2,textLoc($0A,$08), byte_BAB8,textLoc($03,$0C), byte_BADC,textLoc($07,$0E), byte_BAF7,textLoc($05,$10), byte_BB16,textLoc($07,$12), byte_BB32,textLoc($02,$14)
 off_B4F0: creditsPtrs	byte_BB58,textLoc($06,$06), byte_BB75,textLoc($12,$08), byte_BB7B,textLoc($06,$0C), byte_BC9F,textLoc($05,$0E), byte_BBD8,textLoc($08,$10), byte_BBF2,textLoc($08,$12), byte_BC0C,textLoc($09,$14)
 off_B51C: creditsPtrs	byte_BB58,textLoc($06,$06), byte_BB75,textLoc($12,$08), byte_BB98,textLoc($03,$0C), byte_BBBC,textLoc($07,$0E), byte_BCBE,textLoc($07,$10), byte_BCD9,textLoc($0D,$12), byte_BC25,textLoc($04,$14)
-off_B548: creditsPtrs	byte_BC7B,textLoc($0B,$09), byte_BC8F,textLoc($12,$0D), byte_BC95,textLoc($10,$11)
+Credits_Scr16: creditsPtrs	byte_BC7B,textLoc($0B,$09), byte_BC8F,textLoc($12,$0D), CText_Giovanni,textLoc($0D,$11)
 
  ; temporarily remap characters to credit text format
  ; let's encode 2-wide characters like Aa, Bb, Cc, etc. and hide it with a macro
@@ -14593,11 +14616,60 @@ l := lowstring("char")
 
 ; credits text data (palette index followed by a string)
 vram_src := ArtTile_ArtNem_CreditText_CredScr
-byte_B55C:	creditText 1,"EXECUTIVE"
-byte_B56F:	creditText 1,"PRODUCER"
-byte_B581:	creditText 0,"HAYAO  NAKAYAMA"
-byte_B59F:	creditText 0,"SHINOBU  TOYODA"
-byte_B5BC:	creditText 1,"DIRECTOR"
+byte_B55C:
+byte_B56F:
+CText_ProjectLead:	creditText 1,"PROJECT LEAD"
+CText_Giovanni:		creditText 0,"GIOVANNI"
+CText_Program:	creditText 1,"PROGRAMMING"
+CText_Debug:	creditText 1,"DEBUGGING"
+CText_Testing:	creditText 1,"ADDITIONAL TESTING"
+CText_Feedback:	creditText 1,"AND FEEDBACK"
+CText_BladeOfChaos:	creditText 0,"BLADEOFCHAOS"
+CText_DarkShamilKhan:	creditText 0,"DARKSHAMILKHAN"
+CText_DashZick:	creditText 0,"DASHZICK"
+CText_DaxKatter:	creditText 0,"DAXKATTER"
+CText_DeltaWooloo:	creditText 0,"DELTAWOOLOO"
+CText_Inferno:	creditText 0,"INFERNO"
+CText_KGL:	creditText 0,"KGL"
+CText_MDTravis:	creditText 0,"MDTRAVIS"
+CText_Scrap_Sorra:	creditText 0,"SCRAP SORRA"
+CText_TomatoWave_0:	creditText 0,"TOMATOES"
+CText_yami:	creditText 0,"YAMI"
+CText_Art:	creditText 1,"ADDITIONAL ARTWORK"
+CText_CKDev:	creditText 0,"CKDEV"
+CText_MunchJrGames:	creditText 0,"MUNCHJRGAMES"
+CText_SlickNick:	creditText 0,"SLICK NICK"
+CText_thelilcoin:	creditText 0,"THELILCOIN"
+CText_Sound:	creditText 1,"ADDITIONAL SOUND"
+CText_Code:	creditText 1,"ADDITIONAL CODE"
+CText_heyjoeway:	creditText 0,"HEYJOEWAY"
+CText_redhotsonic:	creditText 0,"REDHOTSONIC"
+CText_MoDule:	creditText 0,"MODULE"
+CText_Neto:	creditText 0,"ESRAEL NETO"
+CText_flamewing:	creditText 0,"FLAMEWING"
+CText_MarkeyJester:	creditText 0,"MARKEYJESTER"
+CText_vladikcomper: creditText 0,"VLADIKCOMPER"
+CText_Selbi:	creditText 0,"SELBI"
+CText_Puto:	creditText 0,"PUTO"
+CText_MainMemory: creditText 0,"MAINMEMORY"
+CText_Devon:	creditText 0,"DEVON"
+CText_Kilo:	creditText 0,"KILO"
+CText_Tools:	creditText 1,"ADDITIONAL TOOLS"
+CText_kirjava:	creditText 0,"KIRJAVA"
+CText_SpecialThanks:	creditText 1,"SPECIAL THANKS"
+CText_SHC:	creditText 0,"SHC"
+CText_RHSponsors:	creditText 0,"RHS SPONSORS"
+CText_RadNex:	creditText 0,"RADIANTNEXUS"
+CText_Argick:	creditText 0,"ARGICK"
+CText_NicoTB:	creditText 0,"NICOTB"
+CText_Froozex:	creditText 0,"FROOZEX"
+CText_Monopattino:	creditText 0,"MONOPATTINO"
+CText_fuzzybit:	creditText 0,"FUZZYBIT"
+CText_SEGA: creditText 0,"SEGA"
+CText_SonicTeam: creditText 0,"SONIC TEAM"
+CText_Sonic2Devs: creditText 0,"THE DEVELOPERS OF"
+CText_Sonic2Devs2: creditText 0,"SONIC THE HEDGEHOG 2"
+CText_Promo:	creditText 1,"PROMOTIONAL MEDIA"
 byte_B5CD:	creditText 0,"MASAHARU  YOSHII"
 byte_B5EB:	creditText 1,"CHIEF  PROGRAMMER"
 byte_B60C:	creditText 0,"YUJI  NAKA (YU2)"
@@ -14667,9 +14739,9 @@ byte_BBD8:	creditText 0,"DAISUKE  SAITO"
 byte_BBF2:	creditText 0,"KUNITAKE  AOKI"
 byte_BC0C:	creditText 0,"TSUNEKO  AOKI"
 byte_BC25:	creditText 0,"MASAAKI  KAWAMURA"
-byte_BC46:	creditText 0,"SONIC"
-byte_BC51:	creditText 1,"2"
-byte_BC55:	creditText 0,"CAST  OF  CHARACTERS"
+CText_Sonic2:	creditText 1,"SONIC THE HEDGEHOG 2"
+CText_ScoreRush:	creditText 1,"SCORE RUSH"
+CText_Staff:	creditText 0,"STAFF CREDITS"       
 byte_BC7B:	creditText 0,"PRESENTED"
 byte_BC8F:	creditText 0,"BY"
 byte_BC95:	creditText 0,"SEGA"
