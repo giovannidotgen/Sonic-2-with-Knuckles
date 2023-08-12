@@ -164,6 +164,7 @@ TextInit_GameSel:
 	move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
 	endif
 	clr.w	(QuickRush_MemOption).w
+	clr.b	(ScoreRush_Gamemode).w
 
 	bra.w	GameSel_Selections
 
@@ -492,12 +493,21 @@ CharSel_GoBack:
 		clr.w	(Options_menu_box).w
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
+		cmp.b	#7,(MainMenu_Screen).w
+		beq.s	CharSel_BackFromLB		
 		cmp.b	#2,(ScoreRush_Gamemode).w
 		beq.s	CharSel_GotoQuickRush
-		bgt.s	CharSel_BackFromLB
+		cmp.b	#1,(ScoreRush_Gamemode).w
+		beq.s	CharSel_BackFromER
 		clr.b	(MainMenu_Screen).w	; set menu
 		move.w	#SndID_Back,d0
 		jmp		PlaySound	
+
+CharSel_BackFromER:
+		clr.b	(MainMenu_Screen).w	; set menu
+		move.w	#1,(Options_menu_box).w
+		move.w	#SndID_Back,d0
+		jmp		PlaySound			
 
 CharSel_BackFromLB:
 		clr.b	(MainMenu_Screen).w	; set menu
