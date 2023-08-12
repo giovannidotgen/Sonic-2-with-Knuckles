@@ -1845,7 +1845,7 @@ TextData_PageBodies:
 ; Page 11
 	dc.b	"SONIC 2 - SCORE RUSH              "
 	dc.b	"                                  "
-	dc.b	"VERSION: BETA 0.3 (PRIVATE)       "
+	dc.b	"VERSION: 1.0                      "
 	dc.b	"                                  "
 	dc.b	"THIS IS A ROM HACK. IT IS NOT     "
 	dc.b	"PRODUCED BY OR UNDER LICENSE FROM "
@@ -1855,10 +1855,10 @@ TextData_PageBodies:
 	dc.b	"- GIOVANNI.GEN (DISCORD)          "
 	dc.b	"- GIOVANNI (SSRG, SONIC RETRO)    "
 	dc.b	"                                  "
-	dc.b	"BUILD UNINTENDED FOR PUBLIC       "
-	dc.b	"DISTRIBUTION. IF YOU ARE NOT AN   "
-	dc.b	"INTENDED RECIPIENT, CONTACT THE   "
-	dc.b	"LEAD DEVELOPER.                   "	
+	dc.b	"THIS ROM HACK IS FREELY AVAILABLE,"
+	dc.b	"AND NOT MEANT FOR MONETARY GAIN.  "
+	dc.b	"IF YOU'VE PURCHASED THIS HACK, YOU"
+	dc.b	"HAVE BEEN SCAMMED.                "	
 
 TextData_Version:
 	dc.b	"SONIC 2 - SCORE RUSH DEVBUILD"
