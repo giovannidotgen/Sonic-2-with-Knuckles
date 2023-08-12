@@ -108,6 +108,9 @@ TitleScreen:
 	move.w	(VDP_Reg1_val).w,d0
 	ori.b	#$40,d0
 	move.w	d0,(VDP_control_port).l
+
+	tst.b	(Firstrun).w
+	bne.s	TitleScreen_Flash
 	
 	bsr.w	Pal_FadeFromBlack
 	
@@ -119,6 +122,8 @@ TitleScreen_WaitLoop:
 	tst.w	(Demo_Time_left).w
 	bne.s	TitleScreen_WaitLoop	
 
+TitleScreen_Flash:
+	clr.w	(Demo_Time_left).w
 	move.w	#SndID_SuperTransform,d0
 	jsr	(PlaySound).l	; Play transformation sound effect.	
 	bsr.w	Pal_FadeToWhite
