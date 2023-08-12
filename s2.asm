@@ -27892,10 +27892,27 @@ return_14254:
 	rts
 
 ; ===========================================================================
+QuickRush_Save:
+	
+; ===========================================================================
 
 QuickRush_NewRecord:
 	movea.l	(QuickRush_UpdAddress).w,a2
 	move.l	(Score).w,(a2)
+
+	tst.b	(SRAM_ErrorCode).w				; is there SRAM?
+	bne.s	.return							; if there isn't, return
+
+	move.l	a2,d0							; get the update address
+	sub.l	#Leaderboards_QuickRush,d0		; find the difference between the update address and the starting point	
+	add.l	d0,d0							; double that
+	
+	lea		(SRAM_QuickRushBoards).l,a2		; get start of Quick Rush scoreboard
+	adda.l	d0,a2							; find the score to update
+	move.l	(Score).w,d0					; get the score
+	movep.l	d0,(a2)							; put it in SRAM
+
+.return:
 	rts
 	
 	
