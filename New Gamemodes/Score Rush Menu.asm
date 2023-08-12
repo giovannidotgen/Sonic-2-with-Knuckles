@@ -226,6 +226,20 @@ MenuCtrls_Index:
 ; ===========================================================================
 
 ResultsScreen_SaveChanges:
+		tst.b	(SRAM_ErrorCode).w
+		bne.s	.tocredits
+
+		lea		(SRAM_ScoreRushBoards).l,a0
+		lea		(Leaderboards_ScoreRush).l,a1
+	
+-
+		move.l	(a1)+,d0					; place RAM data in d0
+		movep.l	d0,(a0)						; put it in SRAM
+		adda.l	#8,a0						; advance SRAM pointer
+		cmpa.l	#SRAM_QuickRushBoards,a0	; check if we're past the Endless Rush zone
+		blt.s	-							; if we aren't yet, repeat		
+
+.tocredits:
 		tst.b	(Credits_Watched).w				; has the player watched the credits before?
 		beq.s	Menu_GotoCredits
 		clr.w	(Options_menu_box).w			; get selected character

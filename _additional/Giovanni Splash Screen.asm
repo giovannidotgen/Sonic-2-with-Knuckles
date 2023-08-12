@@ -17,7 +17,7 @@ GiovanniSplash:
 	move.w	#$9001,(a6)		; Scroll table size: 64x32
 	move.w	#$9200,(a6)		; Disable window
 	move.w	#$8B03,(a6)		; EXT-INT disabled, V scroll by screen, H scroll by line
-	move.w	#$8720,(a6)		; Background palette/color: 2/0
+	move.w	#$8700,(a6)		; Background palette/color: 0/0
 
 
    ; load art, mappings and the palette
@@ -89,20 +89,43 @@ Giovanni_Delay1:
     tst.w   (Demo_Time_left).w           	; has the delay time finished?
     bne.s   Giovanni_Delay1				; if not, branch
 
-Credits_Render:
 	lea	(VDP_data_port).l,a6
+	
 	lea	(Text_Giovanni).l,a1 ; where to fetch the lines from
-	move.l	#$488A0003,4(a6)	; starting screen position 
+	tst.b	(SRAM_ErrorCode).w
+	beq.s	+
+	lea	(Text_SaveError).l,a1
+	bra.s	++
++	
+	move.b  (Ctrl_1_Held).w,d0 ; fetch held inputs
+	andi.b  #$70,d0          ; only consider A, B and C
+	cmpi.b  #$70,d0          ; check if A, B and C are being held at the same time	
+	bne.s	+
+
+	bset	#7,(Firstrun).w
+	lea	(Text_SaveReset).l,a1
++	
+	
+	move.l	#$48840003,4(a6)	; starting screen position 
 	move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
-	moveq	#29,d2		; number of characters to be rendered in a line -1
+	moveq	#35,d2		; number of characters to be rendered in a line -1
 	bsr.w	SingleLineRender
 
+	btst	#7,(Firstrun).w
+	beq.s	+
+	bsr.w	ClearData_Values	
++	
+
     move.b  #SndID_Ring,d0			; set sound ID
+	tst.b	(SRAM_ErrorCode).w
+	beq.s	+
+	move.b	#SndID_Error,d0
++	
     jsr     PlaySound			; play ID	
 	move.b	#1,(v_paltime).w
 	move.b	#1,(v_paltimecur).w
 	move.b	#1,(v_palflags).w
-	move.b	#$F,(v_awcount).w
+	move.b	#$1F,(v_awcount).w
 	move.l	#Pal_SplashText,(p_awtarget).w
 	move.l	#Normal_palette+$20,(p_awreplace).w
 	
@@ -114,7 +137,8 @@ Giovanni_TextFadeIn:
 	bsr.w	DynPaletteTransition
 	tst.b	(v_palflags).w				; check if the palette is fully loaded
 	bne.s	Giovanni_TextFadeIn
-	
+	btst	#7,(Firstrun).w
+	bne.s	Giovanni_ClearData
     move.w  #3*60,(Demo_Time_left).w     	; set delay time (3 seconds on a 60hz system)
 
 Giovanni_MainLoop:
@@ -124,10 +148,68 @@ Giovanni_MainLoop:
     bmi.s   Giovanni_GotoTitle         	; if so, branch
     tst.w   (Demo_Time_left).w           	; has the delay time finished?
     bne.s   Giovanni_MainLoop			; if not, branch
+	bra.s	Giovanni_GotoTitle
+ 
+Giovanni_ClearData:
+    move.b  #VintID_Title,(Vint_routine).w			; set V-blank routine to run
+    jsr 	WaitForVint					; wait for V-blank (decreases "Demo_Time_left")
+	bsr.w	ClearData_Controls
+    tst.b   (Ctrl_1_Press).w           	; has player 1 pressed start button?
+    bpl.s   Giovanni_ClearData       	; if not, branch
+
+	bclr	#7,(Firstrun).w
+	tst.w	(Options_menu_box).w
+	beq.s	Giovanni_GotoTitle
+	lea 	(SRAM_Firstrun).l,a0    ; get firstrun string
+	move.l  #"CLRD",d1       		; get the actual word "CLRD"
+    movep.l d1,0(a0)        ; Write CLRD in SRAM_Firstrun	
+	bsr.w	InitSRAM
  
 Giovanni_GotoTitle:
     move.b  #GameModeID_TitleScreen,(Game_Mode).w      		; set the screen mode to Title Screen
     rts									; return
+
+; ===============================================================
+ClearData_Controls:
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
+		andi.b	#$C,d1		; is left/right pressed and held?
+		bne.s	ClearData_LeftRight	; if yes, branch
+		rts	
+		
+ClearData_LeftRight:
+		bchg	#0,(Options_menu_box+1).w
+		bsr.w	ClearData_Values
+		move.w	#SndID_Blip,d0
+		jmp	(PlaySound).l				
+; ===============================================================
+
+ClearData_Values:
+		lea	(SRAM_ResetOptions).l,a1 ; where to fetch the lines from
+		lea	($C00000).l,a6
+		move.l	#$4C0C0003,($C00004).l	; starting screen position
+		move.w	#$A680,d3	; which palette the font should use and where it is in VRAM
+		tst.w   (Options_menu_box).w
+		bne.s   .notyellow
+		move.w  #$C680,d3
+	.notyellow:	
+		moveq	#1,d2		; number of characters to be rendered in a line -1	
+		bsr.w	SingleLineRender
+		
+		move.l  #$4C3E0003,($C00004).l
+		move.w  #$A680,d3
+		tst.w   (Options_menu_box).w
+		beq.s   .notyellow2
+		move.w  #$C680,d3
+	.notyellow2:			
+		moveq   #2,d2
+		bsr.w   SingleLineRender		
+		
+		rts
+		
+SRAM_ResetOptions:
+		dc.b "NO"
+		dc.b "YES"
+		align 2		
 
 ; ===============================================================
 ; Subroutine that deforms the screen until all of its lines are properly centered
@@ -176,5 +258,9 @@ Pal_Giovanni: binclude "art\palettes\Giovanni Splash.bin"
 	even
 Pal_SplashText:	binclude "art\palettes\Sonic 2 Text used in Splash Screen.bin"
 	even
-Text_Giovanni: dc.b "IT'S JOE-VANNI, NOT GEO-VANNI."
+Text_Giovanni: dc.b 	"   IT'S JOE-VANNI, NOT GEO-VANNI.   "
 	even	
+Text_SaveReset:	dc.b	"DO YOU WANT TO CLEAR YOUR SAVE DATA?"
+	even
+Text_SaveError:	dc.b	" SRAM NOT FOUND: CAN NOT SAVE DATA. "
+	even

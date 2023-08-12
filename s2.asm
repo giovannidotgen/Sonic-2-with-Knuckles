@@ -475,7 +475,7 @@ InitSRAM:
 	movep.l 0(a0),d0       			; Put the contents in d0
 	move.l  #"FRUN",d1       		; get the actual word "FRUN"
 	cmp.l   d0,d1          			; was it written already?
-	beq.w   InitSRAM_LoadData  		; If it was, then load the existing SRAM data
+	beq.s	+
 	
 	bsr.w	InitSRAM_PreloadData	; Load all default data if not found
 	lea 	(SRAM_Firstrun).l,a0    ; get firstrun string
@@ -484,9 +484,13 @@ InitSRAM:
 	cmp.l	d0,d1					; was it found?
 	beq.w	InitSRAM_LoadData		; If it was, then put SRAM in RAM
 	
++
+	bset	#0,(Firstrun).w
+	bra.w	InitSRAM_LoadData
 ; If the second SRAM check still fails, set the error code, and load the default data straight into RAM	
 	
 InitSRAM_Failsafe:
+	clr.b	(Firstrun).w
 	move.b	#1,(SRAM_ErrorCode).w	; Error code 1: SRAM not found.
 	lea		(Settings_Data).l,a0
 	lea		(DefaultOptions).l,a1
@@ -526,6 +530,7 @@ InitSRAM_Failsafe:
 InitSRAM_PreloadData:
     movep.l d1,0(a0)        ; Write FRUN in SRAM_Firstrun
 
+	clr.b	(Firstrun).w
 	clr.b	(SRAM_CreditsViewed).l
 
 ; Settings
@@ -570,6 +575,7 @@ InitSRAM_LoadData:
 	lea		(Settings_Data).l,a0
 	lea		(SRAM_Settings).l,a1
 
+	move.b	(SRAM_CreditsViewed).l,(Credits_Watched).w
 
 ; Settings
 -
@@ -6377,7 +6383,7 @@ LoadZoneTiles:
 	move.w	d7,-(sp)
 	move.b	#VintID_TitleCard,(Vint_routine).w
 	bsr.w	WaitForVint
-	bsr.w	RunPLC_RAM
+	jsr		RunPLC_RAM
 	move.w	(sp)+,d7
 	move.w	#$800,d3
 	dbf	d7,-
@@ -6500,11 +6506,11 @@ SpecialStage:
 	bsr.w	ssLdComprsdData
 	move.w	#0,(SpecialStage_CurrentSegment).w
 	moveq	#PLCID_SpecialStage,d0
-	bsr.w	RunPLC_ROM
+	jsr		RunPLC_ROM
 	cmpi.w	#3,(Player_mode).w	; check if playing as Knuckles
 	bne.s	+
 	moveq	#PLCID_SSKnucklesText,d0
-	bsr.w	RunPLC_ROM
+	jsr		RunPLC_ROM
 +
 	clr.b	(Level_started_flag).w
 	move.l	#0,(Camera_X_pos).w	; probably means something else in this context
@@ -9650,7 +9656,7 @@ word_728C_user: lea	(Obj5F_MapUnc_7240+$4C).l,a2 ; word_728C
 	addq.w	#1,d3
 	move.w	#-$28,d2
 	move.w	8(a2),d1
-	bsr.w	CalcAngle
+	jsr		CalcAngle
 	move.b	d0,angle(a1)
 	lea	$A(a2),a2
 +	dbf	d6,--
@@ -13123,6 +13129,10 @@ EndgameCredits:
 	tst.b	(Credits_Trigger).w
 	beq.w	.return
 	st.b	(Credits_Watched).w
+	tst.b	(SRAM_ErrorCode).w
+	bne.s	+
+	st.b	(SRAM_CreditsViewed).l
++
 	jsr		Pal_FadeToBlack
 	lea	(VDP_control_port).l,a6
 	move.w	#$8004,(a6)		; H-INT disabled
@@ -27891,9 +27901,6 @@ return_14254:
 
 	rts
 
-; ===========================================================================
-QuickRush_Save:
-	
 ; ===========================================================================
 
 QuickRush_NewRecord:
