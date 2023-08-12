@@ -43528,8 +43528,16 @@ loc_225FC:
 	move.b	byte_2266E(pc,d0.w),d2
 	cmpi.b	#2,d2
 	bne.s	loc_22688
-	move.b	(Timer_second).w,d2
-	andi.b	#1,d2
+	moveq	#0,d2
+	btst	#button_left,(Ctrl_1_Held).w
+	bne.s	.alt
+	btst	#button_up,(Ctrl_1_Held).w
+	beq.s	.common
+	
+.alt:
+	moveq	#1,d2
+
+.common:	
 	bra.s	loc_22688
 ; ===========================================================================
 byte_2266E:
