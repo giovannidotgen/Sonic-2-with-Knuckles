@@ -145,7 +145,7 @@ Header:
 	dc.b "2023, GIOVANNI  " ; Copyright holder and release date (generally year)
 	dc.b "SONIC THE HEDGEHOG 2 - SCORE RUSH               " ; Domestic name
 	dc.b "SONIC THE HEDGEHOG 2 - SCORE RUSH               " ; International name
-	dc.b "S2SR-ALPHA-021"   ; Version
+	dc.b "S2SR-VER-1.0  "   ; Version
 
 ; word_18E
 Checksum:
@@ -43529,12 +43529,8 @@ loc_225FC:
 	cmpi.b	#2,d2
 	bne.s	loc_22688
 	moveq	#0,d2
-	btst	#button_left,(Ctrl_1_Held).w
-	bne.s	.alt
 	btst	#button_up,(Ctrl_1_Held).w
 	beq.s	.common
-	
-.alt:
 	moveq	#1,d2
 
 .common:	
