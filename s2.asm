@@ -1904,11 +1904,13 @@ Pause_ChkStart:
 Pause_CheckC:
 	tst.b	(Option_PenaltySystem).w
 	beq.s	Pause_Loop
+	btst	#7,(Suicide_Flag).w
+	bne.s	Pause_Loop
 	cmpi.b	#2,(ScoreRush_Gamemode).w
 	beq.s	Pause_Loop
 	btst	#button_C,(Ctrl_1_Press).w	; is C button pressed?
 	beq.s	Pause_Loop					; if not, branch
-	move.b	#1,(Suicide_Flag).w
+	bset	#0,(Suicide_Flag).w
 	
 ; loc_13F2:
 Pause_Resume:
@@ -29994,7 +29996,7 @@ RunObjects:
 	tst.b	(Teleport_flag).w
 	bne.s	RunObjects_End	; rts
 	lea	(Object_RAM).w,a0 ; a0=object
-	tst.b	(Suicide_Flag).w
+	btst	#0,(Suicide_Flag).w
 	beq.s	+
 	clr.b	(Suicide_Flag).w
 	lea		(MainCharacter).w,a0
@@ -34878,6 +34880,7 @@ Obj0D_Main:
 	move.w	(Camera_Max_X_pos).w,(Camera_Min_X_pos).w	; lock screen
 	move.b	#2,routine_secondary(a0) ; => Obj0D_Main_State2
 	move.l	(Score).w,(Score_Saved).w
+	bset	#7,(Suicide_Flag).w
 	cmpi.b	#$C,(Loser_Time_Left).w
 	bhi.s	loc_192A0
 	move.w	(Level_Music).w,d0
@@ -74439,7 +74442,8 @@ ObjB2_Wait_Leader_position:
 	cmpi.w	#$5EC,y_pos(a1)
 	blo.s	+	; rts
 	move.b	#1,(WFZ_Can_Skip).w
-	move.l	(Score).w,(Score_Saved).w		
+	move.l	(Score).w,(Score_Saved).w
+	bset	#7,(Suicide_Flag).w	
 	clr.w	(Ctrl_1_Logical).w
 	addq.w	#1,objoff_2E(a0)
 	cmpi.w	#$40,objoff_2E(a0)
@@ -80573,7 +80577,8 @@ loc_3F2B4:
 +
 	move.w	#100,d0
 	jsr		AddPoints
-	move.l	(Score).w,(Score_Saved).w	
+	move.l	(Score).w,(Score_Saved).w
+	bset	#7,(Suicide_Flag).w	
 	move.w	#-$400,y_vel(a2)
 	move.w	#$800,x_vel(a2)
 	addq.b	#2,routine_secondary(a2)
