@@ -81528,6 +81528,7 @@ ResetScore:
 	cmpa.w	#MainCharacter,a0
 	bne.s	+
 	clr.l	(Score).w
+	clr.l	(Score_Saved).w
 	ori.b	#1,(Update_HUD_score).w
 	bra.s	KillCharacter
 	
@@ -83882,6 +83883,7 @@ Hud_End:
 
 loc_40E84:
 	clr.b	(Update_HUD_timer).w
+	clr.l	(Score_Saved).w
 	lea	(MainCharacter).w,a0 ; a0=character
 	movea.l	a0,a2
 	bsr.w	KillCharacter
