@@ -53696,6 +53696,7 @@ loc_2AE0C:
 	lsl.w	#7,d0
 	neg.w	d0
 	move.w	d0,y_vel(a1)
+	move.b	#30,(VSC_Disable).w	; GIO: makes it so the springs don't have to depend on pinball mode to function correctly
 	move.w	#0,x_vel(a1)
 	move.w	#$800,inertia(a1)
 	bset	#1,status(a1)

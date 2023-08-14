@@ -1458,6 +1458,12 @@ Sonic_JumpHeight:
 Sonic_UpVelCap:
 	tst.b	pinball_mode(a0)	; is Sonic charging a spindash or in a rolling-only area?
 	bne.s	return_1AB36		; if yes, return
+	tst.b	(VSC_Disable).w		; is the VSC disabled?
+	beq.s	+					; if not, branch
+	sub.b	#1,(VSC_Disable).w	; tick down the timer
+	rts
+
++	
 	cmpi.w	#-$FC0,y_vel(a0)	; is Sonic moving up really fast?
 	bge.s	return_1AB36		; if not, return
 	move.w	#-$FC0,y_vel(a0)	; cap upward speed
