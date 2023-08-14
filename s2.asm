@@ -78684,6 +78684,8 @@ loc_3D9D6:
 
 	cmp.b	#1,(ScoreRush_Gamemode).w
 	bne.s	+
+	move.l	(Score).w,(Score_Saved).w
+	bset	#7,(Suicide_Flag).w		
 	jsr		Level_EndlessRush
 	addq.l	#8,sp									; leave game mode loop prematurely
 	rts	
