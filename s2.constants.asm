@@ -1469,7 +1469,8 @@ Tornado_Velocity_Y:		ds.w	1
 
 Boss_variables:
 Boss_spawn_delay:		ds.b	1	; Boss spawn delay timer
-				ds.b	4	; $FFFFF73B-$FFFFF73E
+VSC_Disable:				ds.b	1	; GIO: amount of frames for which the upwards vertical speed cap gets disabled	
+							ds.b	3; $FFFFF73B-$FFFFF73E
 Boss_CollisionRoutine:		ds.b	1
 Boss_AnimationArray:		ds.b	$10	; up to $10 bytes; 2 bytes per entry
 Ending_Routine:
