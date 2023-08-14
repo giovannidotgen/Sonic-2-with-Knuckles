@@ -1782,8 +1782,7 @@ TextData_PageBodies:
 
 ; Page 7
 	dc.b	"YOU CAN GET POINTS IN ANY OF THE  "
-	dc.b	"WAYS PROVIDED BY SONIC 2, WITH A  "
-	dc.b	"CAP OF 1000 POINTS PER BADNIK.    "
+	dc.b	"WAYS PROVIDED BY SONIC 2.         "
 	dc.b	"                                  "
 	dc.b	"YOU ALSO GET 50 POINTS PER RING   "
 	dc.b	"COLLECTED. STARPOSTS, SIGNPOSTS   "
@@ -1797,6 +1796,7 @@ TextData_PageBodies:
 	dc.b	"GETTING HIT WILL COST YOU 1000    "
 	dc.b	"POINTS, BUT YOU CAN RECOVER SOME  "
 	dc.b	"OF THEM THROUGH SCATTERED RINGS.  "
+	dc.b	"                                  "
 
 ; Page 8
 	dc.b	"RING MONITORS, AS EXPECTED, AWARD "
