@@ -1747,6 +1747,13 @@ return_316522:					  ; ...
 Knuckles_UpwardsVelocityCap:			  ; ...
 		tst.b	spindash_flag(a0)
 		bne.s	return_316538
+		tst.b	(VSC_Disable).w		; is the VSC disabled?
+		beq.s	+					; if not, branch
+		sub.b	#1,(VSC_Disable).w	; tick down the timer
+		rts
+
++			
+		
 		cmp.w	#-$FC0,y_vel(a0)
 		bge.s	return_316538
 		move.w	#-$FC0,y_vel(a0)
