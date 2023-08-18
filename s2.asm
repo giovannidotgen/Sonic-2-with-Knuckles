@@ -14568,13 +14568,8 @@ Credits_Scr10:	creditsPtrs	CText_Tools,textLoc($02,$0A),			CText_MainMemory,text
 Credits_Scr11:	creditsPtrs CText_Promo,textLoc($02,$0B),			CText_Froozex,textLoc($02,$0F)
 Credits_Scr12: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$09),	CText_SHC,textLoc($02,$0D), 			CText_RHSponsors,textLoc($02,$0F),	 CText_RadNex,textLoc($02,$11)
 Credits_Scr13: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$08),	CText_redhotsonic,textLoc($02,$0C), 	CText_Argick,textLoc($02,$0E),		 CText_NicoTB,textLoc($02,$10),			CText_Froozex,textLoc($02,$12)
-Credits_Scr14: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$08),	CText_Monopattino,textLoc($02,$0C), 	CText_fuzzybit,textLoc($02,$0E),	 CText_TomatoWave_0,textLoc($02,$10),	CText_DeltaWooloo,textLoc($02,$12)
+Credits_Scr14: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$07),	CText_Monopattino,textLoc($02,$0B), 	CText_fuzzybit,textLoc($02,$0D),	 CText_TomatoWave_0,textLoc($02,$0F),	CText_DeltaWooloo,textLoc($02,$11), CText_DAGarden,textLoc($02,$13)
 Credits_Scr15: 	creditsPtrs	CText_SpecialThanks,textLoc($02,$0A),	CText_SEGA,textLoc($02,$0E), 			CText_SonicTeam,textLoc($02,$10)
-off_B490: creditsPtrs	byte_B9DB,textLoc($03,$08), byte_BA00,textLoc($08,$0C), byte_BA1B,textLoc($06,$0E), byte_BA3A,textLoc($09,$10), byte_BA52,textLoc($0A,$12)
-off_B4B0: creditsPtrs	byte_BA69,textLoc($09,$0A), byte_BA81,textLoc($05,$0E), byte_B7CE,textLoc($03,$10)
-off_B4C4: creditsPtrs	byte_B55C,textLoc($0B,$06), byte_BAA2,textLoc($0A,$08), byte_BAB8,textLoc($03,$0C), byte_BADC,textLoc($07,$0E), byte_BAF7,textLoc($05,$10), byte_BB16,textLoc($07,$12), byte_BB32,textLoc($02,$14)
-off_B4F0: creditsPtrs	byte_BB58,textLoc($06,$06), byte_BB75,textLoc($12,$08), byte_BB7B,textLoc($06,$0C), byte_BC9F,textLoc($05,$0E), byte_BBD8,textLoc($08,$10), byte_BBF2,textLoc($08,$12), byte_BC0C,textLoc($09,$14)
-off_B51C: creditsPtrs	byte_BB58,textLoc($06,$06), byte_BB75,textLoc($12,$08), byte_BB98,textLoc($03,$0C), byte_BBBC,textLoc($07,$0E), byte_BCBE,textLoc($07,$10), byte_BCD9,textLoc($0D,$12), byte_BC25,textLoc($04,$14)
 Credits_Scr16: creditsPtrs	byte_BC7B,textLoc($0B,$09), byte_BC8F,textLoc($12,$0D), CText_Giovanni,textLoc($0D,$11)
 
  ; temporarily remap characters to credit text format
@@ -14672,84 +14667,12 @@ CText_SonicTeam: creditText 0,"SONIC TEAM"
 CText_Sonic2Devs: creditText 0,"THE DEVELOPERS OF"
 CText_Sonic2Devs2: creditText 0,"SONIC THE HEDGEHOG 2"
 CText_Promo:	creditText 1,"PROMOTIONAL MEDIA"
-byte_B5CD:	creditText 0,"MASAHARU  YOSHII"
-byte_B5EB:	creditText 1,"CHIEF  PROGRAMMER"
-byte_B60C:	creditText 0,"YUJI  NAKA (YU2)"
-byte_B628:	creditText 1,"GAME  PLANNER"
-byte_B642:	creditText 0,"HIROKAZU  YASUHARA"
-byte_B665:	creditText 0,"(CAROL  YAS)"
-byte_B67B:	creditText 1,"CHARACTER  DESIGN"
-byte_B69C:	creditText 1,"AND"
-byte_B6A4:	creditText 1,"CHIEF  ARTIST"
-byte_B6BC:	creditText 0,"YASUSHI  YAMAGUCHI"
-byte_B6DE:	creditText 0,"(JUDY  TOTOYA)"
-byte_B6F8:	creditText 1,"ASSISTANT"
-byte_B70B:	creditText 1,"PROGRAMMERS"
-byte_B723:	creditText 0,"BILL  WILLIS"
-byte_B738:	creditText 0,"MASANOBU  YAMAMOTO"
-byte_B75C:	creditText 1,"OBJECT  PLACEMENT"
-byte_B77E:	creditText 0,"TAKAHIRO  ANTO"
-byte_B799:	creditText 0,"YUTAKA  SUGANO"
-byte_B7B5:	creditText 1,"SPECIALSTAGE"
-byte_B7CE:	creditText 0,"CAROL  ANN  HANSHAW"
-byte_B7F2:	creditText 1,"ZONE  ARTISTS"
-byte_B80B:	creditText 0,"CRAIG  STITT"
-byte_B821:	creditText 0,"BRENDA  ROSS"
-byte_B839:	creditText 0,"JINA  ISHIWATARI"
-byte_B855:	creditText 0,"TOM  PAYNE"
-byte_B869:	creditText 0,"PHENIX  RIE"
-byte_B87D:	creditText 1,"ART  AND  CG"
-byte_B893:	creditText 0,"TIM  SKELLY"
-byte_B8A8:	creditText 0,"PETER  MORAWIEC"
-byte_B8C5:	creditText 1,"MUSIC  COMPOSER"
-byte_B8E2:	creditText 0,"MASATO  NAKAMURA"
-byte_B902:	creditText 0,"( @1992"
-byte_B90F:	creditText 0,"DREAMS  COME  TRUE)"
-byte_B932:	creditText 1,"SOUND  PROGRAMMER"
-byte_B954:	creditText 0,"TOMOYUKI  SHIMADA"
-byte_B974:	creditText 1,"SOUND  ASSISTANTS"
-byte_B995:	creditText 0,"MACKY"
-byte_B9A1:	creditText 0,"JIMITA"
-byte_B9AD:	creditText 0,"MILPO"
-byte_B9B8:	creditText 0,"IPPO"
-byte_B9C1:	creditText 0,"S.O"
-byte_B9C8:	creditText 0,"OYZ"
-byte_B9D0:	creditText 0,"N.GEE"
-byte_B9DB:	creditText 1,"PROJECT  ASSISTANTS"
-byte_BA00:	creditText 0,"SYUICHI  KATAGI"
-byte_BA1B:	creditText 0,"TAKAHIRO  HAMANO"
-byte_BA3A:	creditText 0,"YOSHIKI  OOKA"
-byte_BA52:	creditText 0,"STEVE  WOITA"
-byte_BA69:	creditText 1,"GAME  MANUAL"
-byte_BA81:	creditText 0,"YOUICHI  TAKAHASHI"
-byte_BAA2:	creditText 1,"SUPPORTERS"
-byte_BAB8:	creditText 0,"DAIZABUROU  SAKURAI"
-byte_BADC:	creditText 0,"HISASHI  SUZUKI"
-    if gameRevision=0
-byte_BAF7:	creditText 0,"TOHMAS  KALINSKE"	; typo
-    else
-byte_BAF7:	creditText 0,"THOMAS  KALINSKE"
-    endif
-byte_BB16:	creditText 0,"FUJIO  MINEGISHI"
-byte_BB32:	creditText 0,"TAKAHARU UTSUNOMIYA"
-byte_BB58:	creditText 1,"SPECIAL  THANKS"
-byte_BB75:	creditText 1,"TO"
-byte_BB7B:	creditText 0,"CINDY  CLAVERAN"
-byte_BB98:	creditText 0,"DEBORAH  MCCRACKEN"
-byte_BBBC:	creditText 0,"TATSUO  YAMADA"
-byte_BBD8:	creditText 0,"DAISUKE  SAITO"
-byte_BBF2:	creditText 0,"KUNITAKE  AOKI"
-byte_BC0C:	creditText 0,"TSUNEKO  AOKI"
-byte_BC25:	creditText 0,"MASAAKI  KAWAMURA"
+CText_DAGarden:	creditText 0,"DA GARDEN"
 CText_Sonic2:	creditText 1,"SONIC THE HEDGEHOG 2"
 CText_ScoreRush:	creditText 1,"SCORE RUSH"
 CText_Staff:	creditText 0,"STAFF CREDITS"       
 byte_BC7B:	creditText 0,"PRESENTED"
 byte_BC8F:	creditText 0,"BY"
-byte_BC95:	creditText 0,"SEGA"
-byte_BC9F:	creditText 0,"FRANCE  TANTIADO"
-byte_BCBE:	creditText 0,"RICK  MACARAEG"
-byte_BCD9:	creditText 0,"LOCKY  P"
 
  charset ; have to revert character set before changing again
 
