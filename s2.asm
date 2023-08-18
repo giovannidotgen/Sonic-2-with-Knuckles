@@ -37245,7 +37245,7 @@ Obj7E_Init:
 	move.b	#1,priority(a0)
 	move.b	#$18,width_pixels(a0)
 	move.w	#make_art_tile(ArtTile_ArtNem_SuperSonic_stars,0,0),art_tile(a0)
-	bsr.w	Adjust2PArtPointer
+	jsr		Adjust2PArtPointer
 	btst	#high_priority_bit,(MainCharacter+art_tile).w
 	beq.s	Obj7E_Main
 	bset	#high_priority_bit,art_tile(a0)
