@@ -56186,9 +56186,15 @@ Obj50_ControlWing:
 	move.b	status(a0),status(a1)
 	move.b	respawn_index(a0),respawn_index(a1)
 	move.b	render_flags(a0),render_flags(a1)
-	btst	#0,status(a1)	; is object facing right?
-	beq.s	+		; if yes, branch
+	
+; the below is a hacked together fix that makes it so the Aquis' wing's orientation always matches that of the badnik	
+	btst	#0,render_flags(a1)	; is object facing right?
+	beq.s	+		; if yes, branch	
+	bset	#0,status(a1)
 	neg.w	d0	; else, align wing with other side of object
+	bra.s	++
++
+	bclr	#0,status(a1)
 +
 	add.w	d0,x_pos(a1)
 	add.w	d1,y_pos(a1)
