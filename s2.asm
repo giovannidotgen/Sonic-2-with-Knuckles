@@ -60137,10 +60137,10 @@ Obj52_Mobile_Flamethrower:
 	move.b	#$2F,objoff_3E(a0)
 
 loc_2FDAA:
-	bsr.w	loc_300A4
 	bsr.w	loc_2FEDE
 	lea	(Ani_obj52).l,a1
 	bsr.w	AnimateBoss
+	bsr.w	loc_300A4	
 	jmpto	DisplaySprite, JmpTo36_DisplaySprite
 ; ===========================================================================
 
@@ -64332,13 +64332,19 @@ Obj55_Main_End:
 ; ===========================================================================
 ; loc_33174:
 Obj55_HandleHits:
-	bsr.w	Boss_HandleHits
-	cmpi.b	#$1F,boss_invulnerable_time(a0)
-	bne.s	return_33192
-	lea	(Boss_AnimationArray).w,a1
-	andi.b	#$F0,(a1)
-	ori.b	#3,(a1)
-	ori.b	#$80,Obj55_status(a0)	; set boss hit bit
+	bsr.w Boss_HandleHits
+	cmpi.b #$1F,boss_invulnerable_time(a0)
+	bne.s .chk_killed
+	lea (Boss_AnimationArray).w,a1
+	andi.b #$F0,(a1)
+	ori.b #3,(a1)
+	ori.b #$80,Obj55_status(a0) ; set boss hit bit
+
+.chk_killed:
+	cmpi.b #8,boss_routine(a0) ; is boss exploding or retreating?
+	blo.s return_33192 ; if yes, branch
+	move.b #2,boss_subtype(a0) ; => Obj55_Main
+
 
 return_33192:
 	rts
