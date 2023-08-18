@@ -48598,6 +48598,12 @@ loc_2704C:
 	move.w	objoff_30(a0),x_vel(a1)
 	move.w	#-$800,x_vel(a1)
 	move.w	#-$800,y_vel(a1)
+	; this fix is designed for 1 player mode only actually
+	move.b	(Ctrl_1_Held_Logical).w,d0
+	andi.b	#button_B_mask|button_C_mask|button_A_mask,d0 ; is A, B or C pressed?
+	bne.s	+	; if yes, skip
+	move.w	#-$400,y_vel(a1)
++
 	clr.b	jumping(a1)
 	clr.b	double_jump_flag(a1)
 	clr.b	double_jump_property(a1)
