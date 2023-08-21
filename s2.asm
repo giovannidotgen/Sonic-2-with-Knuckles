@@ -60819,6 +60819,8 @@ Obj89_Main_Sub4:
 	bsr.w	Obj89_Main_AlignParts
 	cmpi.b	#-$40,boss_sine_count(a0)	; has boss reached the right height in its hovering animation?
 	bne.s	Obj89_Main_Sub4_Standard	; if not, branch
+    cmpi.b  #8,angle(a0)
+    beq.s    loc_306F8	
 	lea	(Boss_AnimationArray).w,a1
 	andi.b	#$F0,2*2(a1)			; reset hammer animation
 	ori.b	#3,2*2(a1)			; reset hammer animation timer
@@ -60829,7 +60831,7 @@ Obj89_Main_Sub4:
 	move.b	#SndID_Hammer,d0
 	jsrto	PlaySound, JmpTo8_PlaySound
 
-; loc_306F8:
+loc_306F8:
 Obj89_Main_Sub4_Standard:
 	lea	(Ani_obj89_b).l,a1
 	bsr.w	AnimateBoss
@@ -73030,10 +73032,12 @@ loc_39830:
 ; ===========================================================================
 
 loc_3984A:
-	bsr.w	loc_39CAE
-	bsr.w	loc_39D1C
-	subq.b	#1,objoff_2A(a0)
-	beq.s	loc_39886
+    bsr.w   loc_39CAE
+    bsr.w   loc_39D1C
+    cmpi.b  #$C,routine(a0)
+    jeq		DisplaySprite
+    subq.b  #1,objoff_2A(a0)
+    beq.s   loc_39886
 	cmpi.b	#$32,objoff_2A(a0)
 	bne.s	loc_3986A
 	moveq	#signextendB(SndID_MechaSonicBuzz),d0
