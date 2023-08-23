@@ -250,22 +250,15 @@ ResultsScreen_SaveChanges:
 		move.w	#SndID_Checkpoint,d0
 		jmp		PlaySound	
 
-; GIO: Interestingly, the credits are not tied to any gamemode in particular. You can really just call them like this.
+; Universal credits jump code. Thanks to Devon for help on how to do this.
+; Note: if you want to use this in your hack, disable the interrupts in EndgameCredits after the fadeout!
 Menu_GotoCredits:
 		st.b	(Credits_Trigger).w
-		bsr.w	Pal_FadeToBlack					; this masks graphical corruption during the vertical interrupt mode change
-
-
-MenuCredits_MainLoop:
-		move.b	#VintID_Ending,(Vint_routine).w
-		jsr		WaitForVint		
 		jsr		EndgameCredits
-		tst.w	(Level_Inactive_flag).w
-		beq.s	MenuCredits_MainLoop
-		
-		addq.l	#4,sp							; leave menu
-		rts
 
+		lea		(System_Stack).w,sp
+		jmp		MainGameLoop
+		
 ResultsScreen_Controls:
 		btst	#button_start,(Ctrl_1_Press).w
 		bne.w	ResultsScreen_SaveChanges

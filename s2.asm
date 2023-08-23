@@ -13136,6 +13136,7 @@ EndgameCredits:
 	st.b	(SRAM_CreditsViewed).l
 +
 	jsr		Pal_FadeToBlack
+	move	#$2700,sr		; NEW: disable interrupts. Quite strange the vanilla game doesn't do this.	
 	lea	(VDP_control_port).l,a6
 	move.w	#$8004,(a6)		; H-INT disabled
 	move.w	#$8200|(VRAM_EndSeq_Plane_A_Name_Table/$400),(a6)	; PNT A base: $C000
