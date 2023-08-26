@@ -514,7 +514,7 @@ CharSel_GotoQuickRush:
 		jmp		PlaySound		
 
 CharSel_GotoLeaderboards:
-		move.w	(Options_menu_box).w,(Player_option).w			; get selected character
+		move.w	(Option_Character).w,(Player_option).w			; get selected character
 		clr.w	(Options_menu_box).w
 		move.l	#Menu_Update,(sp)	; overwrite stack
 		move.l	#"UPDT",d6
@@ -551,8 +551,8 @@ CharSel_BeginGame:
 		move.l	d0,(Got_Emeralds_array+4).w
 
 		move.b	#GameModeID_Level,(Game_Mode).w ; => Level (Zone play mode)
-		add.w	#1,(Options_menu_box).w
-		move.w	(Options_menu_box).w,(Player_option).w			; get selected character
+		move.w	(Option_Character).w,(Player_option).w			; get selected character		
+		add.w	#1,(Player_option).w
 		move.b	#10,(ScoreRush_TimerSpeed).w
 		tst.b	(Option_Difficulty).w
 		beq.s	+
@@ -602,7 +602,7 @@ CharSel_RefreshDiff:
 		move.w	#SndID_Blip,d0
 		jmp	(PlaySound).l				
 CharSel_RefreshChar:
-		move.w	d2,(Options_menu_box).w ; set new selection
+		move.w	d2,(Option_Character).w ; set new selection
 		bsr.w	CharSel_LoadPlayer 		; refresh option names
 		move.w	#SndID_Blip,d0
 		jmp	(PlaySound).l				
@@ -615,7 +615,7 @@ CharSel_NoInput:
 		rts	
 
 CharSel_LeftRight:	
-		move.w  (Options_menu_box).w,d2        ; load choice number		
+		move.w  (Option_Character).w,d2        ; load choice number		
 		btst	#2,d1		; is left pressed?
 		beq.s	CharSel_Right	; if not, branch
 		subq.w	#1,d2		; subtract 1 to selection
@@ -1093,7 +1093,7 @@ Instructions_PageText:
 CharSel_LoadPlayer:
 	lea	($C00000).l,a6
 ; load palette
-	move.w	(Options_menu_box).w,d1
+	move.w	(Option_Character).w,d1
 	lea		(CharSel_CharData).l,a2
 	lsl.w	#3,d1
 	adda.l	d1,a2
@@ -1109,7 +1109,7 @@ CharSel_LoadPlayer:
 ; load Player plane graphics
 	lea	(Chunk_Table).l,a1
 	moveq	#0,d1
-	move.w	(Options_menu_box).w,d1
+	move.w	(Option_Character).w,d1
 	movea.l	(a2),a0
 	move.w	#make_art_tile(ArtTile_ArtNem_LevelSelectPics,0,0),d0
 	jsr		EniDec

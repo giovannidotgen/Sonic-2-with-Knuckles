@@ -1812,7 +1812,8 @@ Total_Bonus_Countdown:		ds.w	1
 				
 Level_Music:			ds.w	1
 Bonus_Countdown_3:		ds.w	1
-				ds.b	4	; $FFFFFF94-$FFFFFF97 ; seems unused
+Option_Character:		ds.w	1
+				ds.b	2	; $FFFFFF94-$FFFFFF97 ; seems unused
 Game_Over_2P:			ds.w	1
 
 				ds.b	6	; $FFFFFF9A-$FFFFFF9F ; seems unused
