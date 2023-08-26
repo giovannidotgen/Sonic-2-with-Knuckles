@@ -380,10 +380,11 @@ QuickRush_GoBack:
 		jmp		PlaySound	
 	
 QuickRush_Controls:
+		move.b	(Ctrl_1_Press).w,d1 ; fetch commands
+		andi.b  #$C0,d1            ; is start or A being pressed?
+		bne.w   QuickRush_Start
 		btst	#button_B,(Ctrl_1_Press).w
 		bne.s	QuickRush_GoBack
-		btst	#button_start,(Ctrl_1_Press).w
-		bne.s	QuickRush_Start
 		move.b	(Ctrl_1_Press).w,d1 ; fetch commands		
 		andi.b	#$C,d1		; is left/right pressed and held?
 		bne.s	QuickRush_LeftRight	; if yes, branch
