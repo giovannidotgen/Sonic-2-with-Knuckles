@@ -28326,9 +28326,9 @@ RandomLevelTable:
 	dc.w	metropolis_zone_act_1
 	dc.w	metropolis_zone_act_2
 	dc.w	metropolis_zone_act_3
-	dc.w	casino_night_zone_act_1
+	dc.w	metropolis_zone_act_2		; there used to be CNZ1 here
 	dc.w	mystic_cave_zone_act_2
-	dc.w	oil_ocean_zone_act_2
+	dc.w	mystic_cave_zone_act_1		; there used to be OOZ2 here
 	dc.w	oil_ocean_zone_act_1
 	dc.w	death_egg_zone_act_1
 ; ===========================================================================
