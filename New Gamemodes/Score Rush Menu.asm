@@ -1849,7 +1849,7 @@ TextData_PageBodies:
 ; Page 11
 	dc.b	"SONIC 2 - SCORE RUSH              "
 	dc.b	"                                  "
-	dc.b	"VERSION: 1.0                      "
+	dc.b	"VERSION: 1.0.1                    "
 	dc.b	"                                  "
 	dc.b	"THIS IS A ROM HACK. IT IS NOT     "
 	dc.b	"PRODUCED BY OR UNDER LICENSE FROM "

@@ -483,10 +483,12 @@ InitSRAM:
 	move.l  #"FRUN",d1       		; get the actual word "FRUN"
 	cmp.l	d0,d1					; was it found?
 	beq.w	InitSRAM_LoadData		; If it was, then put SRAM in RAM
+	bra.s	InitSRAM_Failsafe
 	
 +
 	bset	#0,(Firstrun).w
 	bra.w	InitSRAM_LoadData
+	
 ; If the second SRAM check still fails, set the error code, and load the default data straight into RAM	
 	
 InitSRAM_Failsafe:
