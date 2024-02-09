@@ -1057,9 +1057,8 @@ locret_14820:
 ; =============== S U B R O U T I N E =======================================
 Tails_CancelFlight:
 
-	tst.b	(Option_FlightCancel).w			; is flight cancellation enabled?
-	beq.s	+								; if not, branch
-
+	tst.b	(Flying_carrying_Sonic_flag).w
+	bne.s	+
 	move.b	(Ctrl_2_Press_Logical).w,d0
 	btst	#button_down,(Ctrl_2_Held_Logical).w			; is down being pressed?
 	beq.s	+								; if not, branch
@@ -1072,6 +1071,7 @@ Tails_CancelFlight:
 	move.b	#AniIDSonAni_Roll,anim(a0)	; use "jumping" animation
 	bset	#2,status(a0)
 	clr.b	double_jump_flag(a0)
+	clr.b	double_jump_property(a0)	
 +
 	rts
 
@@ -2041,8 +2041,6 @@ Tails_Test_For_Flight:
 	bne.s	+
 	tst.b	(WindTunnel_flag).w
 	bne.s	+
-	tst.b	(Option_Flight).w
-	beq.s	+
 	tst.b	double_jump_flag(a0) ; Is tails already flying?
 	beq.w	Tails_Test_For_Flight_2P ; If not, branch
 +
@@ -2050,12 +2048,9 @@ Tails_Test_For_Flight:
 
 Tails_Test_For_Flight_2P:
 
-		tst.b	(Option_FlightCancel).w
-		beq.s	+
 		btst	#button_down,(Ctrl_2_Held_Logical).w			; is down being pressed?
 		bne.s	locret_151A2									; if yes, branch
 
-+
 		move.b	(Ctrl_2_Press_Logical).w,d0
 		andi.b	#button_A_mask|button_B_mask|button_C_mask,d0
 		beq.w	Tails_Test_For_Flight_Assist
