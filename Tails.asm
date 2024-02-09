@@ -1902,13 +1902,11 @@ Tails_Roll:
 	bne.w	Obj02_NoRoll
     endif
 	mvabs.w	inertia(a0),d0
-	tst.b   (Option_SlowDucking).w
-	beq.s   Obj02_NoSlowDucking	
 
-	move.b	(Ctrl_1_Held_Logical).w,d0		
+	move.b	(Ctrl_2_Held_Logical).w,d0		
 	andi.b	#$C,d0		; is left/right	being pressed?
 	bne.s	Obj02_NoRoll	; if yes, branch	
-	btst	#1,(Ctrl_1_Held_Logical).w ; is down being pressed?
+	btst	#1,(Ctrl_2_Held_Logical).w ; is down being pressed?
 	beq.s	Obj02_ChkWalk	; if yes, branch		
 	move.w	inertia(a0),d0
 	bpl.s	+
@@ -1920,16 +1918,7 @@ Tails_Roll:
 	btst	#3,status(a0)
 	bne.s	Obj02_NoRoll
 	move.b	#AniIDSonAni_Duck,anim(a0)	; enter ducking animation	
-	bra.s   Obj02_NoRoll
 
-Obj02_NoSlowDucking:	
-	cmpi.w	#$80,d0		; is Tails moving at $80 speed or faster?
-	blo.s	Obj02_NoRoll	; if not, branch
-	move.b	(Ctrl_2_Held_Logical).w,d0
-	andi.b	#button_left_mask|button_right_mask,d0		; is left/right being pressed?
-	bne.s	Obj02_NoRoll	; if yes, branch
-	btst	#button_down,(Ctrl_2_Held_Logical).w	; is down being pressed?
-	bne.s	Obj02_ChkRoll			; if yes, branch
 ; return_1C5DE:
 Obj02_NoRoll:
 	rts
@@ -2703,19 +2692,12 @@ Tails_ResetOnFloor_Part2:
 	bpl.s	.rollspeedcheck
 	neg.w	d0		
 .rollspeedcheck:
-	tst.b   (Option_SlowDucking).w
-	bne.s   .slowduckcheck		
-	cmpi.w	#$80,d0	; is Sonic moving at $80 speed or faster?
-	bcs.s	Tails_ResetOnFloor_Part3	; if not, branch
-	bra.s   Tails_CheckRollSpeedCommon
-.slowduckcheck:
 	cmpi.w	#$100,d0	; is Sonic moving at $80 speed or faster?
 	bcs.s	Tails_ResetOnFloor_Part3	; if not, branch		
-Tails_CheckRollSpeedCommon:
-	move.b	(Ctrl_1_Held_Logical).w,d0
+	move.b	(Ctrl_2_Held_Logical).w,d0
 	andi.b	#$C,d0		; is left/right	being pressed?
 	bne.s	Tails_ResetOnFloor_Part3	; if yes, branch
-	btst	#1,(Ctrl_1_Held_Logical).w ; is down being pressed?
+	btst	#1,(Ctrl_2_Held_Logical).w ; is down being pressed?
 	beq.s	Tails_ResetOnFloor_Part3	; if not, branch
 ;	move.b  #1,$2E(a0)  ; store 1 in this spot of Sonic's RAM
 	move.b  #AniIDSonAni_Roll,anim(a0)  ; set Sonic's animation		

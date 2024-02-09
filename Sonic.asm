@@ -1256,8 +1256,6 @@ Sonic_Roll:
 	bne.s	Obj01_NoRoll
     endif
 	mvabs.w	inertia(a0),d0
-	tst.b   (Option_SlowDucking).w
-	beq.s   Obj01_NoSlowDucking	
 
 	move.b	(Ctrl_1_Held_Logical).w,d0		
 	andi.b	#$C,d0		; is left/right	being pressed?
@@ -1274,16 +1272,7 @@ loc_13392:
 	btst	#3,status(a0)
 	bne.s	Obj01_NoRoll
 	move.b	#AniIDSonAni_Duck,anim(a0)	; enter ducking animation	
-	bra.s   Obj01_NoRoll
 
-Obj01_NoSlowDucking:
-	cmpi.w	#$80,d0		; is Sonic moving at $80 speed or faster?
-	blo.s	Obj01_NoRoll	; if not, branch
-	move.b	(Ctrl_1_Held_Logical).w,d0
-	andi.b	#button_left_mask|button_right_mask,d0 ; is left/right being pressed?
-	bne.s	Obj01_NoRoll	; if yes, branch
-	btst	#button_down,(Ctrl_1_Held_Logical).w ; is down being pressed?
-	bne.s	Obj01_ChkRoll			; if yes, branch
 ; return_1A9F8:
 Obj01_NoRoll:
 	rts
@@ -2274,15 +2263,8 @@ Sonic_ResetOnFloor_Part2:
 	bpl.s	.rollspeedcheck
 	neg.w	d0		
 .rollspeedcheck:
-	tst.b   (Option_SlowDucking).w
-	bne.s   .slowduckcheck		
-	cmpi.w	#$80,d0	; is Sonic moving at $80 speed or faster?
-	bcs.s	Sonic_ResetOnFloor_Part3	; if not, branch
-	bra.s   Sonic_CheckRollSpeedCommon
-.slowduckcheck:
 	cmpi.w	#$100,d0	; is Sonic moving at $80 speed or faster?
 	bcs.s	Sonic_ResetOnFloor_Part3	; if not, branch		
-Sonic_CheckRollSpeedCommon:
 	move.b	(Ctrl_1_Held_Logical).w,d0
 	andi.b	#$C,d0		; is left/right	being pressed?
 	bne.s	Sonic_ResetOnFloor_Part3	; if yes, branch

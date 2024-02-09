@@ -1624,8 +1624,6 @@ Knuckles_Roll:					  ; ...
 		neg.w	d0
 
 +
-		tst.b   (Option_SlowDucking).w
-		beq.s   loc_3163E6
 
 		move.b	(Ctrl_1_Held_Logical).w,d0		
 		andi.b	#$C,d0		; is left/right	being pressed?
@@ -1641,17 +1639,8 @@ Knuckles_Roll:					  ; ...
 		bhs.s	Obj4C_ChkRoll	; if not, branch
 		btst	#3,status(a0)
 		bne.s	Obj4C_NoRoll
-		move.b	#8,anim(a0)	; enter ducking animation	
-		bra.s   Obj4C_NoRoll		
+		move.b	#8,anim(a0)	; enter ducking animation			
 
-loc_3163E6:					  ; ...
-		cmp.w	#$80,d0
-		bcs.s	Obj4C_NoRoll
-		move.b	($FFFFF602).w,d0
-		and.b	#$C,d0
-		bne.s	Obj4C_NoRoll
-		btst	#1,($FFFFF602).w
-		bne.s	Obj4C_ChkRoll
 
 Obj4C_NoRoll:					  ; ...
 		rts
@@ -2588,15 +2577,8 @@ Knuckles_ResetOnFloor_Part2:			  ; ...
 		bpl.s	.rollspeedcheck
 		neg.w	d0		
 .rollspeedcheck:
-		tst.b   (Option_SlowDucking).w
-		bne.s   .slowduckcheck		
-		cmpi.w	#$80,d0	; is Sonic moving at $80 speed or faster?
-		bcs.s	Knuckles_ResetOnFloor_Part3	; if not, branch
-		bra.s   Knuckles_CheckRollSpeedCommon
-.slowduckcheck:
 		cmpi.w	#$100,d0	; is Sonic moving at $80 speed or faster?
 		bcs.s	Knuckles_ResetOnFloor_Part3	; if not, branch		
-Knuckles_CheckRollSpeedCommon:
 		move.b	(Ctrl_1_Held_Logical).w,d0
 		andi.b	#$C,d0		; is left/right	being pressed?
 		bne.s	Knuckles_ResetOnFloor_Part3	; if yes, branch
